@@ -1,5 +1,6 @@
 package net.bzethmayr.gigantspinosaurus.model;
 
+import net.bzethmayr.gigantspinosaurus.capabilities.ExposesQuaternion;
 import net.bzethmayr.gigantspinosaurus.capabilities.HasRequiredAttributes;
 
 import java.util.SequencedSet;
@@ -14,9 +15,15 @@ public record Orientation(
         double QY,
         double QZ,
         Frame frame
-) implements HasRequiredAttributes {
+) implements HasRequiredAttributes, ExposesQuaternion {
     Orientation(double QW, double QX, double QY, double QZ) {
         this(QW, QX, QY, QZ, new Frame());
+    }
+    Orientation(double[] q4) {
+        this(q4[0], q4[1], q4[2], q4[3]);
+    }
+    Orientation(double[] q4, Frame frame) {
+        this(q4[0], q4[1], q4[2], q4[3], frame);
     }
 
     private static final BoundAttributes<Orientation> ACCESSORS = new BoundAttributes<>(
