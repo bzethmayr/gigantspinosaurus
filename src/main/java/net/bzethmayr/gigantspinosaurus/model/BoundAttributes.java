@@ -5,8 +5,10 @@ import net.bzethmayr.gigantspinosaurus.capabilities.HasMappedAttributes;
 import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.stream.Stream;
 
 import static java.util.Collections.unmodifiableSequencedMap;
+import static java.util.Collections.unmodifiableSequencedSet;
 import static net.zethmayr.fungu.UponHelper.upon;
 
 public final class BoundAttributes<T extends HasMappedAttributes> {
@@ -22,6 +24,12 @@ public final class BoundAttributes<T extends HasMappedAttributes> {
 
     public SequencedSet<String> fieldNames() {
         return fieldNames;
+    }
+
+    public SequencedSet<String> fieldNamesExcept(final String... except) {
+        final SequencedSet<String> reduced = new LinkedHashSet<>(fieldNames);
+        Stream.of(except).forEach(reduced::remove);
+        return unmodifiableSequencedSet(reduced);
     }
 
     public byte[] getBoundValueOrDelegate(final String fieldName, final T binding, final HasMappedAttributes delegate) {

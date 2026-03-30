@@ -5,7 +5,4 @@ public interface ExposesQuaternion {
     double QX();
     double QY();
     double QZ();
-    default double[] q4() {
-        return new double[]{QW(), QX(), QY(), QZ()};
-    }
 }

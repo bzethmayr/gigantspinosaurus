@@ -7,13 +7,13 @@ import java.util.SequencedSet;
 
 import static net.bzethmayr.gigantspinosaurus.capabilities.AttributeValuations.*;
 import static net.bzethmayr.gigantspinosaurus.util.CollectionHelper.adds;
+import static net.zethmayr.fungu.UponHelper.upon;
 
 public record MinimalAttestationRecord(
         long nonce,
         double utcEpochSeconds,
         Geoposition position,
         Orientation orientation,
-        Map<String, byte[]> alsoAttested,
         MarSignature signature
 ) implements HasRequiredAttributes {
     private static final BoundAttributes<MinimalAttestationRecord> ACCESSORS = new BoundAttributes<>(
@@ -23,7 +23,6 @@ public record MinimalAttestationRecord(
                     adds("orientation", fromConverted(MinimalAttestationRecord::orientation, o -> null)),
                     adds("signature", fromConverted(MinimalAttestationRecord::signature, o -> null))
             );
-
     @Override
     public SequencedSet<String> getRequiredAttributes() {
         return ACCESSORS.fieldNames();
@@ -36,6 +35,6 @@ public record MinimalAttestationRecord(
 
     @Override
     public byte[] getAttributeValue(String attributeName) {
-        return ACCESSORS.getBoundValueOrDelegate(attributeName, this, alsoAttested::get);
+        return ACCESSORS.getBoundValue(attributeName, this);
     }
 }

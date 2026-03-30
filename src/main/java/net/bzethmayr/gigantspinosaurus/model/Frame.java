@@ -23,6 +23,7 @@ public record Frame(
     Frame(Handedness x, Vertical y, Face z, Handedness handed, North north) {
         this(x, y, z, handed, north, 0);
     }
+
     Frame() {
         this(U_HAND, U_VERT, U_FACE, U_HAND, U_NORTH);
     }
