@@ -1,4 +1,4 @@
-package net.bzethmayr.gigantspinosaurus.model;
+package net.bzethmayr.gigantspinosaurus;
 
 import static net.zethmayr.fungu.test.TestConstants.TEST_RANDOM;
 

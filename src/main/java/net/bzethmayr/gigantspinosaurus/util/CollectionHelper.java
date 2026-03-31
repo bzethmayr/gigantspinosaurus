@@ -23,7 +23,7 @@ public final class CollectionHelper {
                     right.forEach(left::putLast);
                     return left;
                 },
-                m -> (SequencedMap<K, V>) m,
+                m -> null,
                 Collector.Characteristics.IDENTITY_FINISH
         );
     }

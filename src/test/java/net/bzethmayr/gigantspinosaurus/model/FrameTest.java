@@ -1,5 +1,6 @@
 package net.bzethmayr.gigantspinosaurus.model;
 
+import net.bzethmayr.gigantspinosaurus.TestsWithEnums;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -9,7 +10,7 @@ import static org.hamcrest.Matchers.contains;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-class FrameTest implements  TestsWithEnums {
+class FrameTest implements TestsWithEnums {
     final Handedness x = randomEnum(Handedness.class);
     final Vertical y = randomEnum(Vertical.class);
     final Face z = randomEnum(Face.class);

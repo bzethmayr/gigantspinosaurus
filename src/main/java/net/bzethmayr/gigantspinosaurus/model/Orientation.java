@@ -15,7 +15,7 @@ public record Orientation(
         double QY,
         double QZ,
         Frame frame
-) implements HasRequiredAttributes, ExposesQuaternion {
+) implements HasRequiredAttributes, ExposesQuaternion<Orientation> {
 
     private static final BoundAttributes<Orientation> ACCESSORS = new BoundAttributes<>(
             adds("QW", fromDouble(Orientation::QW)),
@@ -25,8 +25,8 @@ public record Orientation(
             adds("frame", fromConverted(Orientation::frame, f -> null))
     );
 
-    public Orientation withQuaternion(final ExposesQuaternion obtained) {
-        return new Orientation(obtained.QW(), obtained.QX(), obtained.QY(), obtained.QZ(), frame);
+    public Orientation withQ4(final double[] q4) {
+        return new Orientation(q4[0], q4[1], q4[2], q4[3], frame);
     }
 
     public Orientation withFrame(final Frame obtained) {

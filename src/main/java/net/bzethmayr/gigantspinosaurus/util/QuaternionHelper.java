@@ -6,6 +6,9 @@ import java.util.Arrays;
 
 import static net.zethmayr.fungu.core.ExceptionFactory.becauseIllegal;
 
+/**
+ * This deals with quaternions, mostly in the form of a 4-element double array [w,x,y,z].
+ */
 public final class QuaternionHelper {
 
     public static void checkQ4(double[] q4) {
@@ -55,7 +58,9 @@ public final class QuaternionHelper {
         return new4;
     }
 
-    public static double[] normalized(final ExposesQuaternion q4) {
-        return normalized(new double[]{q4.QW(), q4.QX(), q4.QY(), q4.QZ()});
+    public static <R extends ExposesQuaternion<R>> R normalized(final R original) {
+        final double[] q4 = original.asQ4();
+        normalizeUnchecked(q4);
+        return original.withQ4(q4);
     }
 }
