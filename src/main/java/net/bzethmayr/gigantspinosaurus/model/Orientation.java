@@ -1,6 +1,6 @@
 package net.bzethmayr.gigantspinosaurus.model;
 
-import net.bzethmayr.gigantspinosaurus.capabilities.ExposesQuaternion;
+import net.bzethmayr.gigantspinosaurus.capabilities.orientation.ExposesQuaternion;
 import net.bzethmayr.gigantspinosaurus.capabilities.HasRequiredAttributes;
 
 import java.util.SequencedSet;

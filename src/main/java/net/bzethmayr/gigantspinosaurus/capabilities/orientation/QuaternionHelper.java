@@ -1,6 +1,4 @@
-package net.bzethmayr.gigantspinosaurus.util;
-
-import net.bzethmayr.gigantspinosaurus.capabilities.ExposesQuaternion;
+package net.bzethmayr.gigantspinosaurus.capabilities.orientation;
 
 import java.util.Arrays;
 

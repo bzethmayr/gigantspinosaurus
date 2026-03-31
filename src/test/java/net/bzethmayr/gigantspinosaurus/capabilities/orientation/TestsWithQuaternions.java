@@ -1,4 +1,4 @@
-package net.bzethmayr.gigantspinosaurus;
+package net.bzethmayr.gigantspinosaurus.capabilities.orientation;
 
 import java.util.stream.Stream;
 

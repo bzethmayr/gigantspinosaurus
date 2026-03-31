@@ -1,4 +1,4 @@
-package net.bzethmayr.gigantspinosaurus.capabilities;
+package net.bzethmayr.gigantspinosaurus.capabilities.orientation;
 
 public interface ExposesQuaternion<R extends ExposesQuaternion<R>> {
     double QW();

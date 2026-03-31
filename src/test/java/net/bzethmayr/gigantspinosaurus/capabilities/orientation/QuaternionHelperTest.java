@@ -1,6 +1,5 @@
-package net.bzethmayr.gigantspinosaurus.util;
+package net.bzethmayr.gigantspinosaurus.capabilities.orientation;
 
-import net.bzethmayr.gigantspinosaurus.TestsWithQuaternions;
 import net.bzethmayr.gigantspinosaurus.model.Frame;
 import net.bzethmayr.gigantspinosaurus.model.Orientation;
 import org.junit.jupiter.api.RepeatedTest;
@@ -8,7 +7,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
-import static net.bzethmayr.gigantspinosaurus.util.QuaternionHelper.*;
+import static net.bzethmayr.gigantspinosaurus.capabilities.orientation.QuaternionHelper.*;
 import static net.zethmayr.fungu.test.TestConstants.TEST_RANDOM;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.closeTo;
