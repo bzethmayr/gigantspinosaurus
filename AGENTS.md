@@ -5,6 +5,7 @@ The index is stale with probability approaching certainty.
 **NEVER** treat absence of search results as absence of existence.
 
 # order of reading
+Look at files instead of guessing their contents.
 
 ## first
 1. `README.md`

@@ -19,9 +19,25 @@ The core datatype here is the MAR (Minimal Attestation Record),
 which carries the provenance and verification information and specifies the byte-level representation.
 The MAR is transmitted independently of the artifact.
 
+On install:
+generate hardware-backed keypair (Ed25519)
+store private key in secure hardware
+store public key in app storage
+
+On MAR creation:
+encode MAR_core fields
+signature = Sign(privateKey, encodedBytes)
+embed publicKey + signature in MAR
+
 The set of stored MAR form a referential spine.
 The MAR in the artifact allows verification.
 It stores attestations, not artifacts.
 It prevents lying, not disagreement.
 It has no authority node, no ontology, and no interpretive layer.
 It is uncentralized by design.
+
+## agentic involvement
+Limited, with mixed results. Evaluations are specific to the development system.
+* Poor results from DevoxxGenie - overfeatured and regressing
+* No appetite for having the AI plugin self-terminate after 30 days
+* OllamAssist so far has successfully read this file, this is progress!
