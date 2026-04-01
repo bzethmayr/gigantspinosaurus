@@ -1,11 +1,22 @@
 # DEVOXXGENIE.md
 
 ## Project Guidelines
+### RAG
+If RAG and the file structure disagree, RAG is incorrect.
+The index is stale with probability approaching certainty.
+There is also a relevance threshold in place,
+and an existing file is not guaranteed to appear relevant to itself.
+Don't treat absence of search results as absence of existence.
+
+### Tests
+Use the `run_tests` tool if available instead of invoking Gradle directly.
 
 ### Build Commands
 
+This project uses a Kotlin build script `build.gradle.kts`.
+
 - **Build:** `./gradlew build`
-- **Test:** `./gradlew test`
+- **Test:** The run_tests tool or optionally `./gradlew test`
 - **Single Test:** `./gradlew test --tests ClassName.methodName`
 - **Clean:** `./gradlew clean`
 - **Run:** `./gradlew run`
@@ -19,8 +30,15 @@
   - Use SCREAMING_SNAKE_CASE for constants
 - **Documentation:** Use JavaDoc for documentation
 - **Imports:** Organize imports and avoid wildcard imports
-- **Exception Handling:** Prefer specific exceptions and document throws
-
+- **Exception Handling:**
+  - Prefer factory methods from `net.zethmayr.fungu.core.ExceptionFactory`.
+  - Use specific exceptions and document throws.
+  - *Do not* use SneakyThrows.
+  - When composing `java.util.function` types, you can 
+    1. use `net.zethmayr.fungu.throwing.SinkableHelper` methods to obtain
+    2. `net.zethmayr.fungu.throwing.Sinkable` which combine with 
+    3. sinks from `net.zethmayr.fungu.throwing.SinkFactory`
+    4. to tunnel or defer checked exception handling.
 
 
 ### Project Tree
