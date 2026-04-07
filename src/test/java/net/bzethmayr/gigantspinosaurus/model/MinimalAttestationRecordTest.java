@@ -21,7 +21,7 @@ class MinimalAttestationRecordTest {
                 TEST_RANDOM.nextLong(),
                 TEST_RANDOM.nextDouble(),
                 new Geoposition(0.0d, 0.0d, 0.0d),
-                new Orientation(1.0d, 1.0, 0.0d, 0.0d, new Frame()),
+                new Orientation(1.0d, 1.0, 0.0d, 0.0d, new Framing()),
                 TEST_RANDOM.nextLong(),
                 new MarSignature(new byte[]{}, new byte[]{}),
                 (short) 0
@@ -47,7 +47,7 @@ class MinimalAttestationRecordTest {
                         TEST_RANDOM.nextDouble(-1d, 1d),
                         TEST_RANDOM.nextDouble(-1d, 1d),
                         TEST_RANDOM.nextDouble(-1d, 1d),
-                        new Frame()),
+                        new Framing()),
                 TEST_RANDOM.nextLong(),
                 new MarSignature(fakePub, fakeSign),
                 (short) 0

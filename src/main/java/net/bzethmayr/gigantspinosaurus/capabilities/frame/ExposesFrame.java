@@ -1,9 +1,9 @@
 package net.bzethmayr.gigantspinosaurus.capabilities.frame;
 
-import net.bzethmayr.gigantspinosaurus.model.datum.Face;
-import net.bzethmayr.gigantspinosaurus.model.datum.Handedness;
-import net.bzethmayr.gigantspinosaurus.model.datum.North;
-import net.bzethmayr.gigantspinosaurus.model.datum.Vertical;
+import net.bzethmayr.gigantspinosaurus.model.framing.Face;
+import net.bzethmayr.gigantspinosaurus.model.framing.Handedness;
+import net.bzethmayr.gigantspinosaurus.model.framing.North;
+import net.bzethmayr.gigantspinosaurus.model.framing.Vertical;
 
 public interface ExposesFrame {
     Handedness x();

@@ -1,10 +1,10 @@
 package net.bzethmayr.gigantspinosaurus.model;
 
 import net.bzethmayr.gigantspinosaurus.TestsWithEnums;
-import net.bzethmayr.gigantspinosaurus.model.datum.Face;
-import net.bzethmayr.gigantspinosaurus.model.datum.Handedness;
-import net.bzethmayr.gigantspinosaurus.model.datum.North;
-import net.bzethmayr.gigantspinosaurus.model.datum.Vertical;
+import net.bzethmayr.gigantspinosaurus.model.framing.Face;
+import net.bzethmayr.gigantspinosaurus.model.framing.Handedness;
+import net.bzethmayr.gigantspinosaurus.model.framing.North;
+import net.bzethmayr.gigantspinosaurus.model.framing.Vertical;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -15,7 +15,7 @@ import static org.hamcrest.Matchers.contains;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-class FrameTest implements TestsWithEnums {
+class FramingTest implements TestsWithEnums {
     final Handedness x = randomEnum(Handedness.class);
     final Vertical y = randomEnum(Vertical.class);
     final Face z = randomEnum(Face.class);
@@ -23,11 +23,11 @@ class FrameTest implements TestsWithEnums {
     final North north = randomEnum(North.class);
     final short version = (short) TEST_RANDOM.nextInt();
 
-    private Frame underTest;
+    private Framing underTest;
 
     @BeforeEach
     void setUpUnderTest() {
-        underTest = new Frame(x, y, z, handed, north, version);
+        underTest = new Framing(x, y, z, handed, north, version);
     }
 
     @Test

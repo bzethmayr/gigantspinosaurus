@@ -1,6 +1,6 @@
 package net.bzethmayr.gigantspinosaurus.capabilities.orientation;
 
-import net.bzethmayr.gigantspinosaurus.model.Frame;
+import net.bzethmayr.gigantspinosaurus.model.Framing;
 import net.bzethmayr.gigantspinosaurus.model.Orientation;
 import org.junit.jupiter.api.RepeatedTest;
 import org.junit.jupiter.api.Test;
@@ -93,7 +93,7 @@ class QuaternionHelperTest implements TestsWithQuaternions {
     @ParameterizedTest
     @MethodSource("unitQ4s")
     void normalized_givenExposesQuaternion_returnsNormalizedInstance(final double[] q4) {
-        final Orientation orientation = new Orientation(q4[0], q4[1], q4[2], q4[3], new Frame());
+        final Orientation orientation = new Orientation(q4[0], q4[1], q4[2], q4[3], new Framing());
 
         final Orientation result = normalized(orientation);
 

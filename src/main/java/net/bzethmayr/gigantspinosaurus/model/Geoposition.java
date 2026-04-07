@@ -4,7 +4,7 @@ import net.bzethmayr.gigantspinosaurus.capabilities.BoundAttributes;
 import net.bzethmayr.gigantspinosaurus.capabilities.HasRequiredAttributes;
 import net.bzethmayr.gigantspinosaurus.capabilities.Versioned;
 import net.bzethmayr.gigantspinosaurus.capabilities.position.ExposesPosition;
-import net.bzethmayr.gigantspinosaurus.model.datum.North;
+import net.bzethmayr.gigantspinosaurus.model.framing.North;
 
 import java.util.SequencedSet;
 
