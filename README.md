@@ -14,7 +14,7 @@ but this is not part of the MAR.
 We continue to update the attestation, at frequency per application, with updated conditions and the media index.
 We can publish Frame 0, intermediate attestations, or Frame N.
 
-Signatures are embedded in or appended to the evidence as well as propagated to one or more external registrars,
+Signatures are embedded into the evidence as well as propagated to one or more external registrars,
 which may use any durable ledger to record the fact of acquisition.
 
 ## MAR
