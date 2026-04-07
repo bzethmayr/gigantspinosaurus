@@ -17,20 +17,22 @@ We can publish Frame 0, intermediate attestations, or Frame N.
 Signatures are embedded in or appended to the evidence as well as propagated to one or more external registrars,
 which may use any durable ledger to record the fact of acquisition.
 
+## MAR
 The core datatype here is the MAR (Minimal Attestation Record),
 which carries the provenance and verification information and specifies the byte-level representation.
 The MAR is transmitted independently of the artifact.
 
-On install:
-generate hardware-backed keypair (Ed25519)
-store private key in secure hardware
-store public key in app storage
+### On install:
+- generate hardware-backed keypair (Ed25519)
+- store private key in secure hardware
+- store public key in app storage
 
-On MAR creation:
-encode MAR_core fields
-signature = Sign(privateKey, encodedBytes)
-embed publicKey + signature in MAR
+### On MAR creation:
+- encode MAR_core fields
+- signature = Sign(privateKey, encodedBytes)
+- embed publicKey + signature in MAR
 
+### properties
 The set of stored MAR form a referential spine.
 The MAR in the artifact allows verification.
 It stores attestations, not artifacts.
