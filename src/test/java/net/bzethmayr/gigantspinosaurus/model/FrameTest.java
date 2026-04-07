@@ -1,9 +1,14 @@
 package net.bzethmayr.gigantspinosaurus.model;
 
 import net.bzethmayr.gigantspinosaurus.TestsWithEnums;
+import net.bzethmayr.gigantspinosaurus.model.datum.Face;
+import net.bzethmayr.gigantspinosaurus.model.datum.Handedness;
+import net.bzethmayr.gigantspinosaurus.model.datum.North;
+import net.bzethmayr.gigantspinosaurus.model.datum.Vertical;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import static net.bzethmayr.gigantspinosaurus.capabilities.Versioned.VERSION_FIELD;
 import static net.zethmayr.fungu.test.TestConstants.TEST_RANDOM;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
@@ -16,7 +21,7 @@ class FrameTest implements TestsWithEnums {
     final Face z = randomEnum(Face.class);
     final Handedness handed = randomEnum(Handedness.class);
     final North north = randomEnum(North.class);
-    final int version = TEST_RANDOM.nextInt();
+    final short version = (short) TEST_RANDOM.nextInt();
 
     private Frame underTest;
 
@@ -28,13 +33,13 @@ class FrameTest implements TestsWithEnums {
     @Test
     void getRequiredAttributes_always_returnsAllAttributes() {
 
-        assertThat(underTest.getRequiredAttributes(), contains("x", "y", "z", "handed", "north", "version"));
+        assertThat(underTest.getRequiredAttributes(), contains("x", "y", "z", "handed", "north", VERSION_FIELD));
     }
 
     @Test
     void getCanonicalAttributes_always_returnsAllAttributes() {
 
-        assertThat(underTest.getCanonicalAttributes(), contains("x", "y", "z", "handed", "north", "version"));
+        assertThat(underTest.getCanonicalAttributes(), contains("x", "y", "z", "handed", "north", VERSION_FIELD));
     }
 
     @Test

@@ -1,15 +1,21 @@
 package net.bzethmayr.gigantspinosaurus.model;
 
+import net.bzethmayr.gigantspinosaurus.capabilities.BoundAttributes;
 import net.bzethmayr.gigantspinosaurus.capabilities.HasRequiredAttributes;
+import net.bzethmayr.gigantspinosaurus.capabilities.Versioned;
+import net.bzethmayr.gigantspinosaurus.capabilities.frame.ExposesFrame;
+import net.bzethmayr.gigantspinosaurus.model.datum.Face;
+import net.bzethmayr.gigantspinosaurus.model.datum.Handedness;
+import net.bzethmayr.gigantspinosaurus.model.datum.North;
+import net.bzethmayr.gigantspinosaurus.model.datum.Vertical;
 
 import java.util.SequencedSet;
 
-import static net.bzethmayr.gigantspinosaurus.capabilities.AttributeValuations.fromEnum;
-import static net.bzethmayr.gigantspinosaurus.capabilities.AttributeValuations.fromInt;
-import static net.bzethmayr.gigantspinosaurus.model.Face.U_FACE;
-import static net.bzethmayr.gigantspinosaurus.model.Handedness.U_HAND;
-import static net.bzethmayr.gigantspinosaurus.model.North.U_NORTH;
-import static net.bzethmayr.gigantspinosaurus.model.Vertical.U_VERT;
+import static net.bzethmayr.gigantspinosaurus.capabilities.AttributeValuations.*;
+import static net.bzethmayr.gigantspinosaurus.model.datum.Face.U_FACE;
+import static net.bzethmayr.gigantspinosaurus.model.datum.Handedness.U_HAND;
+import static net.bzethmayr.gigantspinosaurus.model.datum.North.U_NORTH;
+import static net.bzethmayr.gigantspinosaurus.model.datum.Vertical.U_VERT;
 import static net.bzethmayr.gigantspinosaurus.util.CollectionHelper.adds;
 
 public record Frame(
@@ -18,10 +24,11 @@ public record Frame(
         Face z,
         Handedness handed,
         North north,
-        int version
-) implements HasRequiredAttributes {
+        short version
+) implements HasRequiredAttributes, ExposesFrame {
+    static final String FRAME_FIELD = "frame";
     public Frame(Handedness x, Vertical y, Face z, Handedness handed, North north) {
-        this(x, y, z, handed, north, 0);
+        this(x, y, z, handed, north, (short) 0);
     }
 
     public Frame() {
@@ -34,7 +41,7 @@ public record Frame(
             adds("z", fromEnum(Frame::z)),
             adds("handed", fromEnum(Frame::handed)),
             adds("north", fromEnum(Frame::north)),
-            adds("version", fromInt(Frame::version))
+            Versioned.addsVersion()
     );
 
     @Override

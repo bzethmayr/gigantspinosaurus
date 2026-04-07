@@ -1,6 +1,6 @@
-package net.bzethmayr.gigantspinosaurus.model;
+package net.bzethmayr.gigantspinosaurus.capabilities;
 
-import net.bzethmayr.gigantspinosaurus.capabilities.HasMappedAttributes;
+import net.zethmayr.fungu.core.declarations.ReuseResults;
 
 import java.util.*;
 import java.util.function.Consumer;
@@ -11,6 +11,10 @@ import static java.util.Collections.unmodifiableSequencedMap;
 import static java.util.Collections.unmodifiableSequencedSet;
 import static net.zethmayr.fungu.UponHelper.upon;
 
+/**
+ * @see net.bzethmayr.gigantspinosaurus.capabilities.AttributeValuations for bindings.
+ * @param <T>
+ */
 public final class BoundAttributes<T extends HasMappedAttributes> {
     private static final HasMappedAttributes EMPTY = s -> null;
     private final SequencedMap<String, Function<T, byte[]>> accessors;
@@ -22,10 +26,19 @@ public final class BoundAttributes<T extends HasMappedAttributes> {
         fieldNames = accessors.sequencedKeySet();
     }
 
+    @FunctionalInterface
+    public interface AttributeBinder<T> extends Consumer<Map<String, Function<T, byte[]>>> {
+        static <T> AttributeBinder<T> binder(final Consumer<Map<String, Function<T, byte[]>>> duck) {
+            return duck::accept;
+        }
+    }
+
+    @ReuseResults
     public SequencedSet<String> fieldNames() {
         return fieldNames;
     }
 
+    @ReuseResults
     public SequencedSet<String> fieldNamesExcept(final String... except) {
         final SequencedSet<String> reduced = new LinkedHashSet<>(fieldNames);
         Stream.of(except).forEach(reduced::remove);

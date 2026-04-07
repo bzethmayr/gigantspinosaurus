@@ -1,3 +1,6 @@
+/**
+ * The common byte-level mapped interface.
+ */
 @LowerLevel
 package net.bzethmayr.gigantspinosaurus.capabilities;
 

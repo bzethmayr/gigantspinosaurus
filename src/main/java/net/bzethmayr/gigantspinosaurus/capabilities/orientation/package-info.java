@@ -1,3 +1,6 @@
+/**
+ * Adaptation from local orientation sensing.
+ */
 @LowerLevel
 package net.bzethmayr.gigantspinosaurus.capabilities.orientation;
 
