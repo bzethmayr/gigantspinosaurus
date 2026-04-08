@@ -12,8 +12,7 @@ import java.util.stream.IntStream;
 import static net.bzethmayr.gigantspinosaurus.util.CollectionHelper.adds;
 import static net.zethmayr.fungu.ForkFactory.overPrior;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.contains;
-import static org.hamcrest.Matchers.hasEntry;
+import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 class CollectionHelperTest {

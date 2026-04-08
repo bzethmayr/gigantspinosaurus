@@ -1,45 +1,43 @@
 package net.bzethmayr.gigantspinosaurus.model;
 
-import net.bzethmayr.gigantspinosaurus.capabilities.BoundAttributes;
-import net.bzethmayr.gigantspinosaurus.capabilities.HasRequiredAttributes;
-import net.bzethmayr.gigantspinosaurus.capabilities.Versioned;
+import net.bzethmayr.gigantspinosaurus.model.signature.ExposesSignature;
 
-import java.util.SequencedSet;
+import java.nio.ByteBuffer;
 
-import static net.bzethmayr.gigantspinosaurus.capabilities.AttributeValuations.fromBytes;
-import static net.bzethmayr.gigantspinosaurus.util.CollectionHelper.adds;
+import static net.bzethmayr.gigantspinosaurus.model.MarDecoder.*;
 
 public record MarSignature(
         byte[] ed25519Pub,
         byte[] ed25519,
         short version
-) implements HasRequiredAttributes {
+) implements ExposesSignature {
 
     public MarSignature(final byte[] ed25519Pub, final byte[] ed25519) {
-        this(ed25519Pub, ed25519, (short) 0);
+        this(ed25519Pub, ed25519, SIGNATURE_VERSION);
     }
 
-    private static final BoundAttributes<MarSignature> ACCESSORS = new BoundAttributes<>(
-            adds("ed25519Pub", fromBytes(MarSignature::ed25519Pub)),
-            adds("ed25519", fromBytes(MarSignature::ed25519)),
-            Versioned.addsVersion()
-    );
-    private static final SequencedSet<String> REQUIRED = ACCESSORS.fieldNamesExcept(VERSION_FIELD);
+    public static MarSignature decode(final ByteBuffer in, final CanonizesDecoders decoders) {
+        expect(in, OPEN);
 
+        byte[] ed25519Pub = new byte[PUB_KEY_LENGTH];
+        byte[] ed25519 = new byte[SIGNATURE_LENGTH];
+        short version = SIGNATURE_VERSION;
 
-    @Override
-    public SequencedSet<String> getRequiredAttributes() {
-        return ACCESSORS.fieldNames();
+        while (true) {
+            String key = readAsciiKey(in); // reads up to ':'
+            expect(in, VAL);
+
+            switch (key) {
+                case PUB_KEY_FIELD -> in.get(ed25519Pub);
+                case SIGNATURE_FIELD -> in.get(ed25519);
+                case VERSION_FIELD -> version = in.getShort();
+            }
+
+            byte sep = in.get();
+            if (sep == CLOSE) break;
+            if (sep != SEP) throw becauseBadSeparator(sep);
+        }
+
+        return new MarSignature(ed25519Pub, ed25519, version);
     }
-
-    @Override
-    public SequencedSet<String> getCanonicalAttributes() {
-        return ACCESSORS.fieldNames();
-    }
-
-    @Override
-    public byte[] getAttributeValue(String attributeName) {
-        return ACCESSORS.getBoundValue(attributeName, this);
-    }
-
 }

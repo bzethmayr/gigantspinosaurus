@@ -1,4 +1,4 @@
-package net.bzethmayr.gigantspinosaurus.capabilities.signature;
+package net.bzethmayr.gigantspinosaurus.model.signature;
 
 public interface Signatory extends ExposesSigningKeys, Signs {
 }

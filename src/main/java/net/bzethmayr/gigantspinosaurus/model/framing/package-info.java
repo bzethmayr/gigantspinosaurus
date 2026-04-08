@@ -1,8 +1,8 @@
 /**
- * Universally shared datatypes.
- * A change here indicates a version change to the immediate client code.
+ * Adaptation from local device frame information,
+ * {@literal i.e.} how the device's sensor is positioned.
  */
-@Core
+@LowerLevel
 package net.bzethmayr.gigantspinosaurus.model.framing;
 
-import net.zethmayr.fungu.core.declarations.Core;
+import net.zethmayr.fungu.core.declarations.LowerLevel;

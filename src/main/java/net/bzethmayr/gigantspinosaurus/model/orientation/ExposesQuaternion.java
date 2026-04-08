@@ -1,6 +1,11 @@
-package net.bzethmayr.gigantspinosaurus.capabilities.orientation;
+package net.bzethmayr.gigantspinosaurus.model.orientation;
 
 public interface ExposesQuaternion<R extends ExposesQuaternion<R>> {
+    String W_FIELD = "QW";
+    String X_FIELD = "QX";
+    String Y_FIELD = "QY";
+    String Z_FIELD = "QZ";
+
     double QW();
     double QX();
     double QY();

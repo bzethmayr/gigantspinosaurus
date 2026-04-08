@@ -42,4 +42,14 @@ public interface HasCanonicalAttributes extends HasMappedAttributes, Versioned {
         }
         return out.array();
     }
+
+    @FunctionalInterface
+    interface CanonicalDecoder<T> {
+        T decode(final ByteBuffer in, CanonizesDecoders decoders);
+    }
+
+    @FunctionalInterface
+    interface CanonizesDecoders {
+        <T> CanonicalDecoder<T> decoderFor(String key);
+    }
 }

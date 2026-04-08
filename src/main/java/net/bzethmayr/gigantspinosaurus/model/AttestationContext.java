@@ -1,9 +1,12 @@
 package net.bzethmayr.gigantspinosaurus.model;
 
 import net.bzethmayr.gigantspinosaurus.capabilities.HasMappedAttributes;
+import net.zethmayr.fungu.core.declarations.NotDone;
+
 
 import java.util.SequencedMap;
 
+@NotDone
 public class AttestationContext implements HasMappedAttributes {
     private final SequencedMap<String, byte[]> contextValues;
 

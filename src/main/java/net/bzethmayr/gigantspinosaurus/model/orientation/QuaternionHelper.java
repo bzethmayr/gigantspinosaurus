@@ -1,4 +1,4 @@
-package net.bzethmayr.gigantspinosaurus.capabilities.orientation;
+package net.bzethmayr.gigantspinosaurus.model.orientation;
 
 import java.util.Arrays;
 

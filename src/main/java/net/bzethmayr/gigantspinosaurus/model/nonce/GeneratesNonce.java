@@ -1,4 +1,4 @@
-package net.bzethmayr.gigantspinosaurus.capabilities.nonce;
+package net.bzethmayr.gigantspinosaurus.model.nonce;
 
 import java.util.function.LongSupplier;
 

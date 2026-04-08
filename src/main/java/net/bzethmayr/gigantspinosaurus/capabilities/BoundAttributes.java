@@ -22,7 +22,7 @@ public final class BoundAttributes<T extends HasMappedAttributes> {
 
     @SafeVarargs
     public BoundAttributes(final Consumer<Map<String, Function<T, byte[]>>>... binders) {
-        accessors = unmodifiableSequencedMap(upon(new LinkedHashMap<>(), binders));
+        accessors = unmodifiableSequencedMap(new LinkedHashMap<>(upon(new LinkedHashMap<>(), binders)));
         fieldNames = accessors.sequencedKeySet();
     }
 

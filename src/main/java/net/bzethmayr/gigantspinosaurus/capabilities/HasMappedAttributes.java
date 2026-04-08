@@ -1,5 +1,7 @@
 package net.bzethmayr.gigantspinosaurus.capabilities;
 
+import net.zethmayr.fungu.core.declarations.NotDone;
+
 import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
@@ -7,6 +9,7 @@ import java.util.function.Function;
 /**
  * The transport type.
  */
+@NotDone
 @FunctionalInterface
 public interface HasMappedAttributes {
     /**
