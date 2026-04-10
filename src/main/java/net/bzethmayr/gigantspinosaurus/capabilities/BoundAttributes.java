@@ -2,13 +2,14 @@ package net.bzethmayr.gigantspinosaurus.capabilities;
 
 import net.zethmayr.fungu.core.declarations.ReuseResults;
 
-import java.util.*;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.SequencedMap;
+import java.util.SequencedSet;
 import java.util.function.Consumer;
 import java.util.function.Function;
-import java.util.stream.Stream;
 
 import static java.util.Collections.unmodifiableSequencedMap;
-import static java.util.Collections.unmodifiableSequencedSet;
 import static net.zethmayr.fungu.UponHelper.upon;
 
 /**
@@ -36,13 +37,6 @@ public final class BoundAttributes<T extends HasMappedAttributes> {
     @ReuseResults
     public SequencedSet<String> fieldNames() {
         return fieldNames;
-    }
-
-    @ReuseResults
-    public SequencedSet<String> fieldNamesExcept(final String... except) {
-        final SequencedSet<String> reduced = new LinkedHashSet<>(fieldNames);
-        Stream.of(except).forEach(reduced::remove);
-        return unmodifiableSequencedSet(reduced);
     }
 
     public byte[] getBoundValueOrDelegate(final String fieldName, final T binding, final HasMappedAttributes delegate) {

@@ -3,11 +3,6 @@ package net.bzethmayr.gigantspinosaurus.model;
 import net.bzethmayr.gigantspinosaurus.model.framing.North;
 import net.bzethmayr.gigantspinosaurus.model.position.ExposesPosition;
 
-import java.nio.ByteBuffer;
-
-import static net.bzethmayr.gigantspinosaurus.model.MarDecoder.*;
-import static net.bzethmayr.gigantspinosaurus.model.framing.North.NORTH_FIELD;
-
 public record Geoposition(double DNLat, double DELong, double MUp, North north, short version)
         implements ExposesPosition {
 

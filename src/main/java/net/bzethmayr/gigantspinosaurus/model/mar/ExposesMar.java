@@ -1,7 +1,7 @@
 package net.bzethmayr.gigantspinosaurus.model.mar;
 
 import net.bzethmayr.gigantspinosaurus.capabilities.BoundAttributes;
-import net.bzethmayr.gigantspinosaurus.capabilities.HasRequiredAttributes;
+import net.bzethmayr.gigantspinosaurus.capabilities.HasCanonicalAttributes;
 import net.bzethmayr.gigantspinosaurus.capabilities.Versioned;
 import net.bzethmayr.gigantspinosaurus.model.orientation.ExposesOrientation;
 import net.bzethmayr.gigantspinosaurus.model.position.ExposesPosition;
@@ -12,7 +12,7 @@ import java.util.SequencedSet;
 import static net.bzethmayr.gigantspinosaurus.capabilities.AttributeValuations.*;
 import static net.bzethmayr.gigantspinosaurus.util.CollectionHelper.adds;
 
-public interface ExposesMar extends HasRequiredAttributes {
+public interface ExposesMar extends HasCanonicalAttributes {
     String MAR_FIELD = "mar";
     String NONCE_FIELD = "nonce";
     String INDEX_FIELD = "index";
@@ -23,7 +23,7 @@ public interface ExposesMar extends HasRequiredAttributes {
     String CURRENT_HASH_FIELD = "currentSH4_8";
     String SIGNATURE_FIELD = "signature";
 
-    short MAR_VERSION = 2;
+    short MAR_VERSION = 3;
     long nonce();
     int index();
     long priorSH4_8();
@@ -34,6 +34,7 @@ public interface ExposesMar extends HasRequiredAttributes {
     ExposesSignature signature();
 
     BoundAttributes<ExposesMar> ACCESSORS = new BoundAttributes<>(
+            Versioned.addsVersion(),
             adds(NONCE_FIELD, fromLong(ExposesMar::nonce)),
             adds(INDEX_FIELD, fromInt(ExposesMar::index)),
             adds(PRIOR_HASH_FIELD, fromLong(ExposesMar::priorSH4_8)),
@@ -41,18 +42,12 @@ public interface ExposesMar extends HasRequiredAttributes {
             adds(POSITION_FIELD, fromConverted(ExposesMar::position, ExposesPosition::canonicalBytes)),
             adds(ORIENTATION_FIELD, fromConverted(ExposesMar::orientation, ExposesOrientation::canonicalBytes)),
             adds(CURRENT_HASH_FIELD, fromLong(ExposesMar::currentSH4_8)),
-            adds(SIGNATURE_FIELD, fromConverted(ExposesMar::signature, ExposesSignature::canonicalBytes)),
-            Versioned.addsVersion()
+            adds(SIGNATURE_FIELD, fromConverted(ExposesMar::signature, ExposesSignature::canonicalBytes))
     );
 
     @Override
     default short version() {
         return MAR_VERSION;
-    }
-
-    @Override
-    default SequencedSet<String> getRequiredAttributes() {
-        return ACCESSORS.fieldNames();
     }
 
     @Override

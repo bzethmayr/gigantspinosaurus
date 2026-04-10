@@ -2,10 +2,7 @@ package net.bzethmayr.gigantspinosaurus.model;
 
 import net.bzethmayr.gigantspinosaurus.model.signature.ExposesSignature;
 
-import java.nio.ByteBuffer;
 import java.util.Arrays;
-
-import static net.bzethmayr.gigantspinosaurus.model.MarDecoder.*;
 
 public record MarSignature(
         byte[] ed25519Pub,

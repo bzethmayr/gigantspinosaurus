@@ -2,12 +2,8 @@ package net.bzethmayr.gigantspinosaurus.model;
 
 import net.bzethmayr.gigantspinosaurus.model.framing.*;
 
-import java.nio.ByteBuffer;
-
-import static net.bzethmayr.gigantspinosaurus.model.MarDecoder.*;
 import static net.bzethmayr.gigantspinosaurus.model.framing.Face.U_FACE;
 import static net.bzethmayr.gigantspinosaurus.model.framing.Handedness.U_HAND;
-import static net.bzethmayr.gigantspinosaurus.model.framing.North.NORTH_FIELD;
 import static net.bzethmayr.gigantspinosaurus.model.framing.North.U_NORTH;
 import static net.bzethmayr.gigantspinosaurus.model.framing.Vertical.U_VERT;
 

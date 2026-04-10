@@ -42,20 +42,14 @@ class FramingTest implements TestsModel, TestsWithBytes {
     }
 
     @Test
-    void getRequiredAttributes_always_returnsAllAttributes() {
-
-        assertThat(underTest.getRequiredAttributes(), contains("x", "y", "z", "handed", "north", VERSION_FIELD));
-    }
-
-    @Test
     void getCanonicalAttributes_always_returnsAllAttributes() {
 
-        assertThat(underTest.getCanonicalAttributes(), contains("x", "y", "z", "handed", "north", VERSION_FIELD));
+        assertThat(underTest.getCanonicalAttributes(), contains(VERSION_FIELD, "x", "y", "z", "handed", "north"));
     }
 
     @Test
-    void getAttributeValue_givenAnyRequired_returnsValue() {
-        underTest.getRequiredAttributes().forEach(s ->
+    void getAttributeValue_givenAnyCanonical_returnsValue() {
+        underTest.getCanonicalAttributes().forEach(s ->
 
                 assertNotNull(underTest.getAttributeValue(s)));
     }
