@@ -3,6 +3,7 @@ package net.bzethmayr.gigantspinosaurus.model;
 import net.bzethmayr.gigantspinosaurus.model.signature.ExposesSignature;
 
 import java.nio.ByteBuffer;
+import java.util.Arrays;
 
 import static net.bzethmayr.gigantspinosaurus.model.MarDecoder.*;
 
@@ -12,32 +13,17 @@ public record MarSignature(
         short version
 ) implements ExposesSignature {
 
-    public MarSignature(final byte[] ed25519Pub, final byte[] ed25519) {
-        this(ed25519Pub, ed25519, SIGNATURE_VERSION);
+    @Override
+    public boolean equals(final Object other) {
+        if (other instanceof MarSignature brother) {
+            return Arrays.equals(ed25519, brother.ed25519)
+                    && Arrays.equals(ed25519Pub, brother.ed25519Pub)
+                    && version == brother.version;
+        }
+        return false;
     }
 
-    public static MarSignature decode(final ByteBuffer in, final CanonizesDecoders decoders) {
-        expect(in, OPEN);
-
-        byte[] ed25519Pub = new byte[PUB_KEY_LENGTH];
-        byte[] ed25519 = new byte[SIGNATURE_LENGTH];
-        short version = SIGNATURE_VERSION;
-
-        while (true) {
-            String key = readAsciiKey(in); // reads up to ':'
-            expect(in, VAL);
-
-            switch (key) {
-                case PUB_KEY_FIELD -> in.get(ed25519Pub);
-                case SIGNATURE_FIELD -> in.get(ed25519);
-                case VERSION_FIELD -> version = in.getShort();
-            }
-
-            byte sep = in.get();
-            if (sep == CLOSE) break;
-            if (sep != SEP) throw becauseBadSeparator(sep);
-        }
-
-        return new MarSignature(ed25519Pub, ed25519, version);
+    public MarSignature(final byte[] ed25519Pub, final byte[] ed25519) {
+        this(ed25519Pub, ed25519, SIGNATURE_VERSION);
     }
 }

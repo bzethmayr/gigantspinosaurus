@@ -1,57 +1,28 @@
 package net.bzethmayr.gigantspinosaurus.model;
 
+import org.junit.jupiter.api.RepeatedTest;
 import org.junit.jupiter.api.Test;
 
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 
+import static net.bzethmayr.gigantspinosaurus.model.signature.ExposesSignature.*;
 import static net.zethmayr.fungu.test.TestConstants.TEST_RANDOM;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.greaterThan;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-class MinimalAttestationRecordTest {
+class MinimalAttestationRecordTest implements TestsModel, TestsWithBytes {
 
     private MinimalAttestationRecord underTest;
 
     void setUpRandomUnderTest() {
-        underTest = new MinimalAttestationRecord(
-                TEST_RANDOM.nextLong(),
-                TEST_RANDOM.nextInt(333333),
-                TEST_RANDOM.nextLong(),
-                TEST_RANDOM.nextDouble(),
-                new Geoposition(0.0d, 0.0d, 0.0d),
-                new Orientation(1.0d, 1.0, 0.0d, 0.0d, new Framing()),
-                TEST_RANDOM.nextLong(),
-                new MarSignature(new byte[]{}, new byte[]{}),
-                (short) 0
-        );
+        underTest = minimalRandomizedMar();
     }
 
     void setUpNormalUnderTest() {
-        final byte[] fakePub = new byte[64];
-        TEST_RANDOM.nextBytes(fakePub);
-        final byte[] fakeSign = new byte[128];
-        TEST_RANDOM.nextBytes(fakeSign);
-        underTest = new MinimalAttestationRecord(
-                TEST_RANDOM.nextLong(),
-                0,
-                0L,
-                Instant.now().toEpochMilli() / 1000d,
-                new Geoposition(
-                        TEST_RANDOM.nextDouble(-180d, 180d),
-                        TEST_RANDOM.nextDouble(-90d, 90d),
-                        TEST_RANDOM.nextDouble(-7000, 7000)),
-                new Orientation(
-                        TEST_RANDOM.nextDouble(-1d, 1d),
-                        TEST_RANDOM.nextDouble(-1d, 1d),
-                        TEST_RANDOM.nextDouble(-1d, 1d),
-                        TEST_RANDOM.nextDouble(-1d, 1d),
-                        new Framing()),
-                TEST_RANDOM.nextLong(),
-                new MarSignature(fakePub, fakeSign),
-                (short) 0
-        );
+        underTest = realisticRandomizedMar();
     }
 
     @Test
@@ -88,4 +59,14 @@ class MinimalAttestationRecordTest {
         System.out.println(garbled);
     }
 
+    @RepeatedTest(1024)
+    void normalBytes_roundTripsExact() {
+        setUpNormalUnderTest();
+
+        final byte[] serialForm = underTest.canonicalBytes();
+        dump(serialForm);
+        final MinimalAttestationRecord parsed = MarDecoder.decode(ByteBuffer.wrap(serialForm));
+
+        assertEquals(underTest, parsed);
+    }
 }

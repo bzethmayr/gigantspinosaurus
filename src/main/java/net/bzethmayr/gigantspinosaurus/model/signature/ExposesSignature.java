@@ -12,9 +12,9 @@ import static net.bzethmayr.gigantspinosaurus.util.CollectionHelper.adds;
 public interface ExposesSignature extends HasRequiredAttributes {
     short SIGNATURE_VERSION = 0;
     String PUB_KEY_FIELD = "ed25519Pub";
-    int PUB_KEY_LENGTH = 128;
+    int PUB_KEY_LENGTH = 64;
     String SIGNATURE_FIELD = "ed25519";
-    int SIGNATURE_LENGTH = 256;
+    int SIGNATURE_LENGTH = 128;
 
 
     byte[] ed25519Pub();

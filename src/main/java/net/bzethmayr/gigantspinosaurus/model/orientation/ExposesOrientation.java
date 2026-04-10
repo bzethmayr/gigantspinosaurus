@@ -3,7 +3,6 @@ package net.bzethmayr.gigantspinosaurus.model.orientation;
 import net.bzethmayr.gigantspinosaurus.capabilities.BoundAttributes;
 import net.bzethmayr.gigantspinosaurus.capabilities.HasRequiredAttributes;
 import net.bzethmayr.gigantspinosaurus.capabilities.Versioned;
-import net.bzethmayr.gigantspinosaurus.model.Framing;
 import net.bzethmayr.gigantspinosaurus.model.framing.ExposesFraming;
 
 import java.util.SequencedSet;
@@ -31,7 +30,7 @@ public interface ExposesOrientation<R extends ExposesOrientation<R>> extends Exp
     );
     SequencedSet<String> REQUIRED = ACCESSORS.fieldNamesExcept(VERSION_FIELD, FRAME_FIELD);
 
-    R withFraming(Framing framing);
+    R withFraming(ExposesFraming framing);
 
     @Override
     default short version() {

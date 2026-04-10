@@ -26,7 +26,7 @@ public interface HasCanonicalAttributes extends HasMappedAttributes, Versioned {
         final int outSize = outMap.keySet().stream().mapToInt(String::length).sum()
                 + outMap.values().stream().mapToInt(a -> a.length).sum()
                 + 2 * keys
-                + 2;
+                + 1;
         final ByteBuffer out = ByteBuffer.allocate(outSize);
         out.put((byte) '{');
         for (Map.Entry<String, byte[]> pair : outMap.sequencedEntrySet()) {
