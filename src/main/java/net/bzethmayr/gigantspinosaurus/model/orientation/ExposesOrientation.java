@@ -21,6 +21,7 @@ public interface ExposesOrientation<R extends ExposesOrientation<R>> extends Exp
     ExposesFraming framing();
 
     BoundAttributes<ExposesOrientation<?>> ACCESSORS = new BoundAttributes<>(
+            ExposesOrientation.class,
             Versioned.addsVersion(),
             adds(W_FIELD, fromDouble(ExposesOrientation::QW)),
             adds(X_FIELD, fromDouble(ExposesOrientation::QX)),

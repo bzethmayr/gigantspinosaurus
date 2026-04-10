@@ -20,9 +20,11 @@ public final class BoundAttributes<T extends HasMappedAttributes> {
     private static final HasMappedAttributes EMPTY = s -> null;
     private final SequencedMap<String, Function<T, byte[]>> accessors;
     private final SequencedSet<String> fieldNames;
+    private final Class<?> identity;
 
     @SafeVarargs
-    public BoundAttributes(final Consumer<Map<String, Function<T, byte[]>>>... binders) {
+    public BoundAttributes(final Class<?> identity, final Consumer<Map<String, Function<T, byte[]>>>... binders) {
+        this.identity = identity;
         accessors = unmodifiableSequencedMap(new LinkedHashMap<>(upon(new LinkedHashMap<>(), binders)));
         fieldNames = accessors.sequencedKeySet();
     }

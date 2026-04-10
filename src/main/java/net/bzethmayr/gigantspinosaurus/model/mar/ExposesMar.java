@@ -34,6 +34,7 @@ public interface ExposesMar extends HasCanonicalAttributes {
     ExposesSignature signature();
 
     BoundAttributes<ExposesMar> ACCESSORS = new BoundAttributes<>(
+            ExposesMar.class,
             Versioned.addsVersion(),
             adds(NONCE_FIELD, fromLong(ExposesMar::nonce)),
             adds(INDEX_FIELD, fromInt(ExposesMar::index)),

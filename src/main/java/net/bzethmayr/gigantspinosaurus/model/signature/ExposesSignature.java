@@ -19,6 +19,7 @@ public interface ExposesSignature extends HasCanonicalAttributes {
     byte[] ed25519Pub();
     byte[] ed25519();
     BoundAttributes<ExposesSignature> ACCESSORS = new BoundAttributes<>(
+            ExposesSignature.class,
             Versioned.addsVersion(),
             adds(PUB_KEY_FIELD, fromBytes(ExposesSignature::ed25519Pub)),
             adds(SIGNATURE_FIELD, fromBytes(ExposesSignature::ed25519))

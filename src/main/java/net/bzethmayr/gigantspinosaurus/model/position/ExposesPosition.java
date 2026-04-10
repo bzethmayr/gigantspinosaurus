@@ -24,6 +24,7 @@ public interface ExposesPosition extends HasCanonicalAttributes {
     North north();
 
     BoundAttributes<ExposesPosition> ACCESSORS = new BoundAttributes<>(
+            ExposesPosition.class,
             Versioned.addsVersion(),
             adds(LAT_FIELD, fromDouble(ExposesPosition::DNLat)),
             adds(LONG_FIELD, fromDouble(ExposesPosition::DELong)),

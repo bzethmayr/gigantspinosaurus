@@ -25,6 +25,7 @@ public interface ExposesFraming extends HasCanonicalAttributes {
     North north();
 
     BoundAttributes<ExposesFraming> ACCESSORS = new BoundAttributes<>(
+            ExposesFraming.class,
             Versioned.addsVersion(),
             adds(HORZ_FIELD, fromEnum(ExposesFraming::x)),
             adds(VERT_FIELD, fromEnum(ExposesFraming::y)),
