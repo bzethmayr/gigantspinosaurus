@@ -1,4 +1,4 @@
-package net.bzethmayr.gigantspinosaurus.model.decoding;
+package net.bzethmayr.gigantspinosaurus.capabilities;
 
 import java.nio.ByteBuffer;
 

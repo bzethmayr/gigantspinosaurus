@@ -1,10 +1,9 @@
 package net.bzethmayr.gigantspinosaurus.model.signature;
 
-import net.bzethmayr.gigantspinosaurus.capabilities.HasCanonicalAttributes;
-import net.bzethmayr.gigantspinosaurus.model.decoding.DecoderHelper;
+import net.bzethmayr.gigantspinosaurus.capabilities.DecoderHelper;
 
 import static net.bzethmayr.gigantspinosaurus.capabilities.Versioned.VERSION_FIELD;
-import static net.bzethmayr.gigantspinosaurus.model.decoding.DecoderHelper.*;
+import static net.bzethmayr.gigantspinosaurus.capabilities.DecoderHelper.*;
 import static net.bzethmayr.gigantspinosaurus.model.signature.ExposesSignature.*;
 
 @FunctionalInterface

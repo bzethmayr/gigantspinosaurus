@@ -6,7 +6,7 @@ import net.bzethmayr.gigantspinosaurus.model.position.ExposesPosition;
 import net.bzethmayr.gigantspinosaurus.model.signature.ExposesSignature;
 
 import static net.bzethmayr.gigantspinosaurus.capabilities.Versioned.VERSION_FIELD;
-import static net.bzethmayr.gigantspinosaurus.model.decoding.DecoderHelper.*;
+import static net.bzethmayr.gigantspinosaurus.capabilities.DecoderHelper.*;
 import static net.bzethmayr.gigantspinosaurus.model.mar.ExposesMar.*;
 
 public interface CreatesMar<T extends ExposesMar> {

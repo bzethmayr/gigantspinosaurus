@@ -1,17 +1,13 @@
 package net.bzethmayr.gigantspinosaurus.model.framing;
 
-import net.bzethmayr.gigantspinosaurus.capabilities.HasCanonicalAttributes;
 import net.bzethmayr.gigantspinosaurus.capabilities.HasCanonicalAttributes.CanonicalDecoder;
-import net.bzethmayr.gigantspinosaurus.model.Framing;
 
-import java.nio.ByteBuffer;
-
-import static net.bzethmayr.gigantspinosaurus.model.decoding.DecoderHelper.*;
-import static net.bzethmayr.gigantspinosaurus.model.decoding.DecoderHelper.VAL;
-import static net.bzethmayr.gigantspinosaurus.model.decoding.DecoderHelper.becauseBadKey;
-import static net.bzethmayr.gigantspinosaurus.model.decoding.DecoderHelper.checkSep;
-import static net.bzethmayr.gigantspinosaurus.model.decoding.DecoderHelper.expect;
-import static net.bzethmayr.gigantspinosaurus.model.decoding.DecoderHelper.readAsciiKey;
+import static net.bzethmayr.gigantspinosaurus.capabilities.DecoderHelper.*;
+import static net.bzethmayr.gigantspinosaurus.capabilities.DecoderHelper.VAL;
+import static net.bzethmayr.gigantspinosaurus.capabilities.DecoderHelper.becauseBadKey;
+import static net.bzethmayr.gigantspinosaurus.capabilities.DecoderHelper.checkSep;
+import static net.bzethmayr.gigantspinosaurus.capabilities.DecoderHelper.expect;
+import static net.bzethmayr.gigantspinosaurus.capabilities.DecoderHelper.readAsciiKey;
 import static net.bzethmayr.gigantspinosaurus.model.framing.ExposesFraming.*;
 import static net.bzethmayr.gigantspinosaurus.model.framing.Face.U_FACE;
 import static net.bzethmayr.gigantspinosaurus.model.framing.Handedness.U_HAND;

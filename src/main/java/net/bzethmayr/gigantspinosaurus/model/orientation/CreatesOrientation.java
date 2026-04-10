@@ -4,7 +4,7 @@ import net.bzethmayr.gigantspinosaurus.capabilities.HasCanonicalAttributes.Canon
 import net.bzethmayr.gigantspinosaurus.model.framing.ExposesFraming;
 
 import static net.bzethmayr.gigantspinosaurus.capabilities.Versioned.VERSION_FIELD;
-import static net.bzethmayr.gigantspinosaurus.model.decoding.DecoderHelper.*;
+import static net.bzethmayr.gigantspinosaurus.capabilities.DecoderHelper.*;
 import static net.bzethmayr.gigantspinosaurus.model.framing.ExposesFraming.FRAME_FIELD;
 import static net.bzethmayr.gigantspinosaurus.model.orientation.ExposesOrientation.ORIENTATION_VERSION;
 import static net.bzethmayr.gigantspinosaurus.model.orientation.ExposesQuaternion.*;
