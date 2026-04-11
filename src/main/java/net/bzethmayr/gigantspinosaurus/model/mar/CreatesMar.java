@@ -21,7 +21,13 @@ public interface CreatesMar<T extends ExposesMar> {
                 ExposesSignature signature,
                 short version);
 
-    static <T extends ExposesMar> HasCanonicalAttributes.CanonicalDecoder<T> createsMars(final CreatesMar<T> ctor) {
+    default T copyMar(final ExposesMar mar) {
+        return createMar(
+                mar.nonce(), mar.index(), mar.priorSH4_8(), mar.utcEpochSeconds(), mar.position(), mar.orientation(),
+                mar.currentSH4_8(), mar.signature(), mar.version());
+    }
+
+    static <T extends ExposesMar> HasCanonicalAttributes.CanonicalDecoder<T> decodesMars(final CreatesMar<T> ctor) {
         return (in, decoders) -> {
             expect(in, OPEN);
 

@@ -19,7 +19,17 @@ public interface CreatesOrientation<T extends ExposesOrientation<T>> {
                         ExposesFraming framing,
                         short version);
 
-    static <T extends ExposesOrientation<T>> CanonicalDecoder<T> createsOrientations(final CreatesOrientation<T> ctor) {
+    default T copyOrientation(final ExposesOrientation<?> orientation) {
+        return createOrientation(
+                orientation.QW(),
+                orientation.QX(),
+                orientation.QY(),
+                orientation.QZ(),
+                orientation.framing(),
+                orientation.version());
+    }
+
+    static <T extends ExposesOrientation<T>> CanonicalDecoder<T> decodesOrientations(final CreatesOrientation<T> ctor) {
         return (in, decoders) -> {
             expect(in, OPEN);
 

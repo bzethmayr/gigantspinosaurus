@@ -15,6 +15,7 @@ dependencies {
     testImplementation("io.github.bzethmayr.fungu:fungu-test:1.2.12")
     testImplementation("org.junit.jupiter:junit-jupiter")
     testImplementation(platform("org.junit:junit-bom:5.10.0"))
+    testImplementation("org.mockito:mockito-core:5.+")
 }
 
 tasks.test {

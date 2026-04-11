@@ -16,13 +16,13 @@ import static net.bzethmayr.gigantspinosaurus.model.mar.ExposesMar.*;
 
 public final class MarDecoder {
 
-    private static final CanonicalDecoder<Orientation> ORIENTATION_DECODER = CreatesOrientation.createsOrientations(Orientation::new);
+    private static final CanonicalDecoder<Orientation> ORIENTATION_DECODER = CreatesOrientation.decodesOrientations(Orientation::new);
 
     public static Orientation decodeOrientation(final ByteBuffer in, final CanonizesDecoders decoders) {
         return ORIENTATION_DECODER.decode(in, decoders);
     }
 
-    private static final CanonicalDecoder<Geoposition> POSITION_DECODER = CreatesPosition.createsPositions(Geoposition::new);
+    private static final CanonicalDecoder<Geoposition> POSITION_DECODER = CreatesPosition.decodesPositions(Geoposition::new);
 
     public static Geoposition decodePosition(final ByteBuffer in, final CanonizesDecoders decoders) {
         return POSITION_DECODER.decode(in, decoders);
@@ -40,7 +40,7 @@ public final class MarDecoder {
         return FRAMING_DECODER.decode(in, decoders);
     }
 
-    private static final CanonicalDecoder<MinimalAttestationRecord> MAR_DECODER = CreatesMar.createsMars(MinimalAttestationRecord::new);
+    private static final CanonicalDecoder<MinimalAttestationRecord> MAR_DECODER = CreatesMar.decodesMars(MinimalAttestationRecord::new);
 
     public static MinimalAttestationRecord decode(final ByteBuffer in, final CanonizesDecoders decoders) {
         return MAR_DECODER.decode(in, decoders);

@@ -13,7 +13,11 @@ public interface CreatesPosition<T extends ExposesPosition> {
 
     T createPosition(double DNLat, double DELong, double MUp, North north, short version);
 
-    static <T extends ExposesPosition> CanonicalDecoder<T> createsPositions(final CreatesPosition<T> ctor) {
+    default T copyPosition(final ExposesPosition position) {
+        return createPosition(position.DNLat(), position.DELong(), position.MUp(), position.north(), position.version());
+    }
+
+    static <T extends ExposesPosition> CanonicalDecoder<T> decodesPositions(final CreatesPosition<T> ctor) {
         return (in, decoders) -> {
             expect(in, OPEN);
 
