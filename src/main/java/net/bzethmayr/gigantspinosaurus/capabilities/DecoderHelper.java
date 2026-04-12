@@ -1,6 +1,7 @@
 package net.bzethmayr.gigantspinosaurus.capabilities;
 
 import java.nio.ByteBuffer;
+import java.util.Set;
 
 import static net.zethmayr.fungu.core.ExceptionFactory.becauseIllegal;
 
@@ -18,6 +19,12 @@ public final class DecoderHelper {
 
     public static IllegalArgumentException becauseBadKey(final String key) {
         return becauseIllegal("Unknown key: %s", key);
+    }
+
+    public static void requireKeyUnique(final Set<String> keys, final String key) {
+        if (!keys.add(key)) {
+            throw becauseIllegal("Duplicate key");
+        }
     }
 
     /**
