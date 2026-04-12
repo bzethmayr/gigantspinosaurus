@@ -1,14 +1,11 @@
 package net.bzethmayr.gigantspinosaurus.model.signature;
 
-import net.bzethmayr.gigantspinosaurus.capabilities.DecoderHelper;
-
 import java.util.HashSet;
 import java.util.Set;
 
-import static net.bzethmayr.gigantspinosaurus.capabilities.Versioned.VERSION_FIELD;
 import static net.bzethmayr.gigantspinosaurus.capabilities.DecoderHelper.*;
+import static net.bzethmayr.gigantspinosaurus.capabilities.Versioned.VERSION_FIELD;
 import static net.bzethmayr.gigantspinosaurus.model.signature.ExposesSignature.*;
-import static net.zethmayr.fungu.core.ExceptionFactory.becauseIllegal;
 
 @FunctionalInterface
 public interface CreatesSignature<T extends ExposesSignature> {
@@ -27,15 +24,15 @@ public interface CreatesSignature<T extends ExposesSignature> {
 
             final Set<String> keys = new HashSet<>();
             while (true) {
-                String key = DecoderHelper.readAsciiKey(in); // reads up to ':'
-                if (!keys.add(key)) throw becauseIllegal("Duplicate key");
+                String key = readAsciiKey(in); // reads up to ':'
+                requireKeyUnique(keys, key);
                 expect(in, VAL);
 
                 switch (key) {
                     case PUB_KEY_FIELD -> in.get(ed25519Pub);
                     case SIGNATURE_FIELD -> in.get(ed25519);
                     case VERSION_FIELD -> version = in.getShort();
-                    default -> throw DecoderHelper.becauseBadKey(key);
+                    default -> throw becauseBadKey(key);
                 }
 
                 if (checkSep(in)) break;

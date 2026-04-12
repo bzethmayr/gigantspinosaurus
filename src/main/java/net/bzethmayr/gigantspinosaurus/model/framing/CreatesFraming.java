@@ -42,7 +42,7 @@ public interface CreatesFraming<T extends ExposesFraming> {
             final Set<String> keys = new HashSet<>();
             while (true) {
                 String key = readAsciiKey(in);
-                if (!keys.add(key)) throw becauseIllegal("Duplicate key");
+                requireKeyUnique(keys, key);
                 expect(in, VAL);
 
                 switch (key) {
