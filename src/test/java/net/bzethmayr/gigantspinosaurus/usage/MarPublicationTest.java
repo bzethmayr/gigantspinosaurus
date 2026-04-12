@@ -1,6 +1,7 @@
 package net.bzethmayr.gigantspinosaurus.usage;
 
 import net.bzethmayr.gigantspinosaurus.model.TestsModel;
+import net.bzethmayr.gigantspinosaurus.model.TestsWithBytes;
 import net.bzethmayr.gigantspinosaurus.model.correlation.Hashes;
 import net.bzethmayr.gigantspinosaurus.model.framing.ExposesFraming;
 import net.bzethmayr.gigantspinosaurus.model.mar.ExposesMar;
@@ -9,26 +10,29 @@ import net.bzethmayr.gigantspinosaurus.model.orientation.ExposesOrientation;
 import net.bzethmayr.gigantspinosaurus.model.position.ExposesPosition;
 import net.bzethmayr.gigantspinosaurus.model.signature.Signatory;
 import net.bzethmayr.gigantspinosaurus.model.time.ExposesUtcDoubleSeconds;
+import net.bzethmayr.gigantspinosaurus.usage.MarPublication.MediaFrameReceiver;
 import org.junit.jupiter.api.Test;
 
+import static net.bzethmayr.gigantspinosaurus.model.mar.ExposesMar.MAR_VERSION;
 import static net.bzethmayr.gigantspinosaurus.usage.BindsConstructors.defaultConstructors;
-import static org.mockito.Mockito.mock;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.mockito.Mockito.*;
 
-class MarPublicationTest implements TestsModel {
+class MarPublicationTest implements TestsModel, TestsWithBytes {
 
     private MarPublication underTest;
-    private BindsConstructors ctors = defaultConstructors();
-    private GeneratesNonce nonceSource = mock();
-    private Hashes hasher = mock();
-    private ExposesUtcDoubleSeconds timeSource = mock();
-    private ExposesPosition positionSource = mock();
-    private ExposesOrientation<?> orientationSource = mock();
-    private ExposesFraming framingSource = mock();
-    private Signatory signatory = mock();
-    private BindsEnvironment env;
+    private final BindsConstructors ctors = defaultConstructors();
+    private final GeneratesNonce nonceSource = mock();
+    private final Hashes hasher = mock();
+    private final ExposesUtcDoubleSeconds timeSource = mock();
+    private final ExposesPosition positionSource = mock();
+    private final ExposesOrientation<?> orientationSource = mock();
+    private final ExposesFraming framingSource = mock();
+    private final Signatory signatory = mock();
 
     void setUpFromMocks() {
-        env = new BindsEnvironment(
+        underTest = new MarPublication(ctors, new BindsEnvironment(
                 nonceSource,
                 hasher,
                 timeSource,
@@ -36,8 +40,7 @@ class MarPublicationTest implements TestsModel {
                 orientationSource,
                 framingSource,
                 signatory
-        );
-        underTest = new MarPublication(ctors, env);
+        ));
     }
 
     @Test
@@ -45,5 +48,38 @@ class MarPublicationTest implements TestsModel {
         setUpFromMocks();
 
         final ExposesMar result = underTest.frameZero();
+
+        assertNotNull(result);
+        assertEquals(MAR_VERSION, result.version());
+        assertEquals(-1, result.index());
+        verify(nonceSource, times(2)).getAsLong();
+        verify(timeSource).utcDoubleSeconds();
+        assertNotNull(result.position());
+        assertNotNull(result.orientation());
+        assertNotNull(result.signature());
+    }
+
+    @Test
+    void acceptsFrame_returnsFrameReceiver() {
+        setUpFromMocks();
+
+        final MediaFrameReceiver receiver = underTest.intentToRecord();
+        verify(nonceSource, times(2)).getAsLong();
+        final ExposesMar first = receiver.mediaFrame(fakeMediaBytes(65536), 0);
+        final ExposesMar second = receiver.mediaFrame(fakeMediaBytes(65536), 1);
+        verifyNoMoreInteractions(nonceSource);
+
+        assertEquals(MAR_VERSION, first.version());
+        assertEquals(0, first.index());
+        verify(timeSource, times(3)).utcDoubleSeconds();
+        assertNotNull(first.position());
+        assertNotNull(first.orientation());
+        assertNotNull(first.signature());
+        assertEquals(MAR_VERSION, second.version());
+        assertEquals(1, second.index());
+        assertEquals(first.nonce(), second.nonce());
+        assertNotNull(second.position());
+        assertNotNull(second.orientation());
+        assertNotNull(second.signature());
     }
 }

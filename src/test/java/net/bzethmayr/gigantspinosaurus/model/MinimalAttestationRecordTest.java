@@ -6,9 +6,11 @@ import org.junit.jupiter.api.Test;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 
+import static net.zethmayr.fungu.test.TestConstants.TEST_RANDOM;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.greaterThan;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class MinimalAttestationRecordTest implements TestsModel, TestsWithBytes {
 
@@ -35,7 +37,7 @@ class MinimalAttestationRecordTest implements TestsModel, TestsWithBytes {
     }
 
     @Test
-    void canonicalBytes_producesParsableShape() {
+    void minimalCanonicalBytes_producesParsableShape() {
         setUpRandomUnderTest();
 
         final byte[] result = underTest.canonicalBytes();
@@ -46,7 +48,7 @@ class MinimalAttestationRecordTest implements TestsModel, TestsWithBytes {
     }
 
     @Test
-    void normalBytes_producesParsableShape() {
+    void normalCanonicalBytes_producesParsableShape() {
         setUpNormalUnderTest();
 
         final byte[] result = underTest.canonicalBytes();
@@ -57,7 +59,7 @@ class MinimalAttestationRecordTest implements TestsModel, TestsWithBytes {
     }
 
     @RepeatedTest(1024)
-    void normalBytes_roundTripsExact() {
+    void normalCanonicalBytes_roundTripsExact() {
         setUpNormalUnderTest();
 
         final byte[] serialForm = underTest.canonicalBytes();
@@ -65,5 +67,13 @@ class MinimalAttestationRecordTest implements TestsModel, TestsWithBytes {
         final MinimalAttestationRecord parsed = MarDecoder.decode(ByteBuffer.wrap(serialForm));
 
         assertEquals(underTest, parsed);
+    }
+
+    @RepeatedTest(1024)
+    void randomBytes_throws() {
+        final byte[] randomBytes = fakeMediaBytes(580);
+
+        assertThrows(IllegalArgumentException.class, () ->
+                MarDecoder.decode(ByteBuffer.wrap(randomBytes)));
     }
 }

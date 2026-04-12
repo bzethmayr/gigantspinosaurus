@@ -1,5 +1,7 @@
 package net.bzethmayr.gigantspinosaurus.model;
 
+import static net.zethmayr.fungu.test.TestConstants.TEST_RANDOM;
+
 public interface TestsWithBytes {
 
     default void printOrSomething(final byte b) {
@@ -17,6 +19,12 @@ public interface TestsWithBytes {
                 System.out.println();
             }
         }
+    }
+
+    default byte[] fakeMediaBytes(final int length) {
+        final byte[] fake = new byte[length];
+        TEST_RANDOM.nextBytes(fake);
+        return fake;
     }
 
 }
