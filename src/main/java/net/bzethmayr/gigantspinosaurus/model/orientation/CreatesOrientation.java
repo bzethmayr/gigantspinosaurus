@@ -3,11 +3,15 @@ package net.bzethmayr.gigantspinosaurus.model.orientation;
 import net.bzethmayr.gigantspinosaurus.capabilities.HasCanonicalAttributes.CanonicalDecoder;
 import net.bzethmayr.gigantspinosaurus.model.framing.ExposesFraming;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import static net.bzethmayr.gigantspinosaurus.capabilities.Versioned.VERSION_FIELD;
 import static net.bzethmayr.gigantspinosaurus.capabilities.DecoderHelper.*;
 import static net.bzethmayr.gigantspinosaurus.model.framing.ExposesFraming.FRAME_FIELD;
 import static net.bzethmayr.gigantspinosaurus.model.orientation.ExposesOrientation.ORIENTATION_VERSION;
 import static net.bzethmayr.gigantspinosaurus.model.orientation.ExposesQuaternion.*;
+import static net.zethmayr.fungu.core.ExceptionFactory.becauseIllegal;
 
 @FunctionalInterface
 public interface CreatesOrientation<T extends ExposesOrientation<T>> {
@@ -40,8 +44,10 @@ public interface CreatesOrientation<T extends ExposesOrientation<T>> {
             ExposesFraming framing = null;
             short version = ORIENTATION_VERSION;
 
+            final Set<String> keys = new HashSet<>();
             while (true) {
                 String key = readAsciiKey(in);
+                if (!keys.add(key)) throw becauseIllegal("Duplicate key");
                 expect(in, VAL);
 
                 switch (key) {

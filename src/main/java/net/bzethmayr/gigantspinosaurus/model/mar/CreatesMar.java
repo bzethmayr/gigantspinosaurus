@@ -5,9 +5,14 @@ import net.bzethmayr.gigantspinosaurus.model.orientation.ExposesOrientation;
 import net.bzethmayr.gigantspinosaurus.model.position.ExposesPosition;
 import net.bzethmayr.gigantspinosaurus.model.signature.ExposesSignature;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import static net.bzethmayr.gigantspinosaurus.capabilities.DecoderHelper.*;
 import static net.bzethmayr.gigantspinosaurus.capabilities.Versioned.VERSION_FIELD;
 import static net.bzethmayr.gigantspinosaurus.model.mar.ExposesMar.*;
+import static net.zethmayr.fungu.core.ExceptionFactory.becauseConflicting;
+import static net.zethmayr.fungu.core.ExceptionFactory.becauseIllegal;
 
 public interface CreatesMar<T extends ExposesMar> {
 
@@ -41,8 +46,10 @@ public interface CreatesMar<T extends ExposesMar> {
             ExposesSignature signature = null;
             short version = MAR_VERSION;
 
+            final Set<String> keys = new HashSet<>();
             while (true) {
                 String key = readAsciiKey(in);
+                if (!keys.add(key)) throw becauseIllegal("Duplicate key");
                 expect(in, VAL);
 
                 switch (key) {

@@ -2,6 +2,9 @@ package net.bzethmayr.gigantspinosaurus.model.framing;
 
 import net.bzethmayr.gigantspinosaurus.capabilities.HasCanonicalAttributes.CanonicalDecoder;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import static net.bzethmayr.gigantspinosaurus.capabilities.DecoderHelper.*;
 import static net.bzethmayr.gigantspinosaurus.capabilities.DecoderHelper.VAL;
 import static net.bzethmayr.gigantspinosaurus.capabilities.DecoderHelper.becauseBadKey;
@@ -14,6 +17,7 @@ import static net.bzethmayr.gigantspinosaurus.model.framing.Handedness.U_HAND;
 import static net.bzethmayr.gigantspinosaurus.model.framing.North.NORTH_FIELD;
 import static net.bzethmayr.gigantspinosaurus.model.framing.North.U_NORTH;
 import static net.bzethmayr.gigantspinosaurus.model.framing.Vertical.U_VERT;
+import static net.zethmayr.fungu.core.ExceptionFactory.becauseIllegal;
 
 @FunctionalInterface
 public interface CreatesFraming<T extends ExposesFraming> {
@@ -35,8 +39,10 @@ public interface CreatesFraming<T extends ExposesFraming> {
             North north = U_NORTH;
             short version = FRAMING_VERSION;
 
+            final Set<String> keys = new HashSet<>();
             while (true) {
                 String key = readAsciiKey(in);
+                if (!keys.add(key)) throw becauseIllegal("Duplicate key");
                 expect(in, VAL);
 
                 switch (key) {

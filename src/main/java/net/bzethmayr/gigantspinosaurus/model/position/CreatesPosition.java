@@ -3,10 +3,14 @@ package net.bzethmayr.gigantspinosaurus.model.position;
 import net.bzethmayr.gigantspinosaurus.capabilities.HasCanonicalAttributes.CanonicalDecoder;
 import net.bzethmayr.gigantspinosaurus.model.framing.North;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import static net.bzethmayr.gigantspinosaurus.capabilities.Versioned.VERSION_FIELD;
 import static net.bzethmayr.gigantspinosaurus.capabilities.DecoderHelper.*;
 import static net.bzethmayr.gigantspinosaurus.model.framing.North.NORTH_FIELD;
 import static net.bzethmayr.gigantspinosaurus.model.position.ExposesPosition.*;
+import static net.zethmayr.fungu.core.ExceptionFactory.becauseIllegal;
 
 @FunctionalInterface
 public interface CreatesPosition<T extends ExposesPosition> {
@@ -27,8 +31,10 @@ public interface CreatesPosition<T extends ExposesPosition> {
             North north = North.U_NORTH;
             short version = POSITION_VERSION;
 
+            final Set<String> keys = new HashSet<>();
             while (true) {
                 String key = readAsciiKey(in);
+                if (!keys.add(key)) throw becauseIllegal("Duplicate key");
                 expect(in, VAL);
 
                 switch (key) {

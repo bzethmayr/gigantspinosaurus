@@ -2,9 +2,13 @@ package net.bzethmayr.gigantspinosaurus.model.signature;
 
 import net.bzethmayr.gigantspinosaurus.capabilities.DecoderHelper;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import static net.bzethmayr.gigantspinosaurus.capabilities.Versioned.VERSION_FIELD;
 import static net.bzethmayr.gigantspinosaurus.capabilities.DecoderHelper.*;
 import static net.bzethmayr.gigantspinosaurus.model.signature.ExposesSignature.*;
+import static net.zethmayr.fungu.core.ExceptionFactory.becauseIllegal;
 
 @FunctionalInterface
 public interface CreatesSignature<T extends ExposesSignature> {
@@ -21,8 +25,10 @@ public interface CreatesSignature<T extends ExposesSignature> {
             byte[] ed25519 = new byte[SIGNATURE_LENGTH];
             short version = SIGNATURE_VERSION;
 
+            final Set<String> keys = new HashSet<>();
             while (true) {
                 String key = DecoderHelper.readAsciiKey(in); // reads up to ':'
+                if (!keys.add(key)) throw becauseIllegal("Duplicate key");
                 expect(in, VAL);
 
                 switch (key) {
