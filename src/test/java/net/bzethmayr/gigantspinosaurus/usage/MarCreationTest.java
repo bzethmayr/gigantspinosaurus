@@ -10,7 +10,7 @@ import net.bzethmayr.gigantspinosaurus.model.orientation.ExposesOrientation;
 import net.bzethmayr.gigantspinosaurus.model.position.ExposesPosition;
 import net.bzethmayr.gigantspinosaurus.model.signature.Signatory;
 import net.bzethmayr.gigantspinosaurus.model.time.ExposesUtcDoubleSeconds;
-import net.bzethmayr.gigantspinosaurus.usage.MarPublication.MediaFrameReceiver;
+import net.bzethmayr.gigantspinosaurus.usage.MarCreation.MediaFrameReceiver;
 import org.junit.jupiter.api.Test;
 
 import static net.bzethmayr.gigantspinosaurus.model.mar.ExposesMar.MAR_VERSION;
@@ -19,9 +19,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.*;
 
-class MarPublicationTest implements TestsModel, TestsWithBytes {
+class MarCreationTest implements TestsModel, TestsWithBytes {
 
-    private MarPublication underTest;
+    private MarCreation underTest;
     private final BindsConstructors ctors = defaultConstructors();
     private final GeneratesNonce nonceSource = mock();
     private final Hashes hasher = mock();
@@ -32,7 +32,7 @@ class MarPublicationTest implements TestsModel, TestsWithBytes {
     private final Signatory signatory = mock();
 
     void setUpFromMocks() {
-        underTest = new MarPublication(ctors, new BindsEnvironment(
+        underTest = new MarCreation(ctors, new BindsEnvironment(
                 nonceSource,
                 hasher,
                 timeSource,

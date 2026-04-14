@@ -11,7 +11,6 @@ import java.util.Set;
 import static net.bzethmayr.gigantspinosaurus.capabilities.DecoderHelper.*;
 import static net.bzethmayr.gigantspinosaurus.capabilities.Versioned.VERSION_FIELD;
 import static net.bzethmayr.gigantspinosaurus.model.mar.ExposesMar.*;
-import static net.zethmayr.fungu.core.ExceptionFactory.becauseIllegal;
 
 public interface CreatesMar<T extends ExposesMar> {
 
@@ -27,8 +26,8 @@ public interface CreatesMar<T extends ExposesMar> {
 
     default T copyMar(final ExposesMar mar) {
         return createMar(
-                mar.nonce(), mar.index(), mar.priorSH4_8(), mar.utcEpochSeconds(), mar.position(), mar.orientation(),
-                mar.currentSH4_8(), mar.signature(), mar.version());
+                mar.nonce(), mar.index(), mar.priorSipHash4_8(), mar.utcEpochSeconds(), mar.position(), mar.orientation(),
+                mar.currentSipHash4_8(), mar.signature(), mar.version());
     }
 
     static <T extends ExposesMar> HasCanonicalAttributes.CanonicalDecoder<T> decodesMars(final CreatesMar<T> ctor) {

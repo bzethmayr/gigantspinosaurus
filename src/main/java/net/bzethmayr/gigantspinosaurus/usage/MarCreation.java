@@ -13,7 +13,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import static net.bzethmayr.gigantspinosaurus.model.signature.ExposesSignature.SIGNATURE_VERSION;
 import static net.zethmayr.fungu.core.ExceptionFactory.becauseImpossible;
 
-public class MarPublication {
+public class MarCreation {
     private final BindsConstructors ctors;
     private final BindsEnvironment env;
 
@@ -22,7 +22,7 @@ public class MarPublication {
         ExposesMar mediaFrame(final byte[] frameData, final int index);
     }
 
-    public MarPublication(
+    public MarCreation(
             final BindsConstructors ctors,
             final BindsEnvironment env
     ) {
@@ -51,7 +51,7 @@ public class MarPublication {
         }
 
         @Override
-        public long priorSH4_8() {
+        public long priorSipHash4_8() {
             return priorSH_48;
         }
 
@@ -71,7 +71,7 @@ public class MarPublication {
         }
 
         @Override
-        public long currentSH4_8() {
+        public long currentSipHash4_8() {
             return currentSH_48;
         }
 
@@ -95,7 +95,7 @@ public class MarPublication {
         bufferZero.position = ctors.positionCtor().copyPosition(positionSource);
         bufferZero.orientation = ctors.orientationCtor().copyOrientation(orientationSource);
         final byte[] bufferZeroBytes = bufferZero.canonicalBytes();
-        bufferZero.currentSH_48 = env.hasher().applyAsLong(bufferZeroBytes);
+        bufferZero.currentSH_48 = env.hasher().applyAsLong(bufferZero.sipHashKey(), bufferZeroBytes);
         final byte[] toSign = bufferZero.canonicalBytes();
         final byte[] signature = env.signatory().apply(toSign);
         bufferZero.signature = ctors.signatureCtor().createSignature(
@@ -112,12 +112,12 @@ public class MarPublication {
             final MutableMar nextBuffer = new MutableMar();
             nextBuffer.nonce = prior.nonce();
             nextBuffer.index = index;
-            nextBuffer.priorSH_48 = prior.currentSH4_8();
+            nextBuffer.priorSH_48 = prior.currentSipHash4_8();
             nextBuffer.utcEpochSeconds = env.timeSource().utcDoubleSeconds();
             nextBuffer.position = ctors.positionCtor().copyPosition(env.positionSource());
             nextBuffer.orientation = ctors.orientationCtor().copyOrientation(env.orientationSource());
             final byte[] hashingBytes = nextBuffer.canonicalBytes();
-            nextBuffer.currentSH_48 = env.hasher().applyAsLong(hashingBytes);
+            nextBuffer.currentSH_48 = env.hasher().applyAsLong(prior.sipHashKey(), hashingBytes);
             final byte[] toSign = nextBuffer.canonicalBytes();
             final byte[] signature = env.signatory().apply(toSign);
             nextBuffer.signature = ctors.signatureCtor().createSignature(

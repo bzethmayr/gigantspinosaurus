@@ -7,6 +7,7 @@ import net.bzethmayr.gigantspinosaurus.model.orientation.ExposesOrientation;
 import net.bzethmayr.gigantspinosaurus.model.position.ExposesPosition;
 import net.bzethmayr.gigantspinosaurus.model.signature.ExposesSignature;
 
+import java.nio.ByteBuffer;
 import java.util.SequencedSet;
 
 import static net.bzethmayr.gigantspinosaurus.capabilities.AttributeValuations.*;
@@ -16,21 +17,21 @@ public interface ExposesMar extends HasCanonicalAttributes {
     String MAR_FIELD = "mar";
     String NONCE_FIELD = "nonce";
     String INDEX_FIELD = "index";
-    String PRIOR_HASH_FIELD = "priorSH4_8";
+    String PRIOR_HASH_FIELD = "priorSipHash4_8";
     String TIME_FIELD = "utcEpochSeconds";
     String POSITION_FIELD = "position";
     String ORIENTATION_FIELD = "orientation";
-    String CURRENT_HASH_FIELD = "currentSH4_8";
+    String CURRENT_HASH_FIELD = "currentSipHash4_8";
     String SIGNATURE_FIELD = "signature";
 
     short MAR_VERSION = 3;
     long nonce();
     int index();
-    long priorSH4_8();
+    long priorSipHash4_8();
     double utcEpochSeconds();
     ExposesPosition position();
     ExposesOrientation<?> orientation();
-    long currentSH4_8();
+    long currentSipHash4_8();
     ExposesSignature signature();
 
     BoundAttributes<ExposesMar> ACCESSORS = new BoundAttributes<>(
@@ -38,11 +39,11 @@ public interface ExposesMar extends HasCanonicalAttributes {
             Versioned.addsVersion(),
             adds(NONCE_FIELD, fromLong(ExposesMar::nonce)),
             adds(INDEX_FIELD, fromInt(ExposesMar::index)),
-            adds(PRIOR_HASH_FIELD, fromLong(ExposesMar::priorSH4_8)),
+            adds(PRIOR_HASH_FIELD, fromLong(ExposesMar::priorSipHash4_8)),
             adds(TIME_FIELD, fromDouble(ExposesMar::utcEpochSeconds)),
             adds(POSITION_FIELD, fromConverted(ExposesMar::position, ExposesPosition::canonicalBytes)),
             adds(ORIENTATION_FIELD, fromConverted(ExposesMar::orientation, ExposesOrientation::canonicalBytes)),
-            adds(CURRENT_HASH_FIELD, fromLong(ExposesMar::currentSH4_8)),
+            adds(CURRENT_HASH_FIELD, fromLong(ExposesMar::currentSipHash4_8)),
             adds(SIGNATURE_FIELD, fromConverted(ExposesMar::signature, ExposesSignature::canonicalBytes))
     );
 
@@ -59,5 +60,11 @@ public interface ExposesMar extends HasCanonicalAttributes {
     @Override
     default byte[] getAttributeValue(String attributeName) {
         return ACCESSORS.getBoundValue(attributeName, this);
+    }
+
+    default byte[] sipHashKey() {
+        final ByteBuffer out = ByteBuffer.allocate(16);
+        out.putLong(nonce()).putLong(nonce());
+        return out.array();
     }
 }

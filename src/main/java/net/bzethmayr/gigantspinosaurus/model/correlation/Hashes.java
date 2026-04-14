@@ -1,9 +1,10 @@
 package net.bzethmayr.gigantspinosaurus.model.correlation;
 
+import java.util.function.ToLongBiFunction;
 import java.util.function.ToLongFunction;
 
 @FunctionalInterface
-public interface Hashes extends ToLongFunction<byte[]> {
+public interface Hashes extends ToLongBiFunction<byte[], byte[]> {
 
     /**
      * {@inheritDoc}
@@ -11,5 +12,5 @@ public interface Hashes extends ToLongFunction<byte[]> {
      * @return a 64-bit hash
      */
     @Override
-    long applyAsLong(byte[] payload);
+    long applyAsLong(byte[] key, byte[] payload);
 }
