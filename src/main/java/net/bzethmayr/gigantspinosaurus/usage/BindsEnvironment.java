@@ -1,6 +1,7 @@
 package net.bzethmayr.gigantspinosaurus.usage;
 
-import net.bzethmayr.gigantspinosaurus.model.correlation.Hashes;
+import net.bzethmayr.gigantspinosaurus.model.correlation.HashesMarFrame;
+import net.bzethmayr.gigantspinosaurus.model.correlation.HashesMedia;
 import net.bzethmayr.gigantspinosaurus.model.framing.ExposesFraming;
 import net.bzethmayr.gigantspinosaurus.model.nonce.GeneratesNonce;
 import net.bzethmayr.gigantspinosaurus.model.orientation.ExposesOrientation;
@@ -19,16 +20,17 @@ import java.time.Clock;
 import static net.zethmayr.fungu.core.ExceptionFactory.becauseImpossible;
 
 public record BindsEnvironment(GeneratesNonce nonceSource,
-                               Hashes hasher,
+                               HashesMarFrame marHasher,
+                               HashesMedia mediaHasher,
                                ExposesUtcDoubleSeconds timeSource,
                                ExposesPosition positionSource,
                                ExposesOrientation<?> orientationSource,
                                ExposesFraming framingSource,
                                Signatory signatory) {
 
-    public BindsEnvironment desktopEnvironment() {
+    public static BindsEnvironment desktopEnvironment() {
         final SecureRandom random = new SecureRandom();
-        final SipHasher hashes = new SipHasher();
+        final SipMarHasher hashes = new SipMarHasher();
         final Clock utcClock = Clock.systemUTC();
         final DesktopOrientation fixedOrientation = new DesktopOrientation();
         final KeyPairGenerator ephemeral;
@@ -41,6 +43,7 @@ public record BindsEnvironment(GeneratesNonce nonceSource,
         return new BindsEnvironment(
                 random::nextLong,
                 hashes,
+                mediaHasher,
                 () -> utcClock.millis() / 1000d,
                 new DesktopPosition(),
                 fixedOrientation,
