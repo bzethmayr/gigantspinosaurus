@@ -6,7 +6,7 @@ To retain the possibility of a point of fact.
 The notion here is to take point-of-capture image, video, or audio evidence and
 watermark it with a durable provenance and content signature,
 preventing trivial repudiation or manipulation.
-A user presents intent to record. We generate a "Frame 0" packet consisting of the conditions of recording at index 0 (prior).
+A user presents intent to record. We generate a "Frame 0" packet consisting of the conditions of recording at index -1 (prior).
 We don't ask what the user says they are recording. We provide a unique reference to the event,
 interpretation beyond the conditions of capture are intentionally out of our domain.
 The user's client software is free to ask them, and associate the event ID with user data,
@@ -21,6 +21,12 @@ which may use any durable ledger to record the fact of acquisition.
 The core datatype here is the MAR (Minimal Attestation Record),
 which carries the provenance and verification information and specifies the byte-level representation.
 The MAR is transmitted independently of the artifact.
+
+### Open
+#### embeddings 
+#### device bindings
+#### key access/persistence
+
 
 ### On install:
 - generate hardware-backed keypair (Ed25519)
