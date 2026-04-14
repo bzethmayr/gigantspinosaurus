@@ -26,8 +26,8 @@ public interface CreatesMar<T extends ExposesMar> {
 
     default T copyMar(final ExposesMar mar) {
         return createMar(
-                mar.nonce(), mar.index(), mar.priorSipHash4_8(), mar.utcEpochSeconds(), mar.position(), mar.orientation(),
-                mar.currentSipHash4_8(), mar.signature(), mar.version());
+                mar.nonce(), mar.index(), mar.prev_Mxx64_FsipH4_8(), mar.utcEpochSeconds(), mar.position(), mar.orientation(),
+                mar.curr_Mxx64_FsipH4_8(), mar.signature(), mar.version());
     }
 
     static <T extends ExposesMar> HasCanonicalAttributes.CanonicalDecoder<T> decodesMars(final CreatesMar<T> ctor) {

@@ -10,11 +10,11 @@ import java.util.Objects;
 public record MinimalAttestationRecord(
         long nonce,
         int index,
-        long priorSipHash4_8,
+        long prev_Mxx64_FsipH4_8,
         double utcEpochSeconds,
         ExposesPosition position,
         ExposesOrientation<?> orientation,
-        long currentSipHash4_8,
+        long curr_Mxx64_FsipH4_8,
         ExposesSignature signature,
         short version
 ) implements ExposesMar {
@@ -23,11 +23,11 @@ public record MinimalAttestationRecord(
         if (other instanceof MinimalAttestationRecord brother) {
             return nonce == brother.nonce
                     && index == brother.index
-                    && priorSipHash4_8 == brother.priorSipHash4_8
+                    && prev_Mxx64_FsipH4_8 == brother.prev_Mxx64_FsipH4_8
                     && utcEpochSeconds == brother.utcEpochSeconds
                     && Objects.equals(position, brother.position)
                     && Objects.equals(orientation, brother.orientation)
-                    && currentSipHash4_8 == brother.currentSipHash4_8
+                    && curr_Mxx64_FsipH4_8 == brother.curr_Mxx64_FsipH4_8
                     && Objects.equals(signature, brother.signature)
                     && version == brother.version;
         }

@@ -17,21 +17,21 @@ public interface ExposesMar extends HasCanonicalAttributes {
     String MAR_FIELD = "mar";
     String NONCE_FIELD = "nonce";
     String INDEX_FIELD = "index";
-    String PRIOR_HASH_FIELD = "priorSipHash4_8";
+    String PRIOR_HASH_FIELD = "prev_Mxx64_FsipH4_8";
     String TIME_FIELD = "utcEpochSeconds";
     String POSITION_FIELD = "position";
     String ORIENTATION_FIELD = "orientation";
-    String CURRENT_HASH_FIELD = "currentSipHash4_8";
+    String CURRENT_HASH_FIELD = "curr_Mxx64_FsipH4_8";
     String SIGNATURE_FIELD = "signature";
 
-    short MAR_VERSION = 4;
+    short MAR_VERSION = 5;
     long nonce();
     int index();
-    long priorSipHash4_8();
+    long prev_Mxx64_FsipH4_8();
     double utcEpochSeconds();
     ExposesPosition position();
     ExposesOrientation<?> orientation();
-    long currentSipHash4_8();
+    long curr_Mxx64_FsipH4_8();
     ExposesSignature signature();
 
     BoundAttributes<ExposesMar> ACCESSORS = new BoundAttributes<>(
@@ -39,11 +39,11 @@ public interface ExposesMar extends HasCanonicalAttributes {
             Versioned.addsVersion(),
             adds(NONCE_FIELD, fromLong(ExposesMar::nonce)),
             adds(INDEX_FIELD, fromInt(ExposesMar::index)),
-            adds(PRIOR_HASH_FIELD, fromLong(ExposesMar::priorSipHash4_8)),
+            adds(PRIOR_HASH_FIELD, fromLong(ExposesMar::prev_Mxx64_FsipH4_8)),
             adds(TIME_FIELD, fromDouble(ExposesMar::utcEpochSeconds)),
             adds(POSITION_FIELD, fromConverted(ExposesMar::position, ExposesPosition::canonicalBytes)),
             adds(ORIENTATION_FIELD, fromConverted(ExposesMar::orientation, ExposesOrientation::canonicalBytes)),
-            adds(CURRENT_HASH_FIELD, fromLong(ExposesMar::currentSipHash4_8)),
+            adds(CURRENT_HASH_FIELD, fromLong(ExposesMar::curr_Mxx64_FsipH4_8)),
             adds(SIGNATURE_FIELD, fromConverted(ExposesMar::signature, ExposesSignature::canonicalBytes))
     );
 
@@ -64,7 +64,7 @@ public interface ExposesMar extends HasCanonicalAttributes {
 
     default byte[] sipHashKey() {
         final ByteBuffer out = ByteBuffer.allocate(16);
-        out.putLong(nonce()).putLong(nonce());
+        out.putLong(nonce()).putLong(prev_Mxx64_FsipH4_8());
         return out.array();
     }
 }

@@ -2,7 +2,7 @@ package net.bzethmayr.gigantspinosaurus.usage;
 
 import net.bzethmayr.gigantspinosaurus.model.TestsModel;
 import net.bzethmayr.gigantspinosaurus.model.TestsWithBytes;
-import net.bzethmayr.gigantspinosaurus.model.correlation.Hashes;
+import net.bzethmayr.gigantspinosaurus.model.correlation.HashesMarFrame;
 import net.bzethmayr.gigantspinosaurus.model.framing.ExposesFraming;
 import net.bzethmayr.gigantspinosaurus.model.mar.ExposesMar;
 import net.bzethmayr.gigantspinosaurus.model.nonce.GeneratesNonce;
@@ -24,7 +24,7 @@ class MarCreationTest implements TestsModel, TestsWithBytes {
     private MarCreation underTest;
     private final BindsConstructors ctors = defaultConstructors();
     private final GeneratesNonce nonceSource = mock();
-    private final Hashes hasher = mock();
+    private final HashesMarFrame hasher = mock();
     private final ExposesUtcDoubleSeconds timeSource = mock();
     private final ExposesPosition positionSource = mock();
     private final ExposesOrientation<?> orientationSource = mock();
@@ -47,7 +47,7 @@ class MarCreationTest implements TestsModel, TestsWithBytes {
     void frameZero_producesFrameZero() {
         setUpFromMocks();
 
-        final ExposesMar result = underTest.frameZero();
+        final ExposesMar result = underTest.intentFrame();
 
         assertNotNull(result);
         assertEquals(MAR_VERSION, result.version());

@@ -21,15 +21,16 @@ Look at files instead of guessing their contents.
 
 ## first
 1. `README.md`
-2. `src/main/java/net/bzethmayr/gigantspinosaurus/capabilities/HasMappedAttributes.java`
-3. `src/main/java/net/bzethmayr/gigantspinosaurus/model/MinimalAttestationRecord.java`
+2. `src/main/java/net/bzethmayr/gigantspinosaurus/capabilities/HasCanonicalAttributes.java`
+3. `src/main/java/net/bzethmayr/gigantspinosaurus/model/mar/ExposesMar.java`
+4. `src/main/java/net/bzethmayr/gigantspinosaurus/usage/MarCreation.java`
 
 ## least priority
 * any `package-info.java`
 * empty classes
 
 # annotations in use
-`@LowerLevel` indicates that a package is part of the functionality layer.
+`@LowerLevel` indicates that a package is part of the functionality layer and should not depend on application layers.
 `@HigherLevel` indicates that a package is part of the application layer.
 You can otherwise ignore `package-info.java`.
 
