@@ -24,7 +24,7 @@ public interface ExposesMar extends HasCanonicalAttributes {
     String CURRENT_HASH_FIELD = "currentSipHash4_8";
     String SIGNATURE_FIELD = "signature";
 
-    short MAR_VERSION = 3;
+    short MAR_VERSION = 4;
     long nonce();
     int index();
     long priorSipHash4_8();
