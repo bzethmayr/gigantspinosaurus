@@ -33,8 +33,8 @@ The MAR is transmitted independently of the artifact.
 - embed publicKey + signature in MAR
 
 ### properties
-The set of stored MAR form a referential spine.
 The MAR in the artifact allows verification.
+The set of stored MAR form a referential spine.
 It stores attestations, not artifacts.
 It prevents lying, not disagreement.
 It has no authority node, no ontology, and no interpretive layer.
