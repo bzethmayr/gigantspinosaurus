@@ -1,5 +1,7 @@
 package net.bzethmayr.gigantspinosaurus.model;
 
+import java.nio.ByteBuffer;
+
 import static net.zethmayr.fungu.test.TestConstants.TEST_RANDOM;
 
 public interface TestsWithBytes {
@@ -21,10 +23,10 @@ public interface TestsWithBytes {
         }
     }
 
-    default byte[] fakeMediaBytes(final int length) {
+    default ByteBuffer fakeMediaBytes(final int length) {
         final byte[] fake = new byte[length];
         TEST_RANDOM.nextBytes(fake);
-        return fake;
+        return ByteBuffer.wrap(fake);
     }
 
 }

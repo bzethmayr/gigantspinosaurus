@@ -7,6 +7,7 @@ import net.bzethmayr.gigantspinosaurus.model.position.ExposesPosition;
 import net.bzethmayr.gigantspinosaurus.model.signature.Signatory;
 import net.bzethmayr.gigantspinosaurus.model.time.ExposesUtcDoubleSeconds;
 
+import java.nio.ByteBuffer;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -20,7 +21,7 @@ public class MarCreation {
 
     @FunctionalInterface
     public interface MediaFrameReceiver {
-        ExposesMar mediaFrame(final byte[] frameData, final int index);
+        ExposesMar mediaFrame(final ByteBuffer frameData, final int index);
     }
 
     public MarCreation(
@@ -40,12 +41,13 @@ public class MarCreation {
         final MutableMar bufferZero = new MutableMar();
         bufferZero.nonce(nonceSource.getAsLong());
         bufferZero.index(-1);
-        bufferZero.prev_Mxx64_FsipH4_8(nonceSource.getAsLong());
+        bufferZero.priorSipH4_8(nonceSource.getAsLong());
         bufferZero.utcEpochSeconds(timeSource.utcDoubleSeconds());
         bufferZero.position(ctors.positionCtor().copyPosition(positionSource));
         bufferZero.orientation(ctors.orientationCtor().copyOrientation(orientationSource));
+        bufferZero.mediaBLK3(new byte[32]);
         final byte[] bufferZeroBytes = bufferZero.canonicalBytes();
-        bufferZero.curr_Mxx64_FsipH4_8(env.marHasher().applyAsLong(bufferZero.sipHashKey(), bufferZeroBytes));
+        bufferZero.currentSipH4_8(env.marHasher().applyAsLong(bufferZero.sipHashKey(), bufferZeroBytes));
         final byte[] toSign = bufferZero.canonicalBytes();
         final byte[] signature = env.signatory().apply(toSign);
         bufferZero.signature(ctors.signatureCtor().createSignature(
@@ -67,13 +69,13 @@ public class MarCreation {
             final MutableMar nextBuffer = new MutableMar();
             nextBuffer.nonce(prior.nonce());
             nextBuffer.index(index);
-            nextBuffer.prev_Mxx64_FsipH4_8(prior.curr_Mxx64_FsipH4_8());
+            nextBuffer.priorSipH4_8(prior.currentSipH4_8());
             nextBuffer.utcEpochSeconds(env.timeSource().utcDoubleSeconds());
             nextBuffer.position(ctors.positionCtor().copyPosition(env.positionSource()));
             nextBuffer.orientation(ctors.orientationCtor().copyOrientation(env.orientationSource()));
-            nextBuffer.curr_Mxx64_FsipH4_8(env.mediaHasher().applyAsLong(media));
+            nextBuffer.mediaBLK3(env.mediaHasher().apply(media));
             final byte[] conditions = nextBuffer.canonicalBytes();
-            nextBuffer.curr_Mxx64_FsipH4_8(env.marHasher().applyAsLong(prior.sipHashKey(), conditions));
+            nextBuffer.currentSipH4_8(env.marHasher().applyAsLong(nextBuffer.sipHashKey(), conditions));
             final byte[] toSign = nextBuffer.canonicalBytes();
             final byte[] signature = env.signatory().apply(toSign);
             nextBuffer.signature(ctors.signatureCtor().createSignature(

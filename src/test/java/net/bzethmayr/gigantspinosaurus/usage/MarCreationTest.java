@@ -1,5 +1,6 @@
 package net.bzethmayr.gigantspinosaurus.usage;
 
+import net.bzethmayr.gigantspinosaurus.model.MarDecoder;
 import net.bzethmayr.gigantspinosaurus.model.TestsModel;
 import net.bzethmayr.gigantspinosaurus.model.TestsWithBytes;
 import net.bzethmayr.gigantspinosaurus.model.correlation.HashesMarFrame;
@@ -14,8 +15,10 @@ import net.bzethmayr.gigantspinosaurus.model.time.ExposesUtcDoubleSeconds;
 import net.bzethmayr.gigantspinosaurus.usage.MarCreation.MediaFrameReceiver;
 import org.junit.jupiter.api.Test;
 
+import static java.nio.ByteBuffer.wrap;
 import static net.bzethmayr.gigantspinosaurus.model.mar.ExposesMar.MAR_VERSION;
 import static net.bzethmayr.gigantspinosaurus.usage.BindsConstructors.defaultConstructors;
+import static net.bzethmayr.gigantspinosaurus.usage.BindsEnvironment.desktopEnvironment;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.*;
@@ -47,7 +50,7 @@ class MarCreationTest implements TestsModel, TestsWithBytes {
     }
 
     @Test
-    void intentFrame_producesIntentFrame() {
+    void intentFrame_againstMocks_producesIntentFrame() {
         setUpFromMocks();
 
         final ExposesMar result = underTest.intentFrame();
@@ -63,7 +66,7 @@ class MarCreationTest implements TestsModel, TestsWithBytes {
     }
 
     @Test
-    void intentToRecord_returnsFrameReceiver() {
+    void intentToRecord_againstMocks_returnsFrameReceiver() {
         setUpFromMocks();
 
         final MediaFrameReceiver receiver = underTest.intentToRecord();
@@ -84,5 +87,20 @@ class MarCreationTest implements TestsModel, TestsWithBytes {
         assertNotNull(second.position());
         assertNotNull(second.orientation());
         assertNotNull(second.signature());
+    }
+
+    void setUpForDesktopEphemeral() {
+        underTest = new MarCreation(ctors, desktopEnvironment());
+    }
+
+    @Test
+    void intentFrame_againstDesktopBindings_returnsRoundTripIntentFrame() {
+        setUpForDesktopEphemeral();
+
+        final ExposesMar result = underTest.intentFrame();
+        final byte[] serialized = result.canonicalBytes();
+        final ExposesMar parsed = MarDecoder.decode(wrap(serialized));
+
+        assertEquals(result, parsed);
     }
 }

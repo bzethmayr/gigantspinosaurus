@@ -5,16 +5,18 @@ import net.bzethmayr.gigantspinosaurus.model.orientation.ExposesOrientation;
 import net.bzethmayr.gigantspinosaurus.model.position.ExposesPosition;
 import net.bzethmayr.gigantspinosaurus.model.signature.ExposesSignature;
 
+import java.util.Arrays;
 import java.util.Objects;
 
 public record MinimalAttestationRecord(
         long nonce,
         int index,
-        long prev_Mxx64_FsipH4_8,
+        long priorSipH4_8,
         double utcEpochSeconds,
         ExposesPosition position,
         ExposesOrientation<?> orientation,
-        long curr_Mxx64_FsipH4_8,
+        byte[] mediaBLK3,
+        long currentSipH4_8,
         ExposesSignature signature,
         short version
 ) implements ExposesMar {
@@ -23,11 +25,12 @@ public record MinimalAttestationRecord(
         if (other instanceof MinimalAttestationRecord brother) {
             return nonce == brother.nonce
                     && index == brother.index
-                    && prev_Mxx64_FsipH4_8 == brother.prev_Mxx64_FsipH4_8
+                    && priorSipH4_8 == brother.priorSipH4_8
                     && utcEpochSeconds == brother.utcEpochSeconds
                     && Objects.equals(position, brother.position)
                     && Objects.equals(orientation, brother.orientation)
-                    && curr_Mxx64_FsipH4_8 == brother.curr_Mxx64_FsipH4_8
+                    && Arrays.equals(mediaBLK3, brother.mediaBLK3)
+                    && currentSipH4_8 == brother.currentSipH4_8
                     && Objects.equals(signature, brother.signature)
                     && version == brother.version;
         }
@@ -40,8 +43,10 @@ public record MinimalAttestationRecord(
                                     double utcEpochSeconds,
                                     ExposesPosition position,
                                     ExposesOrientation<?> orientation,
+                                    byte[] mediaBLK3,
                                     long currentSH4_8,
                                     ExposesSignature signature) {
-        this(nonce, index, priorSH4_8, utcEpochSeconds, position, orientation, currentSH4_8, signature, MAR_VERSION);
+        this(nonce, index, priorSH4_8, utcEpochSeconds, position, orientation,
+                mediaBLK3, currentSH4_8, signature, MAR_VERSION);
     }
 }

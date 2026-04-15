@@ -7,21 +7,25 @@ import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.SequencedMap;
 import java.util.SequencedSet;
+import java.util.Set;
 
+import static java.util.function.Predicate.not;
 import static net.bzethmayr.gigantspinosaurus.util.CollectionHelper.toSequencedMap;
 import static net.zethmayr.fungu.ForkFactory.over;
 
 public interface HasCanonicalAttributes extends HasMappedAttributes, Versioned {
     SequencedSet<String> getCanonicalAttributes();
 
-    default SequencedMap<String, byte[]> getCanonicalAttributeValues() {
+    default SequencedMap<String, byte[]> getCanonicalAttributeValues(final String... excluding) {
+        final Set<String> excluded = Set.of(excluding);
         return getCanonicalAttributes().stream()
+                .filter(not(excluded::contains))
                 .map(over(this::getAttributeValue))
                 .collect(toSequencedMap(Fork::top, Fork::bottom));
     }
 
-    default byte[] canonicalBytes() {
-        final SequencedMap<String, byte[]> outMap = getCanonicalAttributeValues();
+    default byte[] canonicalBytes(final String... excluding) {
+        final SequencedMap<String, byte[]> outMap = getCanonicalAttributeValues(excluding);
         final int keys = outMap.size();
         final int outSize = outMap.keySet().stream().mapToInt(String::length).sum()
                 + outMap.values().stream().mapToInt(a -> a.length).sum()

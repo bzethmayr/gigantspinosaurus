@@ -71,9 +71,9 @@ class MinimalAttestationRecordTest implements TestsModel, TestsWithBytes {
 
     @RepeatedTest(1024)
     void randomBytes_throws() {
-        final byte[] randomBytes = fakeMediaBytes(580);
+        final ByteBuffer randomBytes = fakeMediaBytes(580);
 
         assertThrows(IllegalArgumentException.class, () ->
-                MarDecoder.decode(ByteBuffer.wrap(randomBytes)));
+                MarDecoder.decode(randomBytes));
     }
 }
