@@ -3,6 +3,7 @@ package net.bzethmayr.gigantspinosaurus.usage;
 import net.bzethmayr.gigantspinosaurus.model.TestsModel;
 import net.bzethmayr.gigantspinosaurus.model.TestsWithBytes;
 import net.bzethmayr.gigantspinosaurus.model.correlation.HashesMarFrame;
+import net.bzethmayr.gigantspinosaurus.model.correlation.HashesMedia;
 import net.bzethmayr.gigantspinosaurus.model.framing.ExposesFraming;
 import net.bzethmayr.gigantspinosaurus.model.mar.ExposesMar;
 import net.bzethmayr.gigantspinosaurus.model.nonce.GeneratesNonce;
@@ -24,7 +25,8 @@ class MarCreationTest implements TestsModel, TestsWithBytes {
     private MarCreation underTest;
     private final BindsConstructors ctors = defaultConstructors();
     private final GeneratesNonce nonceSource = mock();
-    private final HashesMarFrame hasher = mock();
+    private final HashesMedia mediaHasher = mock();
+    private final HashesMarFrame marHasher = mock();
     private final ExposesUtcDoubleSeconds timeSource = mock();
     private final ExposesPosition positionSource = mock();
     private final ExposesOrientation<?> orientationSource = mock();
@@ -34,7 +36,8 @@ class MarCreationTest implements TestsModel, TestsWithBytes {
     void setUpFromMocks() {
         underTest = new MarCreation(ctors, new BindsEnvironment(
                 nonceSource,
-                hasher,
+                marHasher,
+                mediaHasher,
                 timeSource,
                 positionSource,
                 orientationSource,
@@ -44,7 +47,7 @@ class MarCreationTest implements TestsModel, TestsWithBytes {
     }
 
     @Test
-    void frameZero_producesFrameZero() {
+    void intentFrame_producesIntentFrame() {
         setUpFromMocks();
 
         final ExposesMar result = underTest.intentFrame();
@@ -60,7 +63,7 @@ class MarCreationTest implements TestsModel, TestsWithBytes {
     }
 
     @Test
-    void acceptsFrame_returnsFrameReceiver() {
+    void intentToRecord_returnsFrameReceiver() {
         setUpFromMocks();
 
         final MediaFrameReceiver receiver = underTest.intentToRecord();

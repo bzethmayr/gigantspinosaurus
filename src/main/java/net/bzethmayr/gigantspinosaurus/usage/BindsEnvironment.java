@@ -30,7 +30,8 @@ public record BindsEnvironment(GeneratesNonce nonceSource,
 
     public static BindsEnvironment desktopEnvironment() {
         final SecureRandom random = new SecureRandom();
-        final SipMarHasher hashes = new SipMarHasher();
+        final SipMarHasher hashesMar = new SipMarHasher();
+        final Xx64MediaHasher hashesMedia = new Xx64MediaHasher();
         final Clock utcClock = Clock.systemUTC();
         final DesktopOrientation fixedOrientation = new DesktopOrientation();
         final KeyPairGenerator ephemeral;
@@ -42,8 +43,8 @@ public record BindsEnvironment(GeneratesNonce nonceSource,
         final KeyPair ephemeralPair = ephemeral.generateKeyPair();
         return new BindsEnvironment(
                 random::nextLong,
-                hashes,
-                mediaHasher,
+                hashesMar,
+                hashesMedia,
                 () -> utcClock.millis() / 1000d,
                 new DesktopPosition(),
                 fixedOrientation,
