@@ -8,7 +8,6 @@ import org.junit.jupiter.api.Test;
 
 import java.nio.ByteBuffer;
 
-import static java.nio.ByteBuffer.wrap;
 import static net.bzethmayr.gigantspinosaurus.usage.BindsEnvironment.desktopEnvironment;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 

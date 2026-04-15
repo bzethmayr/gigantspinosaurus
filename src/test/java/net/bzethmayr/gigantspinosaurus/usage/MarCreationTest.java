@@ -37,6 +37,7 @@ class MarCreationTest implements TestsModel, TestsWithBytes {
     private final Signatory signatory = mock();
 
     void setUpFromMocks() {
+        doReturn(new byte[32]).when(mediaHasher).apply(any());
         underTest = new MarCreation(ctors, new BindsEnvironment(
                 nonceSource,
                 marHasher,
