@@ -14,8 +14,8 @@ but this is not part of the MAR.
 
 Publishing an "Intent" frame does not establish any correlation to a piece of media -
 this requires media frames.
-At each frame, we compute a temporary hash of the media bytes using xxHash64,
-then use SipHash 4-8 to overwrite this hash with the keyed hash of the temporary frame.
+At each frame, we compute the media hash using BLAKE3,
+then use SipHash 4-8 to combine this with the frame data for the frame hash.
 Each frame's SipHash key consists of the nonce followed by the prior hash.
 We continue to update the attestation, at frequency per application, with updated conditions and the media index.
 We can publish Frame 0, intermediate attestations, or Frame N.
@@ -29,6 +29,7 @@ and a current hash that includes no media hash.
 
 ### Media frame
 Signed conditions of capture including nonce and prior hashes based on the previous frame,
+a media content hash,
 a valid current hash, and non-negative index.
 
 ## MAR
