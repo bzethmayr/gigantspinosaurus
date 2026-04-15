@@ -7,9 +7,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.SequencedMap;
 import java.util.SequencedSet;
-import java.util.Set;
 
-import static java.util.function.Predicate.not;
 import static net.bzethmayr.gigantspinosaurus.util.CollectionHelper.toSequencedMap;
 import static net.zethmayr.fungu.ForkFactory.over;
 
