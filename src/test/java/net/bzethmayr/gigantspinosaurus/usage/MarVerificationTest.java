@@ -4,11 +4,13 @@ import net.bzethmayr.gigantspinosaurus.model.TestsModel;
 import net.bzethmayr.gigantspinosaurus.model.TestsWithBytes;
 import net.bzethmayr.gigantspinosaurus.model.mar.ExposesMar;
 import net.bzethmayr.gigantspinosaurus.usage.MarCreation.MediaFrameReceiver;
+import org.junit.jupiter.api.RepeatedTest;
 import org.junit.jupiter.api.Test;
 
 import java.nio.ByteBuffer;
 
 import static net.bzethmayr.gigantspinosaurus.usage.BindsEnvironment.desktopEnvironment;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class MarVerificationTest implements TestsModel, TestsWithBytes {
@@ -54,4 +56,16 @@ public class MarVerificationTest implements TestsModel, TestsWithBytes {
 
         assertTrue(result);
     }
+
+    @RepeatedTest(1024)
+    void verifyMediaFrame_givenFrameAndInvalidMedia_neverReturnsValid() {
+        setUpDesktopEphemeral();
+        final MediaFrameReceiver receiver = creation.intentToRecord();
+        final ExposesMar frameZero = receiver.mediaFrame(fakeMediaBytes(1024), 0);
+
+        final boolean result = underTest.verifyMedia(frameZero, fakeMediaBytes(1024));
+
+        assertFalse(result);
+    }
+
 }
