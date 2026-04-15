@@ -20,14 +20,15 @@ public interface CreatesMar<T extends ExposesMar> {
                 double utcEpochSeconds,
                 ExposesPosition position,
                 ExposesOrientation<?> orientation,
+                byte[] mediaBLK3,
                 long currentSH4_8,
                 ExposesSignature signature,
                 short version);
 
     default T copyMar(final ExposesMar mar) {
         return createMar(
-                mar.nonce(), mar.index(), mar.prev_Mxx64_FsipH4_8(), mar.utcEpochSeconds(), mar.position(), mar.orientation(),
-                mar.curr_Mxx64_FsipH4_8(), mar.signature(), mar.version());
+                mar.nonce(), mar.index(), mar.priorSipH4_8(), mar.utcEpochSeconds(), mar.position(), mar.orientation(),
+                mar.mediaBLK3(), mar.currentSipH4_8(), mar.signature(), mar.version());
     }
 
     static <T extends ExposesMar> HasCanonicalAttributes.CanonicalDecoder<T> decodesMars(final CreatesMar<T> ctor) {
@@ -40,6 +41,7 @@ public interface CreatesMar<T extends ExposesMar> {
             Double utcEpochSeconds = null;
             ExposesPosition position = null;
             ExposesOrientation<?> orientation = null;
+            byte[] mediaBLK3 = new byte[32];
             Long currentSH4_8 = null;
             ExposesSignature signature = null;
             short version = MAR_VERSION;
@@ -59,6 +61,7 @@ public interface CreatesMar<T extends ExposesMar> {
                             decoders.<ExposesPosition>decoderFor(POSITION_FIELD).decode(in, decoders);
                     case ORIENTATION_FIELD -> orientation =
                             decoders.<ExposesOrientation<?>>decoderFor(ORIENTATION_FIELD).decode(in, decoders);
+                    case MEDIA_HASH_FIELD -> in.get(mediaBLK3);
                     case CURRENT_HASH_FIELD -> currentSH4_8 = in.getLong();
                     case SIGNATURE_FIELD -> signature =
                             decoders.<ExposesSignature>decoderFor(SIGNATURE_FIELD).decode(in, decoders);
@@ -70,7 +73,7 @@ public interface CreatesMar<T extends ExposesMar> {
             }
 
             return ctor.createMar(
-                    nonce, index, priorSH4_8, utcEpochSeconds, position, orientation, currentSH4_8, signature, version);
+                    nonce, index, priorSH4_8, utcEpochSeconds, position, orientation, mediaBLK3, currentSH4_8, signature, version);
         };
     }
 }

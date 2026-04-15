@@ -8,6 +8,7 @@ import net.bzethmayr.gigantspinosaurus.model.framing.Vertical;
 
 import java.time.Instant;
 
+import static net.bzethmayr.gigantspinosaurus.model.mar.ExposesMar.MEDIA_HASH_BYTES;
 import static net.bzethmayr.gigantspinosaurus.model.signature.ExposesSignature.*;
 import static net.zethmayr.fungu.test.TestConstants.TEST_RANDOM;
 
@@ -20,6 +21,7 @@ public interface TestsModel extends TestsWithEnums {
                 TEST_RANDOM.nextDouble(),
                 zeroGeoposition(),
                 oneOrientation(),
+                new byte[MEDIA_HASH_BYTES],
                 TEST_RANDOM.nextLong(),
                 nullSignature(),
                 (short) 0
@@ -91,6 +93,8 @@ public interface TestsModel extends TestsWithEnums {
     }
 
     default MinimalAttestationRecord realisticRandomizedMar() {
+        final byte[] fakeMedia = new byte[MEDIA_HASH_BYTES];
+        TEST_RANDOM.nextBytes(fakeMedia);
         return new MinimalAttestationRecord(
                 TEST_RANDOM.nextLong(),
                 0,
@@ -98,10 +102,10 @@ public interface TestsModel extends TestsWithEnums {
                 Instant.now().toEpochMilli() / 1000d,
                 randomGeoposition(),
                 randomOrientation(),
+                fakeMedia,
                 TEST_RANDOM.nextLong(),
                 randomSignature(),
                 SIGNATURE_VERSION
         );
-
     }
 }

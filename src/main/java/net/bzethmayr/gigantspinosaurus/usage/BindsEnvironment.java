@@ -31,7 +31,7 @@ public record BindsEnvironment(GeneratesNonce nonceSource,
     public static BindsEnvironment desktopEnvironment() {
         final SecureRandom random = new SecureRandom();
         final SipMarHasher hashesMar = new SipMarHasher();
-        final Xx64MediaHasher hashesMedia = new Xx64MediaHasher();
+        final Blake3MediaHasher hashesMedia = new Blake3MediaHasher();
         final Clock utcClock = Clock.systemUTC();
         final DesktopOrientation fixedOrientation = new DesktopOrientation();
         final KeyPairGenerator ephemeral;

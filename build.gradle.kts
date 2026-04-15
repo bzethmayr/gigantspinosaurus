@@ -8,7 +8,7 @@ plugins {
 java { toolchain { languageVersion = JavaLanguageVersion.of(21) } }
 
 group = "org.example"
-version = "1.2.0-SNAPSHOT"
+version = "1.3.0-SNAPSHOT"
 
 repositories {
     mavenCentral()
@@ -16,7 +16,7 @@ repositories {
 
 dependencies {
     implementation("io.github.bzethmayr.fungu:fungu:1.5.7")
-    implementation("at.yawk.lz4:lz4-java:1.10.2")
+    implementation("io.github.rctcwyvrn:blake3:1.3")
     implementation("io.whitfin:siphash:3.0.0")
 
     testImplementation("io.github.bzethmayr.fungu:fungu-test:1.2.12")

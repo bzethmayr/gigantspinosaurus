@@ -10,9 +10,14 @@ import static net.bzethmayr.gigantspinosaurus.capabilities.AttributeValuations.f
 import static net.bzethmayr.gigantspinosaurus.util.CollectionHelper.adds;
 
 public interface ExposesSignature extends HasCanonicalAttributes {
-    short SIGNATURE_VERSION = 2;
+    /**
+     * 1... - wrong lengths
+     * 2 - 32 bytes key, 64 bytes signature (also wrong)
+     * 3 - 44 bytes key, 64 bytes signature ?
+     */
+    short SIGNATURE_VERSION = 3;
     String PUB_KEY_FIELD = "ed25519Pub";
-    int PUB_KEY_LENGTH = 32;
+    int PUB_KEY_LENGTH = 44;
     String SIGNATURE_FIELD = "ed25519";
     int SIGNATURE_LENGTH = 64;
 

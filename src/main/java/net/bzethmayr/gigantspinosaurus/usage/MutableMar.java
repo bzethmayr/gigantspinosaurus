@@ -12,6 +12,7 @@ final class MutableMar implements ExposesMar {
     private double utcEpochSeconds;
     private ExposesPosition position;
     private ExposesOrientation<?> orientation;
+    private byte[] mediaBLK3;
     private long currentSH_48;
     private ExposesSignature signature;
 
@@ -21,8 +22,13 @@ final class MutableMar implements ExposesMar {
         return this;
     }
 
-    public MutableMar curr_Mxx64_FsipH4_8(long currentSH_48) {
+    public MutableMar currentSipH4_8(long currentSH_48) {
         this.currentSH_48 = currentSH_48;
+        return this;
+    }
+
+    public MutableMar mediaBLK3(final byte[] mediaBLK3) {
+        this.mediaBLK3 = mediaBLK3;
         return this;
     }
 
@@ -41,7 +47,7 @@ final class MutableMar implements ExposesMar {
         return this;
     }
 
-    public MutableMar prev_Mxx64_FsipH4_8(long priorSH_48) {
+    public MutableMar priorSipH4_8(long priorSH_48) {
         this.priorSH_48 = priorSH_48;
         return this;
     }
@@ -67,7 +73,7 @@ final class MutableMar implements ExposesMar {
     }
 
     @Override
-    public long prev_Mxx64_FsipH4_8() {
+    public long priorSipH4_8() {
         return priorSH_48;
     }
 
@@ -87,7 +93,12 @@ final class MutableMar implements ExposesMar {
     }
 
     @Override
-    public long curr_Mxx64_FsipH4_8() {
+    public byte[] mediaBLK3() {
+        return mediaBLK3;
+    }
+
+    @Override
+    public long currentSipH4_8() {
         return currentSH_48;
     }
 
