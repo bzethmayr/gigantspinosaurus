@@ -24,8 +24,8 @@ Signatures are embedded into the evidence as well as propagated to one or more e
 which may use any durable ledger to record the fact of acquisition.
 
 ### Intent frame
-Signed conditions of capture, with nonce and prior hash as random values and index -1,
-and a current hash that includes no media hash.
+Signed conditions of capture, with random nonce, prior and media hashes zero, index -1,
+and a current hash over those data.
 
 ### Media frame
 Signed conditions of capture including nonce and prior hashes based on the previous frame,
