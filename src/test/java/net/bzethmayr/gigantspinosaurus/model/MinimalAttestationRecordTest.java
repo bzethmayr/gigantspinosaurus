@@ -9,6 +9,7 @@ import java.nio.charset.StandardCharsets;
 import static net.zethmayr.fungu.test.TestConstants.TEST_RANDOM;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.greaterThan;
+import static org.hamcrest.Matchers.lessThan;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -58,7 +59,7 @@ class MinimalAttestationRecordTest implements TestsModel, TestsWithBytes {
         System.out.println(garbled);
     }
 
-    @RepeatedTest(1024)
+    @RepeatedTest(FEW)
     void normalCanonicalBytes_roundTripsExact() {
         setUpNormalUnderTest();
 
@@ -69,11 +70,12 @@ class MinimalAttestationRecordTest implements TestsModel, TestsWithBytes {
         assertEquals(underTest, parsed);
     }
 
-    @RepeatedTest(1024)
+    @RepeatedTest(SOME)
     void randomBytes_throws() {
         final ByteBuffer randomBytes = fakeMediaBytes(580);
 
         assertThrows(IllegalArgumentException.class, () ->
                 MarDecoder.decode(randomBytes));
+        assertThat(randomBytes.position(), lessThan(290));
     }
 }

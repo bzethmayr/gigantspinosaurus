@@ -56,9 +56,13 @@ public class MarCreation {
     }
 
     public MediaFrameReceiver intentToRecord() {
-        ExposesMar frameZero = intentFrame();
-        final AtomicReference<ExposesMar> priorFrame = new AtomicReference<>(frameZero);
-        final AtomicInteger priorIndex = new AtomicInteger(frameZero.index());
+        ExposesMar intentFrame = intentFrame();
+        return intentToRecord(intentFrame);
+    }
+
+    public MediaFrameReceiver intentToRecord(final ExposesMar intentFrame) {
+        final AtomicReference<ExposesMar> priorFrame = new AtomicReference<>(intentFrame);
+        final AtomicInteger priorIndex = new AtomicInteger(intentFrame.index());
         final Signatory signatory = env.signatory();
 
         return (media, index) -> {
