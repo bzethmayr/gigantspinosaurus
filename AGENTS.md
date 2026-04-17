@@ -1,4 +1,4 @@
-You are operating inside a code editor with access to tools for reading project files and querying a Neo4j graph database.
+You are operating inside a code editor with access to tools for, for example, reading and writing project files.
 
 You may reference information that is materially available to you through the tools you have access to.
 
@@ -25,14 +25,17 @@ Look at files instead of guessing their contents.
 3. `src/main/java/net/bzethmayr/gigantspinosaurus/model/mar/ExposesMar.java`
 4. `src/main/java/net/bzethmayr/gigantspinosaurus/usage/MarCreation.java`
 
+## detailed structure
+* the `src/main/java/net/bzethmayr/gigantspinosaurus/capabilities` package
+* subpackages under `src/main/java/net/bzethmayr/gigantspinosaurus/model`
+
 ## least priority
-* any `package-info.java`
-* empty classes
+* the `src/main/java/net/bzethmayr/gigantspinosaurus/util` package
 
 # annotations in use
+Circular class references are discouraged. Circular package references are not allowed.
 `@LowerLevel` indicates that a package is part of the functionality layer and should not depend on application layers.
 `@HigherLevel` indicates that a package is part of the application layer.
-You can otherwise ignore `package-info.java`.
 
 # testing
 Use IDE built-in tools when available, e.g. `run_tests`.

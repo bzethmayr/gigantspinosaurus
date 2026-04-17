@@ -5,6 +5,10 @@ import java.nio.ByteBuffer;
 import static net.zethmayr.fungu.test.TestConstants.TEST_RANDOM;
 
 public interface TestsWithBytes {
+    int FEW  = 1 << 8;   // L1-ish bytes
+    int SOME = 1 << 12;  // page-ish bytes
+    int MANY = 1 << 16;  // now we're talking bytes
+    int LOTS = 1 << 20;  // one _million_ (...
 
     default void printOrSomething(final byte b) {
         if (b > 32) {

@@ -72,8 +72,8 @@ class MarCreationTest implements TestsModel, TestsWithBytes {
 
         final MediaFrameReceiver receiver = underTest.intentToRecord();
         verify(nonceSource, times(2)).getAsLong();
-        final ExposesMar first = receiver.mediaFrame(fakeMediaBytes(65536), 0);
-        final ExposesMar second = receiver.mediaFrame(fakeMediaBytes(65536), 1);
+        final ExposesMar first = receiver.mediaFrame(fakeMediaBytes(MANY), 0);
+        final ExposesMar second = receiver.mediaFrame(fakeMediaBytes(MANY), 1);
         verifyNoMoreInteractions(nonceSource);
 
         assertEquals(MAR_VERSION, first.version());

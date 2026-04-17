@@ -2,7 +2,6 @@ package net.bzethmayr.gigantspinosaurus.model.correlation;
 
 import java.nio.ByteBuffer;
 import java.util.function.Function;
-import java.util.function.ToLongFunction;
 
 public interface HashesMedia extends Function<ByteBuffer, byte[]> {
     /**

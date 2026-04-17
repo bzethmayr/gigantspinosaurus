@@ -1,11 +1,10 @@
 package net.bzethmayr.gigantspinosaurus.model;
 
 import org.junit.jupiter.api.RepeatedTest;
-import org.junit.jupiter.api.Test;
 
 import static java.nio.ByteBuffer.wrap;
 import static net.bzethmayr.gigantspinosaurus.model.MarDecoder.decoders;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class OrientationTest implements TestsModel, TestsWithBytes {
 
@@ -15,7 +14,7 @@ class OrientationTest implements TestsModel, TestsWithBytes {
         underTest = randomOrientation();
     }
 
-    @RepeatedTest(1024)
+    @RepeatedTest(FEW)
     void decode_roundTrips() {
         setUpTrivial();
 
@@ -24,38 +23,5 @@ class OrientationTest implements TestsModel, TestsWithBytes {
         final Orientation parsed = MarDecoder.decodeOrientation(wrap(bytes), decoders());
 
         assertEquals(underTest, parsed);
-    }
-
-    @Test
-    void getRequiredAttributes_always_returnsAllAttributes() {
-
-    }
-
-    @Test
-    void getCanonicalAttributes() {
-    }
-
-    @Test
-    void getAttributeValue() {
-    }
-
-    @Test
-    void QW() {
-    }
-
-    @Test
-    void QX() {
-    }
-
-    @Test
-    void QY() {
-    }
-
-    @Test
-    void QZ() {
-    }
-
-    @Test
-    void frame() {
     }
 }

@@ -10,6 +10,7 @@ import org.junit.jupiter.api.Test;
 import java.nio.ByteBuffer;
 
 import static net.bzethmayr.gigantspinosaurus.usage.BindsEnvironment.desktopEnvironment;
+import static net.zethmayr.fungu.test.TestConstants.TEST_RANDOM;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -40,16 +41,16 @@ public class MarVerificationTest implements TestsModel, TestsWithBytes {
         setUpDesktopEphemeral();
         final ExposesMar original = creation.intentFrame();
 
-        final boolean result = underTest.verifyMar(original, fakeMediaBytes(16384));
+        final boolean result = underTest.verifyMar(original, fakeMediaBytes(SOME));
 
         assertTrue(result);
     }
 
-    @Test
+    @RepeatedTest(16)
     void verifyMediaFrame_givenFrameAndValidMedia_returnsValid() {
         setUpDesktopEphemeral();
         final MediaFrameReceiver receiver = creation.intentToRecord();
-        final ByteBuffer fakeFrame = fakeMediaBytes(16384);
+        final ByteBuffer fakeFrame = fakeMediaBytes(LOTS);
         final ExposesMar frameZero = receiver.mediaFrame(fakeFrame, 0);
 
         final boolean result = underTest.verifyMedia(frameZero, fakeFrame);
@@ -57,15 +58,29 @@ public class MarVerificationTest implements TestsModel, TestsWithBytes {
         assertTrue(result);
     }
 
-    @RepeatedTest(1024)
+    @RepeatedTest(FEW)
     void verifyMediaFrame_givenFrameAndInvalidMedia_neverReturnsValid() {
         setUpDesktopEphemeral();
         final MediaFrameReceiver receiver = creation.intentToRecord();
-        final ExposesMar frameZero = receiver.mediaFrame(fakeMediaBytes(1024), 0);
+        final ExposesMar frameZero = receiver.mediaFrame(fakeMediaBytes(SOME), 0);
 
-        final boolean result = underTest.verifyMedia(frameZero, fakeMediaBytes(1024));
+        final boolean result = underTest.verifyMedia(frameZero, fakeMediaBytes(SOME));
 
         assertFalse(result);
     }
+
+    @RepeatedTest(64)
+    void verifyMediaFrame_givenFrameAndCorruptedMedia_neverReturnsValid() {
+        setUpDesktopEphemeral();
+        final MediaFrameReceiver receiver = creation.intentToRecord();
+        final ByteBuffer fakeFrame = fakeMediaBytes(MANY);
+        final ExposesMar frameZero = receiver.mediaFrame(fakeFrame, 0);
+        fakeFrame.array()[TEST_RANDOM.nextInt(0, MANY)] ^= 1;
+
+        final boolean result = underTest.verifyMedia(frameZero, fakeFrame);
+
+        assertFalse(result);
+    }
+
 
 }
