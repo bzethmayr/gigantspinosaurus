@@ -7,8 +7,8 @@ plugins {
 
 java { toolchain { languageVersion = JavaLanguageVersion.of(21) } }
 
-group = "org.example"
-version = "1.3.0-SNAPSHOT"
+group = "net.bzethmayr.mar"
+version = "0.4.0-SNAPSHOT"
 
 repositories {
     mavenCentral()
