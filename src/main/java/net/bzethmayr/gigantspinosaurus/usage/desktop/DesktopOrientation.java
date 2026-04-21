@@ -17,7 +17,7 @@ public class DesktopOrientation implements ExposesOrientation<DesktopOrientation
     private double z;
 
     public DesktopOrientation() {
-        this(1, 0, 1, 0);
+        this(1, 0, 1, 0); // Placeholder: Default values
     }
 
     public DesktopOrientation(final double w, final double x, final double y, final double z) {

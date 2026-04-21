@@ -19,8 +19,9 @@ import static java.nio.ByteBuffer.wrap;
 import static net.bzethmayr.gigantspinosaurus.model.mar.ExposesMar.MAR_VERSION;
 import static net.bzethmayr.gigantspinosaurus.usage.BindsConstructors.defaultConstructors;
 import static net.bzethmayr.gigantspinosaurus.usage.BindsEnvironment.desktopEnvironment;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.lessThan;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 class MarCreationTest implements TestsModel, TestsWithBytes {
@@ -100,8 +101,43 @@ class MarCreationTest implements TestsModel, TestsWithBytes {
 
         final ExposesMar result = underTest.intentFrame();
         final byte[] serialized = result.canonicalBytes();
+        assertThat(serialized.length, lessThan(600));
         final ExposesMar parsed = MarDecoder.decode(wrap(serialized));
 
         assertEquals(result, parsed);
+    }
+
+    @Test
+    void intentToRecord_givenIntentFrame_againstDesktopBindings_returnsRoundTripReceiver() {
+        setUpForDesktopEphemeral();
+
+        final ExposesMar intentFrame = underTest.intentFrame();
+        final MediaFrameReceiver receiver = underTest.intentToRecord(intentFrame);
+        final ExposesMar firstFrame = receiver.mediaFrame(fakeMediaBytes(LOTS), 0);
+        final ExposesMar secondFrame = receiver.mediaFrame(fakeMediaBytes(LOTS), 1);
+
+        final long nonce = intentFrame.nonce();
+        assertEquals(-1, intentFrame.index());
+        assertNotEquals(0L, intentFrame.priorSipH4_8());
+        assertNotNull(intentFrame.mediaBLK3());
+        assertEquals(0, intentFrame.mediaBLK3()[0]);
+        assertNotEquals(0L, intentFrame.currentSipH4_8());
+        assertNotNull(intentFrame.signature());
+        final int intentSize = intentFrame.canonicalBytes().length;
+        assertNotNull(intentFrame.signature());
+        assertEquals(nonce, firstFrame.nonce());
+        assertEquals(0, firstFrame.index());
+        assertEquals(intentFrame.currentSipH4_8(), firstFrame.priorSipH4_8());
+        assertNotNull(firstFrame.mediaBLK3());
+        assertNotEquals(0L, firstFrame.currentSipH4_8());
+        assertNotNull(firstFrame.signature());
+        assertEquals(intentSize, firstFrame.canonicalBytes().length);
+        assertEquals(nonce, secondFrame.nonce());
+        assertEquals(1, secondFrame.index());
+        assertEquals(firstFrame.currentSipH4_8(), secondFrame.priorSipH4_8());
+        assertNotNull(secondFrame.mediaBLK3());
+        assertNotEquals(0L, secondFrame.currentSipH4_8());
+        assertNotNull(secondFrame.signature());
+        assertEquals(intentSize, secondFrame.canonicalBytes().length);
     }
 }
