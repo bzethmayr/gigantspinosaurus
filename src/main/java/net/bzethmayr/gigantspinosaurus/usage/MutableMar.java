@@ -1,6 +1,7 @@
 package net.bzethmayr.gigantspinosaurus.usage;
 
 import net.bzethmayr.gigantspinosaurus.model.mar.ExposesMar;
+import net.bzethmayr.gigantspinosaurus.model.media.ExposesMedia;
 import net.bzethmayr.gigantspinosaurus.model.orientation.ExposesOrientation;
 import net.bzethmayr.gigantspinosaurus.model.position.ExposesPosition;
 import net.bzethmayr.gigantspinosaurus.model.signature.ExposesSignature;
@@ -12,7 +13,7 @@ final class MutableMar implements ExposesMar {
     private double utcEpochSeconds;
     private ExposesPosition position;
     private ExposesOrientation<?> orientation;
-    private byte[] mediaBLK3;
+    private ExposesMedia media;
     private long currentSH_48;
     private ExposesSignature signature;
 
@@ -27,8 +28,8 @@ final class MutableMar implements ExposesMar {
         return this;
     }
 
-    public MutableMar mediaBLK3(final byte[] mediaBLK3) {
-        this.mediaBLK3 = mediaBLK3;
+    public MutableMar media(final ExposesMedia media) {
+        this.media = media;
         return this;
     }
 
@@ -93,8 +94,8 @@ final class MutableMar implements ExposesMar {
     }
 
     @Override
-    public byte[] mediaBLK3() {
-        return mediaBLK3;
+    public ExposesMedia media() {
+        return media;
     }
 
     @Override

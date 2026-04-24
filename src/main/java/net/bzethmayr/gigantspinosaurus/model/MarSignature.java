@@ -12,10 +12,10 @@ public record MarSignature(
 
     @Override
     public boolean equals(final Object other) {
-        if (other instanceof MarSignature brother) {
-            return Arrays.equals(ed25519, brother.ed25519)
-                    && Arrays.equals(ed25519Pub, brother.ed25519Pub)
-                    && version == brother.version;
+        if (other instanceof ExposesSignature brother) {
+            return Arrays.equals(ed25519, brother.ed25519())
+                    && Arrays.equals(ed25519Pub, brother.ed25519Pub())
+                    && version == brother.version();
         }
         return false;
     }

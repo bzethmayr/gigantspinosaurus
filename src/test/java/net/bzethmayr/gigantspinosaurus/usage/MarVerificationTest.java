@@ -20,9 +20,10 @@ public class MarVerificationTest implements TestsModel, TestsWithBytes {
     private MarVerification underTest;
 
     void setUpDesktopEphemeral() {
+        final BindsConstructors ctors = BindsConstructors.defaultConstructors();
         final BindsEnvironment env = desktopEnvironment();
-        creation = new MarCreation(BindsConstructors.defaultConstructors(), env);
-        underTest = new MarVerification(env);
+        creation = new MarCreation(ctors, env);
+        underTest = new MarVerification(ctors, env);
     }
 
     @Test

@@ -4,6 +4,7 @@ import net.bzethmayr.gigantspinosaurus.capabilities.HasCanonicalAttributes.Canon
 import net.bzethmayr.gigantspinosaurus.capabilities.HasCanonicalAttributes.CanonizesDecoders;
 import net.bzethmayr.gigantspinosaurus.model.framing.CreatesFraming;
 import net.bzethmayr.gigantspinosaurus.model.mar.CreatesMar;
+import net.bzethmayr.gigantspinosaurus.model.media.CreatesMedia;
 import net.bzethmayr.gigantspinosaurus.model.orientation.CreatesOrientation;
 import net.bzethmayr.gigantspinosaurus.model.position.CreatesPosition;
 import net.bzethmayr.gigantspinosaurus.model.signature.CreatesSignature;
@@ -27,6 +28,8 @@ public final class MarDecoder {
     public static Geoposition decodePosition(final ByteBuffer in, final CanonizesDecoders decoders) {
         return POSITION_DECODER.decode(in, decoders);
     }
+
+    public static final CanonicalDecoder<Media> MEDIA_DECODER = CreatesMedia.decodesMedias(Media::new);
 
     private static final CanonicalDecoder<MarSignature> SIGNATURE_DECODER = CreatesSignature.createsSignatures(MarSignature::new);
 
@@ -54,6 +57,7 @@ public final class MarDecoder {
         static final Map<String, CanonicalDecoder<?>> DECODERS = Map.of(
                 POSITION_FIELD, POSITION_DECODER,
                 ORIENTATION_FIELD, ORIENTATION_DECODER,
+                MEDIA_FIELD, MEDIA_DECODER,
                 FRAME_FIELD, FRAMING_DECODER,
                 SIGNATURE_FIELD, SIGNATURE_DECODER,
                 MAR_FIELD, MAR_DECODER

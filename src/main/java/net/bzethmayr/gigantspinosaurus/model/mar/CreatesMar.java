@@ -1,6 +1,7 @@
 package net.bzethmayr.gigantspinosaurus.model.mar;
 
 import net.bzethmayr.gigantspinosaurus.capabilities.HasCanonicalAttributes;
+import net.bzethmayr.gigantspinosaurus.model.media.ExposesMedia;
 import net.bzethmayr.gigantspinosaurus.model.orientation.ExposesOrientation;
 import net.bzethmayr.gigantspinosaurus.model.position.ExposesPosition;
 import net.bzethmayr.gigantspinosaurus.model.signature.ExposesSignature;
@@ -20,7 +21,7 @@ public interface CreatesMar<T extends ExposesMar> {
                 double utcEpochSeconds,
                 ExposesPosition position,
                 ExposesOrientation<?> orientation,
-                byte[] mediaBLK3,
+                ExposesMedia mediaBLK3,
                 long currentSH4_8,
                 ExposesSignature signature,
                 short version);
@@ -28,7 +29,7 @@ public interface CreatesMar<T extends ExposesMar> {
     default T copyMar(final ExposesMar mar) {
         return createMar(
                 mar.nonce(), mar.index(), mar.priorSipH4_8(), mar.utcEpochSeconds(), mar.position(), mar.orientation(),
-                mar.mediaBLK3(), mar.currentSipH4_8(), mar.signature(), mar.version());
+                mar.media(), mar.currentSipH4_8(), mar.signature(), mar.version());
     }
 
     static <T extends ExposesMar> HasCanonicalAttributes.CanonicalDecoder<T> decodesMars(final CreatesMar<T> ctor) {
@@ -41,13 +42,13 @@ public interface CreatesMar<T extends ExposesMar> {
             Double utcEpochSeconds = null;
             ExposesPosition position = null;
             ExposesOrientation<?> orientation = null;
-            byte[] mediaBLK3 = new byte[32];
+            ExposesMedia media = null;
             Long currentSH4_8 = null;
             ExposesSignature signature = null;
             short version = MAR_VERSION;
 
             final Set<String> keys = new HashSet<>();
-            while (true) {
+            do {
                 String key = readAsciiKey(in);
                 requireKeyUnique(keys, key);
                 expect(in, VAL);
@@ -61,7 +62,8 @@ public interface CreatesMar<T extends ExposesMar> {
                             decoders.<ExposesPosition>decoderFor(POSITION_FIELD).decode(in, decoders);
                     case ORIENTATION_FIELD -> orientation =
                             decoders.<ExposesOrientation<?>>decoderFor(ORIENTATION_FIELD).decode(in, decoders);
-                    case MEDIA_HASH_FIELD -> in.get(mediaBLK3);
+                    case MEDIA_FIELD -> media =
+                            decoders.<ExposesMedia>decoderFor(MEDIA_FIELD).decode(in, decoders);
                     case CURRENT_HASH_FIELD -> currentSH4_8 = in.getLong();
                     case SIGNATURE_FIELD -> signature =
                             decoders.<ExposesSignature>decoderFor(SIGNATURE_FIELD).decode(in, decoders);
@@ -69,11 +71,10 @@ public interface CreatesMar<T extends ExposesMar> {
                     default -> throw becauseBadKey(key);
                 }
 
-                if (checkSep(in)) break;
-            }
+            } while (!checkSep(in));
 
             return ctor.createMar(
-                    nonce, index, priorSH4_8, utcEpochSeconds, position, orientation, mediaBLK3, currentSH4_8, signature, version);
+                    nonce, index, priorSH4_8, utcEpochSeconds, position, orientation, media, currentSH4_8, signature, version);
         };
     }
 }

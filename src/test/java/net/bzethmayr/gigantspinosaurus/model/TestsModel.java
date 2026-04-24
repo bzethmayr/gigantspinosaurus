@@ -5,10 +5,13 @@ import net.bzethmayr.gigantspinosaurus.model.framing.Face;
 import net.bzethmayr.gigantspinosaurus.model.framing.Handedness;
 import net.bzethmayr.gigantspinosaurus.model.framing.North;
 import net.bzethmayr.gigantspinosaurus.model.framing.Vertical;
+import net.bzethmayr.gigantspinosaurus.model.media.ReductionStep;
 
 import java.time.Instant;
 
-import static net.bzethmayr.gigantspinosaurus.model.mar.ExposesMar.MEDIA_HASH_BYTES;
+import static net.bzethmayr.gigantspinosaurus.model.media.ExposesMedia.MEDIA_HASH_BYTES;
+import static net.bzethmayr.gigantspinosaurus.model.media.ExposesMedia.MEDIA_VERSION;
+import static net.bzethmayr.gigantspinosaurus.model.media.ReductionStep.noStep;
 import static net.bzethmayr.gigantspinosaurus.model.signature.ExposesSignature.*;
 import static net.zethmayr.fungu.test.TestConstants.TEST_RANDOM;
 
@@ -21,7 +24,7 @@ public interface TestsModel extends TestsWithEnums {
                 TEST_RANDOM.nextDouble(),
                 zeroGeoposition(),
                 oneOrientation(),
-                new byte[MEDIA_HASH_BYTES],
+                minimalMedia(),
                 TEST_RANDOM.nextLong(),
                 nullSignature(),
                 (short) 0
@@ -81,7 +84,20 @@ public interface TestsModel extends TestsWithEnums {
                 TEST_RANDOM.nextDouble(-1d, 1d),
                 TEST_RANDOM.nextDouble(-1d, 1d),
                 TEST_RANDOM.nextDouble(-1d, 1d),
-                new Framing());
+                randomFraming());
+    }
+
+    default Media minimalMedia() {
+        return new Media(
+                noStep(), noStep(), noStep(), noStep(), new byte[MEDIA_HASH_BYTES], MEDIA_VERSION);
+    }
+
+    default Media randomMedia() {
+        final byte[] fakeMedia = new byte[MEDIA_HASH_BYTES];
+        TEST_RANDOM.nextBytes(fakeMedia);
+        return new Media(
+                new ReductionStep(randomVersion(), randomVersion()), new ReductionStep(randomVersion(), randomVersion()),
+                noStep(), noStep(), fakeMedia, MEDIA_VERSION);
     }
 
     default MarSignature randomSignature() {
@@ -93,8 +109,6 @@ public interface TestsModel extends TestsWithEnums {
     }
 
     default MinimalAttestationRecord realisticRandomizedMar() {
-        final byte[] fakeMedia = new byte[MEDIA_HASH_BYTES];
-        TEST_RANDOM.nextBytes(fakeMedia);
         return new MinimalAttestationRecord(
                 TEST_RANDOM.nextLong(),
                 0,
@@ -102,7 +116,7 @@ public interface TestsModel extends TestsWithEnums {
                 Instant.now().toEpochMilli() / 1000d,
                 randomGeoposition(),
                 randomOrientation(),
-                fakeMedia,
+                randomMedia(),
                 TEST_RANDOM.nextLong(),
                 randomSignature(),
                 SIGNATURE_VERSION
