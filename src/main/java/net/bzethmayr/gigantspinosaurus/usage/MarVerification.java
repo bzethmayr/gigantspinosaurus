@@ -1,13 +1,21 @@
 package net.bzethmayr.gigantspinosaurus.usage;
 
 import net.bzethmayr.gigantspinosaurus.model.mar.ExposesMar;
+import net.bzethmayr.gigantspinosaurus.model.media.ExposesMedia;
 
 import java.nio.ByteBuffer;
 
+import static net.bzethmayr.gigantspinosaurus.model.media.ExposesMedia.MEDIA_VERSION;
+
 public class MarVerification {
+    private final BindsConstructors ctors;
     private final BindsEnvironment env;
 
-    public MarVerification(final BindsEnvironment env) {
+    public MarVerification(
+            final BindsConstructors ctors,
+            final BindsEnvironment env
+    ) {
+        this.ctors = ctors;
         this.env = env;
     }
 
@@ -42,13 +50,21 @@ public class MarVerification {
 
     public final boolean verifyIntent(final ExposesMar intentFrame) {
         MutableMar hashingFrame = coreFieldsCopy(intentFrame);
-        hashingFrame.mediaBLK3(intentFrame.mediaBLK3());
+        hashingFrame.media(intentFrame.media());
         return verifyHashAndSignature(intentFrame, hashingFrame);
     }
 
     public final boolean verifyMedia(final ExposesMar mediaFrame, final ByteBuffer media) {
         final MutableMar hashingFrame = coreFieldsCopy(mediaFrame);
-        hashingFrame.mediaBLK3(env.mediaHasher().apply(media));
+        final ExposesMedia frameMedia = mediaFrame.media();
+        hashingFrame.media(ctors.mediaCtor().createMedia(
+                frameMedia.r0(),
+                frameMedia.r1(),
+                frameMedia.r2(),
+                frameMedia.r3(),
+                env.mediaHasher().apply(media),
+                MEDIA_VERSION
+        ));
         return verifyHashAndSignature(mediaFrame, hashingFrame);
     }
 }

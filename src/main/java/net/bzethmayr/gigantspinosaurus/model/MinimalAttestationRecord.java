@@ -1,6 +1,7 @@
 package net.bzethmayr.gigantspinosaurus.model;
 
 import net.bzethmayr.gigantspinosaurus.model.mar.ExposesMar;
+import net.bzethmayr.gigantspinosaurus.model.media.ExposesMedia;
 import net.bzethmayr.gigantspinosaurus.model.orientation.ExposesOrientation;
 import net.bzethmayr.gigantspinosaurus.model.position.ExposesPosition;
 import net.bzethmayr.gigantspinosaurus.model.signature.ExposesSignature;
@@ -15,7 +16,7 @@ public record MinimalAttestationRecord(
         double utcEpochSeconds,
         ExposesPosition position,
         ExposesOrientation<?> orientation,
-        byte[] mediaBLK3,
+        ExposesMedia media,
         long currentSipH4_8,
         ExposesSignature signature,
         short version
@@ -29,7 +30,7 @@ public record MinimalAttestationRecord(
                     && utcEpochSeconds == brother.utcEpochSeconds
                     && Objects.equals(position, brother.position)
                     && Objects.equals(orientation, brother.orientation)
-                    && Arrays.equals(mediaBLK3, brother.mediaBLK3)
+                    && Objects.equals(media, brother.media)
                     && currentSipH4_8 == brother.currentSipH4_8
                     && Objects.equals(signature, brother.signature)
                     && version == brother.version;
@@ -43,10 +44,10 @@ public record MinimalAttestationRecord(
                                     double utcEpochSeconds,
                                     ExposesPosition position,
                                     ExposesOrientation<?> orientation,
-                                    byte[] mediaBLK3,
+                                    ExposesMedia media,
                                     long currentSH4_8,
                                     ExposesSignature signature) {
         this(nonce, index, priorSH4_8, utcEpochSeconds, position, orientation,
-                mediaBLK3, currentSH4_8, signature, MAR_VERSION);
+                media, currentSH4_8, signature, MAR_VERSION);
     }
 }

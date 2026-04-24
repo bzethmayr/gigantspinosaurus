@@ -1,6 +1,9 @@
 package net.bzethmayr.gigantspinosaurus.usage;
 
+import net.bzethmayr.gigantspinosaurus.model.Media;
 import net.bzethmayr.gigantspinosaurus.model.mar.ExposesMar;
+import net.bzethmayr.gigantspinosaurus.model.media.ExposesMedia;
+import net.bzethmayr.gigantspinosaurus.model.media.ReductionStep;
 import net.bzethmayr.gigantspinosaurus.model.nonce.GeneratesNonce;
 import net.bzethmayr.gigantspinosaurus.model.orientation.ExposesOrientation;
 import net.bzethmayr.gigantspinosaurus.model.position.ExposesPosition;
@@ -11,6 +14,9 @@ import java.nio.ByteBuffer;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
+import static net.bzethmayr.gigantspinosaurus.model.media.ExposesMedia.MEDIA_HASH_BYTES;
+import static net.bzethmayr.gigantspinosaurus.model.media.ExposesMedia.MEDIA_VERSION;
+import static net.bzethmayr.gigantspinosaurus.model.media.ReductionStep.noStep;
 import static net.bzethmayr.gigantspinosaurus.model.signature.ExposesSignature.SIGNATURE_VERSION;
 import static net.zethmayr.fungu.core.ExceptionFactory.becauseIllegal;
 import static net.zethmayr.fungu.core.ExceptionFactory.becauseImpossible;
@@ -32,7 +38,13 @@ public class MarCreation {
         this.env = env;
     }
 
-    public ExposesMar intentFrame() {
+    private static ReductionStep stepOrNoStep(final int index, final ReductionStep... steps) {
+        return index < steps.length && index > -1
+                ? steps[index]
+                : noStep();
+    }
+
+    public ExposesMar intentFrame(final ReductionStep... reductionSteps) {
         final GeneratesNonce nonceSource = env.nonceSource();
         final ExposesUtcDoubleSeconds timeSource = env.timeSource();
         final ExposesPosition positionSource = env.positionSource();
@@ -45,7 +57,12 @@ public class MarCreation {
         bufferZero.utcEpochSeconds(timeSource.utcDoubleSeconds());
         bufferZero.position(ctors.positionCtor().copyPosition(positionSource));
         bufferZero.orientation(ctors.orientationCtor().copyOrientation(orientationSource));
-        bufferZero.mediaBLK3(new byte[32]);
+        bufferZero.media(ctors.mediaCtor().createMedia(
+                stepOrNoStep(0, reductionSteps),
+                stepOrNoStep(1, reductionSteps),
+                stepOrNoStep(2, reductionSteps),
+                stepOrNoStep(3, reductionSteps),
+                new byte[MEDIA_HASH_BYTES], MEDIA_VERSION));
         final byte[] bufferZeroBytes = bufferZero.canonicalBytes();
         bufferZero.currentSipH4_8(env.marHasher().applyAsLong(bufferZero.sipHashKey(), bufferZeroBytes));
         final byte[] toSign = bufferZero.canonicalBytes();
@@ -77,7 +94,15 @@ public class MarCreation {
             nextBuffer.utcEpochSeconds(env.timeSource().utcDoubleSeconds());
             nextBuffer.position(ctors.positionCtor().copyPosition(env.positionSource()));
             nextBuffer.orientation(ctors.orientationCtor().copyOrientation(env.orientationSource()));
-            nextBuffer.mediaBLK3(env.mediaHasher().apply(media));
+            final ExposesMedia priorMedia = prior.media();
+            nextBuffer.media(ctors.mediaCtor().createMedia(
+                    priorMedia.r0(),
+                    priorMedia.r1(),
+                    priorMedia.r2(),
+                    priorMedia.r3(),
+                    env.mediaHasher().apply(media),
+                    MEDIA_VERSION
+            ));
             final byte[] conditions = nextBuffer.canonicalBytes();
             nextBuffer.currentSipH4_8(env.marHasher().applyAsLong(nextBuffer.sipHashKey(), conditions));
             final byte[] toSign = nextBuffer.canonicalBytes();

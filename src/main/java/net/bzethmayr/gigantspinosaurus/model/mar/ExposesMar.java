@@ -3,6 +3,7 @@ package net.bzethmayr.gigantspinosaurus.model.mar;
 import net.bzethmayr.gigantspinosaurus.capabilities.BoundAttributes;
 import net.bzethmayr.gigantspinosaurus.capabilities.HasCanonicalAttributes;
 import net.bzethmayr.gigantspinosaurus.capabilities.Versioned;
+import net.bzethmayr.gigantspinosaurus.model.media.ExposesMedia;
 import net.bzethmayr.gigantspinosaurus.model.orientation.ExposesOrientation;
 import net.bzethmayr.gigantspinosaurus.model.position.ExposesPosition;
 import net.bzethmayr.gigantspinosaurus.model.signature.ExposesSignature;
@@ -24,8 +25,7 @@ public interface ExposesMar extends HasCanonicalAttributes {
     String TIME_FIELD = "utcEpochSeconds";
     String POSITION_FIELD = "position";
     String ORIENTATION_FIELD = "orientation";
-    String MEDIA_HASH_FIELD = "mediaBLK3";
-    int MEDIA_HASH_BYTES = 32;
+    String MEDIA_FIELD = "media";
     String CURRENT_HASH_FIELD = "currentSipH4_8";
     String SIGNATURE_FIELD = "signature";
 
@@ -34,15 +34,16 @@ public interface ExposesMar extends HasCanonicalAttributes {
      * 4 - renamed hash fields to `previous/currentSipH4_8`
      * 5 - renamed hash fields to `prev/curr_Mxx64_FsipH4_8`
      * 6 - adds mediaBLK3 field, back to `prior/currentSipH4_8` naming
+     * 7 - removes mediaBLK3 field and adds media object
      */
-    short MAR_VERSION = 6;
+    short MAR_VERSION = 7;
     long nonce();
     int index();
     long priorSipH4_8();
     double utcEpochSeconds();
     ExposesPosition position();
     ExposesOrientation<?> orientation();
-    byte[] mediaBLK3();
+    ExposesMedia media();
     long currentSipH4_8();
     ExposesSignature signature();
 
@@ -55,7 +56,7 @@ public interface ExposesMar extends HasCanonicalAttributes {
             adds(TIME_FIELD, fromDouble(ExposesMar::utcEpochSeconds)),
             adds(POSITION_FIELD, fromConverted(ExposesMar::position, ExposesPosition::canonicalBytes)),
             adds(ORIENTATION_FIELD, fromConverted(ExposesMar::orientation, ExposesOrientation::canonicalBytes)),
-            adds(MEDIA_HASH_FIELD, fromBytes(ExposesMar::mediaBLK3)),
+            adds(MEDIA_FIELD, fromConverted(ExposesMar::media, ExposesMedia::canonicalBytes)),
             adds(CURRENT_HASH_FIELD, fromLong(ExposesMar::currentSipH4_8)),
             adds(SIGNATURE_FIELD, fromConverted(ExposesMar::signature, ExposesSignature::canonicalBytes))
     );
