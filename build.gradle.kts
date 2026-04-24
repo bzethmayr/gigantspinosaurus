@@ -1,5 +1,5 @@
 plugins {
-    kotlin("jvm") version "1.9.23"          // make sure the Kotlin plugin itself supports Java 21
+    kotlin("jvm") version "1.9.23"          // make sure the Kotlin plugin itself supports Java 21
     id("java")
     id("jacoco")
     id("info.solidsoft.pitest") version "1.15.0"
@@ -8,7 +8,7 @@ plugins {
 java { toolchain { languageVersion = JavaLanguageVersion.of(21) } }
 
 group = "net.bzethmayr.mar"
-version = "0.4.0-SNAPSHOT"
+version = "0.5.0-SNAPSHOT"
 
 repositories {
     mavenCentral()
