@@ -8,13 +8,13 @@ plugins {
 java { toolchain { languageVersion = JavaLanguageVersion.of(21) } }
 
 group = "net.bzethmayr.mar"
-version = "0.5.0-SNAPSHOT"
+version = "0.5.1-SNAPSHOT"
 
 repositories {
     mavenCentral()
 }
 
-val lwjglVersion = "3.3.3"
+val lwjglVersion = "3.4.1"
 
 dependencies {
     implementation("io.github.bzethmayr.fungu:fungu:1.5.7")

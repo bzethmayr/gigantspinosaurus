@@ -1,12 +1,10 @@
 package net.bzethmayr.gigantspinosaurus.gpu;
 
-public interface GpuContext {
-    GpuTextureLoan loanTexture2D(int w, int h, int internalFormat);
-    GpuProgramLoan loanProgram(String glslSource);
+public interface GpuContext extends AutoCloseable {
+    String APPLICATION_NAME = "MAR";
+    GpuBuffer createBuffer(GpuBuffer.BufferDesc desc);
+    GpuTexture createTexture(GpuTexture.TextureDesc desc);
+    GpuProgram createProgram(GpuProgram.ProgramDesc desc);
 
-    void bindImage(int unit, GpuTextureLoan tex, int access, int format);
-    void bindUniform1i(int location, int value);
-
-    void dispatch(int groupsX, int groupsY, int groupsZ);
-    void memoryBarrier(int barriers);
+    void withProgram(GpuProgram program, UsesGpuProgram user);
 }

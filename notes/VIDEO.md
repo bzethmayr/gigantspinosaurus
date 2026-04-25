@@ -1,4 +1,14 @@
 We have to reduce the video to a form that survives compression while retaining very high uniqueness.
+
+```text
+Color space conversion (RGB → YCbCr)
+Chroma subsampling (4:2:0)
+Block partitioning (8×8, 16×16, etc.)
+DCT or wavelet transform
+Quantization (lossy)
+Entropy coding
+```
+
 We perform a DCT first, at resolution less than or equal to the compressor resolution,
 taking a size-dependent sample of the low-frequency quadrant.
 We downsample post-DCT in a shader: using bilinear filter with integer math only to a 160×90 texture.
@@ -13,11 +23,11 @@ We then perform a 12x12 "feature" grid, detecting the strongest gradient's rough
 We are hoping for a real raster of size at least 96x96, but still need to be consistently wrong on smaller raster sizes.
 
 ```
-1100000111110000
+11001100
 strength (2 bits)
-  origin-x (5 bits)
-       origin-y (5 bits)
-            orientation (4 bits)
+  origin-x (2 bits)
+    origin-y (2 bits)
+      orientation (2 bits)
 ```
 at moderate resolution, discarding any gradient weak enough to have been triggered by a compressor macroblock.
 
