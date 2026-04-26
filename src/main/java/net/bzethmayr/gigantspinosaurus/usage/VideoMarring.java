@@ -11,7 +11,7 @@ import static java.lang.Thread.currentThread;
 import static net.zethmayr.fungu.core.ExceptionFactory.becauseIllegal;
 import static net.zethmayr.fungu.core.ExceptionFactory.becauseImpossible;
 
-public class MediaMarring {
+public class VideoMarring {
     private final Object copyLock = new Object();
     private final BindsMediaPipeline pipeline;
     private final MarCreation.ReducedFrameReceiver marsReduced;
@@ -27,7 +27,7 @@ public class MediaMarring {
     private final MediaFrameAcceptor mediaFrames;
     private final CalculationThreadWorker background;
 
-    public MediaMarring(
+    public VideoMarring(
             final BindsConstructors ctors,
             final BindsEnvironment env,
             final BindsMediaPipeline pipeline,
