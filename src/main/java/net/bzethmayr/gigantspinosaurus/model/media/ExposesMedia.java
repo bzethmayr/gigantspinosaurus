@@ -9,6 +9,7 @@ import java.util.SequencedSet;
 import static net.bzethmayr.gigantspinosaurus.capabilities.AttributeValuations.fromBytes;
 import static net.bzethmayr.gigantspinosaurus.capabilities.AttributeValuations.fromConverted;
 import static net.bzethmayr.gigantspinosaurus.util.CollectionHelper.adds;
+import static net.zethmayr.fungu.core.ExceptionFactory.becauseIllegal;
 
 public interface ExposesMedia extends HasCanonicalAttributes {
     String REDUCTION_0_FIELD = "r0";
@@ -17,6 +18,7 @@ public interface ExposesMedia extends HasCanonicalAttributes {
     String REDUCTION_3_FIELD = "r3";
     String MEDIA_HASH_FIELD = "BLK3";
 
+    int MAX_REDUCERS = 4;
     int MEDIA_HASH_BYTES = 32;
     short MEDIA_VERSION = 0;
 
@@ -51,4 +53,7 @@ public interface ExposesMedia extends HasCanonicalAttributes {
         return ACCESSORS.getBoundValue(attributeName, this);
     }
 
+    static IllegalArgumentException becauseTooManyReducers() {
+        return becauseIllegal("Only %s reducers are supported", MAX_REDUCERS);
+    }
 }

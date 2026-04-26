@@ -1,6 +1,5 @@
 package net.bzethmayr.gigantspinosaurus.usage;
 
-import net.bzethmayr.gigantspinosaurus.model.Media;
 import net.bzethmayr.gigantspinosaurus.model.mar.ExposesMar;
 import net.bzethmayr.gigantspinosaurus.model.media.ExposesMedia;
 import net.bzethmayr.gigantspinosaurus.model.media.ReductionStep;
@@ -14,8 +13,8 @@ import java.nio.ByteBuffer;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
-import static net.bzethmayr.gigantspinosaurus.model.media.ExposesMedia.MEDIA_HASH_BYTES;
-import static net.bzethmayr.gigantspinosaurus.model.media.ExposesMedia.MEDIA_VERSION;
+import static net.bzethmayr.gigantspinosaurus.model.mar.ExposesMar.MAR_VERSION;
+import static net.bzethmayr.gigantspinosaurus.model.media.ExposesMedia.*;
 import static net.bzethmayr.gigantspinosaurus.model.media.ReductionStep.noStep;
 import static net.bzethmayr.gigantspinosaurus.model.signature.ExposesSignature.SIGNATURE_VERSION;
 import static net.zethmayr.fungu.core.ExceptionFactory.becauseIllegal;
@@ -26,8 +25,8 @@ public class MarCreation {
     private final BindsEnvironment env;
 
     @FunctionalInterface
-    public interface MediaFrameReceiver {
-        ExposesMar mediaFrame(final ByteBuffer frameData, final int index);
+    public interface ReducedFrameReceiver {
+        ExposesMar reducedFrame(final ByteBuffer frameData, final int index);
     }
 
     public MarCreation(
@@ -45,12 +44,16 @@ public class MarCreation {
     }
 
     public ExposesMar intentFrame(final ReductionStep... reductionSteps) {
+        if (reductionSteps.length > MAX_REDUCERS) {
+            throw becauseTooManyReducers();
+        }
         final GeneratesNonce nonceSource = env.nonceSource();
         final ExposesUtcDoubleSeconds timeSource = env.timeSource();
         final ExposesPosition positionSource = env.positionSource();
         final ExposesOrientation<?> orientationSource = env.orientationSource();
         final Signatory signatory = env.signatory();
         final MutableMar bufferZero = new MutableMar();
+        bufferZero.version(MAR_VERSION);
         bufferZero.nonce(nonceSource.getAsLong());
         bufferZero.index(-1);
         bufferZero.priorSipH4_8(nonceSource.getAsLong());
@@ -72,12 +75,12 @@ public class MarCreation {
         return ctors.marCtor().copyMar(bufferZero);
     }
 
-    public MediaFrameReceiver intentToRecord() {
-        ExposesMar intentFrame = intentFrame();
+    public ReducedFrameReceiver intentToRecord(final ReductionStep... reductionSteps) {
+        ExposesMar intentFrame = intentFrame(reductionSteps);
         return intentToRecord(intentFrame);
     }
 
-    public MediaFrameReceiver intentToRecord(final ExposesMar intentFrame) {
+    public ReducedFrameReceiver intentToRecord(final ExposesMar intentFrame) {
         final AtomicReference<ExposesMar> priorFrame = new AtomicReference<>(intentFrame);
         final AtomicInteger priorIndex = new AtomicInteger(intentFrame.index());
         final Signatory signatory = env.signatory();
@@ -88,6 +91,7 @@ public class MarCreation {
             }
             ExposesMar prior = priorFrame.get();
             final MutableMar nextBuffer = new MutableMar();
+            nextBuffer.version(prior.version());
             nextBuffer.nonce(prior.nonce());
             nextBuffer.index(index);
             nextBuffer.priorSipH4_8(prior.currentSipH4_8());

@@ -17,7 +17,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.time.Clock;
 
-import static net.zethmayr.fungu.core.ExceptionFactory.becauseImpossible;
+import static net.bzethmayr.gigantspinosaurus.model.signature.ExposesSignature.becauseEdHasGone;
 
 public record BindsEnvironment(GeneratesNonce nonceSource,
                                HashesMarFrame marHasher,
@@ -38,7 +38,7 @@ public record BindsEnvironment(GeneratesNonce nonceSource,
         try {
             ephemeral = KeyPairGenerator.getInstance("Ed25519");
         } catch (final NoSuchAlgorithmException nsae) {
-            throw becauseImpossible("Ed25519 has gone?");
+            throw becauseEdHasGone();
         }
         final KeyPair ephemeralPair = ephemeral.generateKeyPair();
         return new BindsEnvironment(

@@ -3,7 +3,7 @@ package net.bzethmayr.gigantspinosaurus.usage;
 import net.bzethmayr.gigantspinosaurus.model.TestsModel;
 import net.bzethmayr.gigantspinosaurus.model.TestsWithBytes;
 import net.bzethmayr.gigantspinosaurus.model.mar.ExposesMar;
-import net.bzethmayr.gigantspinosaurus.usage.MarCreation.MediaFrameReceiver;
+import net.bzethmayr.gigantspinosaurus.usage.MarCreation.ReducedFrameReceiver;
 import org.junit.jupiter.api.RepeatedTest;
 import org.junit.jupiter.api.Test;
 
@@ -50,9 +50,9 @@ public class MarVerificationTest implements TestsModel, TestsWithBytes {
     @RepeatedTest(16)
     void verifyMediaFrame_givenFrameAndValidMedia_returnsValid() {
         setUpDesktopEphemeral();
-        final MediaFrameReceiver receiver = creation.intentToRecord();
+        final ReducedFrameReceiver receiver = creation.intentToRecord();
         final ByteBuffer fakeFrame = fakeMediaBytes(LOTS);
-        final ExposesMar frameZero = receiver.mediaFrame(fakeFrame, 0);
+        final ExposesMar frameZero = receiver.reducedFrame(fakeFrame, 0);
 
         final boolean result = underTest.verifyMedia(frameZero, fakeFrame);
 
@@ -62,8 +62,8 @@ public class MarVerificationTest implements TestsModel, TestsWithBytes {
     @RepeatedTest(FEW)
     void verifyMediaFrame_givenFrameAndInvalidMedia_neverReturnsValid() {
         setUpDesktopEphemeral();
-        final MediaFrameReceiver receiver = creation.intentToRecord();
-        final ExposesMar frameZero = receiver.mediaFrame(fakeMediaBytes(SOME), 0);
+        final ReducedFrameReceiver receiver = creation.intentToRecord();
+        final ExposesMar frameZero = receiver.reducedFrame(fakeMediaBytes(SOME), 0);
 
         final boolean result = underTest.verifyMedia(frameZero, fakeMediaBytes(SOME));
 
@@ -73,9 +73,9 @@ public class MarVerificationTest implements TestsModel, TestsWithBytes {
     @RepeatedTest(64)
     void verifyMediaFrame_givenFrameAndCorruptedMedia_neverReturnsValid() {
         setUpDesktopEphemeral();
-        final MediaFrameReceiver receiver = creation.intentToRecord();
+        final ReducedFrameReceiver receiver = creation.intentToRecord();
         final ByteBuffer fakeFrame = fakeMediaBytes(MANY);
-        final ExposesMar frameZero = receiver.mediaFrame(fakeFrame, 0);
+        final ExposesMar frameZero = receiver.reducedFrame(fakeFrame, 0);
         fakeFrame.array()[TEST_RANDOM.nextInt(0, MANY)] ^= 1;
 
         final boolean result = underTest.verifyMedia(frameZero, fakeFrame);
