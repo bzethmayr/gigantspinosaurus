@@ -11,6 +11,10 @@ import static java.lang.Thread.currentThread;
 import static net.zethmayr.fungu.core.ExceptionFactory.becauseIllegal;
 import static net.zethmayr.fungu.core.ExceptionFactory.becauseImpossible;
 
+/**
+ * Marring video in near-real time requires
+ * offloading as much work as possible away from the media thread.
+ */
 public class VideoMarring {
     private final Object copyLock = new Object();
     private final BindsMediaPipeline pipeline;
@@ -49,6 +53,10 @@ public class VideoMarring {
 
     @FunctionalInterface
     public interface BackgroundCalculator {
+        /**
+         * Parks the thread and waits for media frames - when a frame is available,
+         * calculates the mark that verifies that frame and goes back to waiting for the next frame.
+         */
         void calculate();
     }
 
@@ -85,7 +93,8 @@ public class VideoMarring {
             mediaThread = current;
         } else if (current != mediaThread) {
             throw becauseIllegal("Non-media thread %s acting as media thread", current);
-        } else if (mediaThread == calcThread) {
+        }
+        if (mediaThread == calcThread) {
             throw becauseSameThreads();
         }
     }
@@ -96,7 +105,8 @@ public class VideoMarring {
             calcThread = current;
         } else if (current != calcThread) {
             throw becauseIllegal("Non-calculation thread %s acting as calc thread", current);
-        } else if (calcThread == mediaThread) {
+        }
+        if (calcThread == mediaThread) {
             throw becauseSameThreads();
         }
     }
