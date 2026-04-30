@@ -7,6 +7,7 @@ import net.bzethmayr.gigantspinosaurus.model.position.ExposesPosition;
 import net.bzethmayr.gigantspinosaurus.model.signature.ExposesSignature;
 
 final class MutableMar implements ExposesMar {
+    private short version;
     private long nonce;
     private int index;
     private long priorSH_48;
@@ -17,6 +18,14 @@ final class MutableMar implements ExposesMar {
     private long currentSH_48;
     private ExposesSignature signature;
 
+    public short version() {
+        return version;
+    }
+
+    public MutableMar version(short version) {
+        this.version = version;
+        return this;
+    }
 
     public MutableMar signature(ExposesSignature signature) {
         this.signature = signature;

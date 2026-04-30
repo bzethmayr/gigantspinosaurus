@@ -5,8 +5,6 @@ import net.bzethmayr.gigantspinosaurus.model.media.ExposesMedia;
 
 import java.nio.ByteBuffer;
 
-import static net.bzethmayr.gigantspinosaurus.model.media.ExposesMedia.MEDIA_VERSION;
-
 public class MarVerification {
     private final BindsConstructors ctors;
     private final BindsEnvironment env;
@@ -19,15 +17,16 @@ public class MarVerification {
         this.env = env;
     }
 
-    public final boolean verifyMar(final ExposesMar someFrame, final ByteBuffer media) {
+    public final boolean verifyMar(final ExposesMar someFrame, final ByteBuffer reducedMedia) {
         if (someFrame.index() < 0) {
             return verifyIntent(someFrame);
         }
-        return verifyMedia(someFrame, media);
+        return verifyMedia(someFrame, reducedMedia);
     }
 
     private MutableMar coreFieldsCopy(final ExposesMar someFrame) {
         final MutableMar hashingFrame = new MutableMar();
+        hashingFrame.version(someFrame.version());
         hashingFrame.nonce(someFrame.nonce());
         hashingFrame.index(someFrame.index());
         hashingFrame.priorSipH4_8(someFrame.priorSipH4_8());
@@ -63,7 +62,7 @@ public class MarVerification {
                 frameMedia.r2(),
                 frameMedia.r3(),
                 env.mediaHasher().apply(media),
-                MEDIA_VERSION
+                frameMedia.version()
         ));
         return verifyHashAndSignature(mediaFrame, hashingFrame);
     }

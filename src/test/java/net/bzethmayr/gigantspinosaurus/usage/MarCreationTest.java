@@ -12,7 +12,7 @@ import net.bzethmayr.gigantspinosaurus.model.orientation.ExposesOrientation;
 import net.bzethmayr.gigantspinosaurus.model.position.ExposesPosition;
 import net.bzethmayr.gigantspinosaurus.model.signature.Signatory;
 import net.bzethmayr.gigantspinosaurus.model.time.ExposesUtcDoubleSeconds;
-import net.bzethmayr.gigantspinosaurus.usage.MarCreation.MediaFrameReceiver;
+import net.bzethmayr.gigantspinosaurus.usage.MarCreation.ReducedFrameReceiver;
 import org.junit.jupiter.api.Test;
 
 import static java.nio.ByteBuffer.wrap;
@@ -22,7 +22,6 @@ import static net.bzethmayr.gigantspinosaurus.model.media.ReductionStep.noStep;
 import static net.bzethmayr.gigantspinosaurus.usage.BindsConstructors.defaultConstructors;
 import static net.bzethmayr.gigantspinosaurus.usage.BindsEnvironment.desktopEnvironment;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.in;
 import static org.hamcrest.Matchers.lessThan;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -74,10 +73,10 @@ class MarCreationTest implements TestsModel, TestsWithBytes {
     void intentToRecord_againstMocks_returnsFrameReceiver() {
         setUpFromMocks();
 
-        final MediaFrameReceiver receiver = underTest.intentToRecord();
+        final ReducedFrameReceiver receiver = underTest.intentToRecord();
         verify(nonceSource, times(2)).getAsLong();
-        final ExposesMar first = receiver.mediaFrame(fakeMediaBytes(MANY), 0);
-        final ExposesMar second = receiver.mediaFrame(fakeMediaBytes(MANY), 1);
+        final ExposesMar first = receiver.reducedFrame(fakeMediaBytes(MANY), 0);
+        final ExposesMar second = receiver.reducedFrame(fakeMediaBytes(MANY), 1);
         verifyNoMoreInteractions(nonceSource);
 
         assertEquals(MAR_VERSION, first.version());
@@ -115,9 +114,9 @@ class MarCreationTest implements TestsModel, TestsWithBytes {
         setUpForDesktopEphemeral();
 
         final ExposesMar intentFrame = underTest.intentFrame();
-        final MediaFrameReceiver receiver = underTest.intentToRecord(intentFrame);
-        final ExposesMar firstFrame = receiver.mediaFrame(fakeMediaBytes(LOTS), 0);
-        final ExposesMar secondFrame = receiver.mediaFrame(fakeMediaBytes(LOTS), 1);
+        final ReducedFrameReceiver receiver = underTest.intentToRecord(intentFrame);
+        final ExposesMar firstFrame = receiver.reducedFrame(fakeMediaBytes(LOTS), 0);
+        final ExposesMar secondFrame = receiver.reducedFrame(fakeMediaBytes(LOTS), 1);
 
         final long nonce = intentFrame.nonce();
         assertEquals(-1, intentFrame.index());

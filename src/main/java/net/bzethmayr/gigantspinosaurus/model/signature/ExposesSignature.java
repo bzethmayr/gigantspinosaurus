@@ -8,6 +8,7 @@ import java.util.SequencedSet;
 
 import static net.bzethmayr.gigantspinosaurus.capabilities.AttributeValuations.fromBytes;
 import static net.bzethmayr.gigantspinosaurus.util.CollectionHelper.adds;
+import static net.zethmayr.fungu.core.ExceptionFactory.becauseImpossible;
 
 public interface ExposesSignature extends HasCanonicalAttributes {
     /**
@@ -40,4 +41,7 @@ public interface ExposesSignature extends HasCanonicalAttributes {
         return ACCESSORS.getBoundValue(attributeName, this);
     }
 
+    static IllegalStateException becauseEdHasGone() {
+        return becauseImpossible("Ed25519 has gone?");
+    }
 }

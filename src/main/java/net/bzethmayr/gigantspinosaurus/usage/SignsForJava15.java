@@ -7,6 +7,7 @@ import java.security.*;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.X509EncodedKeySpec;
 
+import static net.bzethmayr.gigantspinosaurus.model.signature.ExposesSignature.becauseEdHasGone;
 import static net.zethmayr.fungu.core.ExceptionFactory.becauseIllegal;
 import static net.zethmayr.fungu.core.ExceptionFactory.becauseImpossible;
 
@@ -23,10 +24,6 @@ public class SignsForJava15 implements Signatory {
     @Override
     public byte[] get() {
         return signingPair.getPublic().getEncoded();
-    }
-
-    private static IllegalStateException becauseEdHasGone() {
-        return becauseImpossible("Ed25519 has gone?");
     }
 
     private static IllegalArgumentException becauseBadKey() {
