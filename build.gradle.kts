@@ -14,15 +14,19 @@ repositories {
     mavenCentral()
 }
 
-val lwjglVersion = "3.4.1"
+var lwjglVersion = "3.4.1"
+var lwjglNatives = "natives-windows"
+
 
 dependencies {
     implementation("io.github.bzethmayr.fungu:fungu:1.5.7")
     implementation("io.github.rctcwyvrn:blake3:1.3")
     implementation("io.whitfin:siphash:3.0.0")
-    implementation("org.lwjgl:lwjgl:$lwjglVersion")
-    implementation("org.lwjgl:lwjgl-vulkan:$lwjglVersion")
-    implementation("org.lwjgl:lwjgl-vma:$lwjglVersion")
+    implementation(platform("org.lwjgl:lwjgl-bom:$lwjglVersion"))
+    implementation("org.lwjgl", "lwjgl", classifier = lwjglNatives)
+    implementation("org.lwjgl:lwjgl-vulkan")
+    implementation("org.lwjgl:lwjgl-vma")
+    implementation("org.lwjgl", "lwjgl-vma", classifier = lwjglNatives)
 
     testImplementation("io.github.bzethmayr.fungu:fungu-test:1.2.12")
     testImplementation("org.junit.jupiter:junit-jupiter")
