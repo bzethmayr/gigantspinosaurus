@@ -1,9 +1,10 @@
 package net.bzethmayr.gigantspinosaurus.usage.vk;
 
+import net.bzethmayr.gigantspinosaurus.gpu.GpuProgram;
 import net.zethmayr.fungu.core.declarations.NotDone;
 
 @NotDone
-public final class VkComputePipeline implements AutoCloseable {
+public final class VkComputePipeline implements GpuProgram {
     final long shaderModule;
     final long descriptorSetLayout;
     final long pipelineLayout;
