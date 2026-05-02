@@ -1,6 +1,7 @@
 package net.bzethmayr.gigantspinosaurus.usage.vk;
 
 import net.bzethmayr.gigantspinosaurus.gpu.*;
+import net.bzethmayr.gigantspinosaurus.util.ClosingChain;
 import net.zethmayr.fungu.core.declarations.NotDone;
 import net.zethmayr.fungu.core.declarations.ReuseResults;
 import org.lwjgl.PointerBuffer;
@@ -18,6 +19,7 @@ import static net.bzethmayr.gigantspinosaurus.usage.vk.VulkanCommon.OSType.MACOS
 import static net.bzethmayr.gigantspinosaurus.usage.vk.VulkanCommon.*;
 import static net.bzethmayr.gigantspinosaurus.usage.vk.VulkanInstanceCreation.*;
 import static net.bzethmayr.gigantspinosaurus.usage.vk.VulkanPhysicalDeviceSelection.*;
+import static net.zethmayr.fungu.CloseableFactory.closeable;
 import static org.lwjgl.system.MemoryStack.stackPush;
 import static org.lwjgl.vulkan.VK10.vkCreateInstance;
 import static org.lwjgl.vulkan.VK10.vkDestroyInstance;
@@ -25,6 +27,7 @@ import static org.lwjgl.vulkan.VK10.vkDestroyInstance;
 @NotDone
 public final class VulkanRoot implements GpuContext {
     static final String ENGINE_NAME = "vermillion";
+    private final ClosingChain closeChain;
     private final VkInstance instance;
     private final VkPhysicalDevice physicalDevice;
     private final PhysicalDeviceMetadata physicalMetadata;
@@ -35,6 +38,7 @@ public final class VulkanRoot implements GpuContext {
 
     @ReuseResults
     public VulkanRoot() {
+        ClosingChain chain = null;
         try (MemoryStack stack = stackPush()) {
             VkApplicationInfo appInfo = appInfo(stack, APPLICATION_NAME, ENGINE_NAME);
             final List<String> layerNames = allLayerNames(stack,
@@ -45,18 +49,22 @@ public final class VulkanRoot implements GpuContext {
             PointerBuffer instanceBuf = stack.mallocPointer(1);
             checkVk(vkCreateInstance(instanceInfo, null, instanceBuf), "instance creation");
             instance = new VkInstance(instanceBuf.get(0), instanceInfo);
+            chain = new ClosingChain(
+                    closeable(instance, i -> vkDestroyInstance(i, null))
+            );
             physicalDevice = selectPhysicalDevice(stack, instance,
                     noComputeQueue(-100),
                     discreteBonus(50)
             );
             physicalMetadata = new PhysicalDeviceMetadata(stack, physicalDevice);
+            chain = chain.link(physicalMetadata);
         }
+        closeChain = chain;
     }
 
     @Override
     public void close() {
-        physicalMetadata.close();
-        vkDestroyInstance(instance, null);
+        closeChain.close();
     }
 
     @Override
@@ -79,11 +87,15 @@ public final class VulkanRoot implements GpuContext {
 
     }
 
-    void withInstance(final Consumer<VkInstance> usesInstance) {
-        usesInstance.accept(instance);
+    VkInstance instance() {
+        return instance;
     }
 
-    <T> T fromInstance(final Function<VkInstance, T> usesInstance) {
-        return usesInstance.apply(instance);
+    VkPhysicalDevice physicalDevice() {
+        return physicalDevice;
+    }
+
+    PhysicalDeviceMetadata physicalMetadata() {
+        return physicalMetadata;
     }
 }

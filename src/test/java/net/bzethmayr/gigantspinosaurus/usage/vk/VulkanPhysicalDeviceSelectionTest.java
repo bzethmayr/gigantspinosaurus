@@ -17,20 +17,18 @@ class VulkanPhysicalDeviceSelectionTest {
     @Test
     void allPhysicalDevices_givenInstanceAndStack_returnsBuffer() {
         try (final VulkanRoot hasInstance = new VulkanRoot(); final MemoryStack stack = stackPush()) {
-            hasInstance.withInstance(i -> {
-                final PointerBuffer allDevices = allPhysicalDevices(stack, i);
+            final PointerBuffer allDevices = allPhysicalDevices(stack, hasInstance.instance());
 
-                assertNotNull(allDevices);
-            });
+            assertNotNull(allDevices);
         }
     }
 
     @Test
     void selectPhysicalDevice_givenInstanceAndStack_whenAllScoresEqual_findsFirstDevice() {
         try (final VulkanRoot hasInstance = new VulkanRoot(); final MemoryStack stack = stackPush()) {
-            final VkPhysicalDevice result = hasInstance.fromInstance(i -> selectPhysicalDevice(stack, i,
+            final VkPhysicalDevice result = selectPhysicalDevice(stack, hasInstance.instance(),
                     noComputeQueue(0), discreteBonus(0),
-                    seeDeviceNames(System.out::println)));
+                    seeDeviceNames(System.out::println));
 
             assertNotNull(result);
         }
@@ -39,13 +37,11 @@ class VulkanPhysicalDeviceSelectionTest {
     @Test
     void selectPhysicalDevice_givenInstanceAndStack_whenAllDevicesRejected_throws() {
         try (final VulkanRoot hasInstance = new VulkanRoot(); final MemoryStack stack = stackPush()) {
-            hasInstance.withInstance(i -> {
-                final IllegalStateException thrown = assertThrows(IllegalStateException.class, () ->
-                        selectPhysicalDevice(stack, i, m -> -1));
+            final IllegalStateException thrown = assertThrows(IllegalStateException.class, () ->
+                    selectPhysicalDevice(stack, hasInstance.instance(), m -> -1));
 
-                assertThat(thrown.getLocalizedMessage().toLowerCase(),
-                        stringContainsInOrder("no", "devices"));
-            });
+            assertThat(thrown.getLocalizedMessage().toLowerCase(),
+                    stringContainsInOrder("no", "devices"));
         }
     }
 }
