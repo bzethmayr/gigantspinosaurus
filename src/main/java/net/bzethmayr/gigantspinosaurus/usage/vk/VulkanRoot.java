@@ -5,29 +5,28 @@ import net.zethmayr.fungu.core.declarations.NotDone;
 import net.zethmayr.fungu.core.declarations.ReuseResults;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.system.MemoryStack;
-import org.lwjgl.vulkan.*;
+import org.lwjgl.vulkan.VkApplicationInfo;
+import org.lwjgl.vulkan.VkInstance;
+import org.lwjgl.vulkan.VkInstanceCreateInfo;
+import org.lwjgl.vulkan.VkPhysicalDevice;
 
-import java.nio.ByteBuffer;
-import java.nio.IntBuffer;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Function;
-import java.util.function.Predicate;
 
-import static net.bzethmayr.gigantspinosaurus.usage.vk.VkCommon.OSType.MACOS;
-import static net.bzethmayr.gigantspinosaurus.usage.vk.VkCommon.*;
+import static net.bzethmayr.gigantspinosaurus.usage.vk.VulkanCommon.OSType.MACOS;
+import static net.bzethmayr.gigantspinosaurus.usage.vk.VulkanCommon.*;
 import static net.bzethmayr.gigantspinosaurus.usage.vk.VulkanInstanceCreation.*;
-import static net.zethmayr.fungu.PredicateFactory.anyOf;
+import static net.bzethmayr.gigantspinosaurus.usage.vk.VulkanPhysicalDeviceSelection.*;
 import static org.lwjgl.system.MemoryStack.stackPush;
-import static org.lwjgl.vulkan.KHRPortabilityEnumeration.VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR;
-import static org.lwjgl.vulkan.VK10.*;
+import static org.lwjgl.vulkan.VK10.vkCreateInstance;
+import static org.lwjgl.vulkan.VK10.vkDestroyInstance;
 
 @NotDone
 public final class VulkanRoot implements GpuContext {
     static final String ENGINE_NAME = "vermillion";
     private final VkInstance instance;
-//    final VkPhysicalDevice physicalDevice;
+    private final VkPhysicalDevice physicalDevice;
 //    final VkDevice logicalDevice;
 //    final VkQueue queue;
 //    final int queueFamily;
@@ -45,6 +44,10 @@ public final class VulkanRoot implements GpuContext {
             PointerBuffer instanceBuf = stack.mallocPointer(1);
             checkVk(vkCreateInstance(instanceInfo, null, instanceBuf), "instance creation");
             instance = new VkInstance(instanceBuf.get(0), instanceInfo);
+            physicalDevice = selectPhysicalDevice(instance, stack,
+                    noComputeQueue(-100),
+                    discreteBonus(50)
+            );
         }
     }
 

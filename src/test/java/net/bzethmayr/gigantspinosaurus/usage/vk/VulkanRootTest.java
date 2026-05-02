@@ -2,15 +2,9 @@ package net.bzethmayr.gigantspinosaurus.usage.vk;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.VKCapabilitiesInstance;
 
-import java.util.List;
-
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.*;
-import static org.junit.jupiter.api.Assertions.*;
-import static org.lwjgl.system.MemoryStack.stackPush;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
 class VulkanRootTest {
 

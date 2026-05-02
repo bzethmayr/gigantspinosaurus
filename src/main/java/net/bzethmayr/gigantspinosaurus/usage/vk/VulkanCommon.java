@@ -1,5 +1,8 @@
 package net.bzethmayr.gigantspinosaurus.usage.vk;
 
+import org.lwjgl.PointerBuffer;
+import org.lwjgl.system.MemoryStack;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -9,8 +12,8 @@ import static net.zethmayr.fungu.PredicateFactory.anyOf;
 import static net.zethmayr.fungu.core.ExceptionFactory.becauseStaticsOnly;
 import static org.lwjgl.vulkan.VK10.VK_SUCCESS;
 
-final class VkCommon {
-    private VkCommon() {
+final class VulkanCommon {
+    private VulkanCommon() {
         throw becauseStaticsOnly();
     }
 
@@ -47,6 +50,31 @@ final class VkCommon {
         return filters.length == 0
                 ? new ArrayList<>(size)
                 : new ArrayList<>();
+    }
+
+    static PointerBuffer layerNamesFrom(final MemoryStack stack, final List<String> names) {
+        PointerBuffer namesBuf = null;
+        if (!names.isEmpty()) {
+            final int numNames = names.size();
+            namesBuf = stack.mallocPointer(numNames);
+            for (int i = 0; i < numNames; i++) {
+                namesBuf.put(i, stack.ASCII(names.get(i)));
+            }
+        }
+        return namesBuf;
+    }
+
+    static PointerBuffer extensionNamesFrom(final MemoryStack stack, final List<String> names) {
+        PointerBuffer namesBuf = null;
+        if (!names.isEmpty()) {
+            final int numNames = names.size();
+            namesBuf = stack.mallocPointer(numNames);
+            for (int i = 0; i < numNames; i++) {
+                namesBuf.put(i, stack.UTF8(names.get(i)));
+            }
+            namesBuf.flip();
+        }
+        return namesBuf;
     }
 
     static class VulkanUsageException extends RuntimeException {

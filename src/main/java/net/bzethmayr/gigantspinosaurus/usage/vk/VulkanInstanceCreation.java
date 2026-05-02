@@ -1,6 +1,5 @@
 package net.bzethmayr.gigantspinosaurus.usage.vk;
 
-import org.lwjgl.PointerBuffer;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.VkApplicationInfo;
 import org.lwjgl.vulkan.VkExtensionProperties;
@@ -12,12 +11,17 @@ import java.nio.IntBuffer;
 import java.util.List;
 import java.util.function.Predicate;
 
-import static net.bzethmayr.gigantspinosaurus.usage.vk.VkCommon.OSType.MACOS;
-import static net.bzethmayr.gigantspinosaurus.usage.vk.VkCommon.*;
+import static net.bzethmayr.gigantspinosaurus.usage.vk.VulkanCommon.OSType.MACOS;
+import static net.bzethmayr.gigantspinosaurus.usage.vk.VulkanCommon.*;
+import static net.zethmayr.fungu.core.ExceptionFactory.becauseStaticsOnly;
 import static org.lwjgl.vulkan.KHRPortabilityEnumeration.VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR;
 import static org.lwjgl.vulkan.VK10.*;
 
 class VulkanInstanceCreation {
+    private VulkanInstanceCreation() {
+        throw becauseStaticsOnly();
+    }
+
     static VkApplicationInfo appInfo(final MemoryStack stack, final String app, final String engine) {
         final ByteBuffer appName = stack.UTF8(app);
         final ByteBuffer engineName = stack.UTF8(engine);
@@ -66,31 +70,6 @@ class VulkanInstanceCreation {
             }
         }
         return extensions;
-    }
-
-    private static PointerBuffer layerNamesFrom(final MemoryStack stack, final List<String> names) {
-        PointerBuffer namesBuf = null;
-        if (!names.isEmpty()) {
-            final int numNames = names.size();
-            namesBuf = stack.mallocPointer(numNames);
-            for (int i = 0; i < numNames; i++) {
-                namesBuf.put(i, stack.ASCII(names.get(i)));
-            }
-        }
-        return namesBuf;
-    }
-
-    private static PointerBuffer extensionNamesFrom(final MemoryStack stack, final List<String> names) {
-        PointerBuffer namesBuf = null;
-        if (!names.isEmpty()) {
-            final int numNames = names.size();
-            namesBuf = stack.mallocPointer(numNames);
-            for (int i = 0; i < numNames; i++) {
-                namesBuf.put(i, stack.UTF8(names.get(i)));
-            }
-            namesBuf.flip();
-        }
-        return namesBuf;
     }
 
     static VkInstanceCreateInfo instanceCreateInfo(
