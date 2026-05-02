@@ -18,14 +18,14 @@ final class VulkanPhysicalDeviceSelection {
         throw becauseStaticsOnly();
     }
 
-    static class DeviceMetadata implements AutoCloseable {
+    static class PhysicalDeviceMetadata implements AutoCloseable {
         private final VkExtensionProperties.Buffer vkDeviceExtensions;
         private final VkPhysicalDeviceMemoryProperties vkMemoryProperties;
         private final VkPhysicalDeviceFeatures vkPhysicalDeviceFeatures;
         private final VkPhysicalDeviceProperties vkPhysicalDeviceProperties;
         private final VkQueueFamilyProperties.Buffer vkQueueFamilyProps;
 
-        private DeviceMetadata(final MemoryStack stack, final VkPhysicalDevice physicalDevice) {
+        PhysicalDeviceMetadata(final MemoryStack stack, final VkPhysicalDevice physicalDevice) {
             vkPhysicalDeviceProperties = VkPhysicalDeviceProperties.calloc();
             vkGetPhysicalDeviceProperties(physicalDevice, vkPhysicalDeviceProperties);
             final IntBuffer countBuffer = stack.mallocInt(1);
@@ -77,7 +77,10 @@ final class VulkanPhysicalDeviceSelection {
         }
     }
 
-    static PointerBuffer allPhysicalDevices(VkInstance instance, MemoryStack stack) {
+    static PointerBuffer allPhysicalDevices(
+            final MemoryStack stack,
+            final VkInstance instance
+    ) {
         final IntBuffer countBuffer = stack.mallocInt(1);
         checkVk(vkEnumeratePhysicalDevices(instance, countBuffer, null),
                 "counting physical devices");
@@ -90,18 +93,18 @@ final class VulkanPhysicalDeviceSelection {
 
     @SafeVarargs
     static VkPhysicalDevice selectPhysicalDevice(
-            final VkInstance instance,
             final MemoryStack stack,
-            final ToIntFunction<DeviceMetadata>... scorers
+            final VkInstance instance,
+            final ToIntFunction<PhysicalDeviceMetadata>... scorers
     ) {
-        final PointerBuffer allDevices = allPhysicalDevices(instance, stack);
+        final PointerBuffer allDevices = allPhysicalDevices(stack, instance);
         final int numDevices = allDevices.capacity();
         final int[] scores = new int[numDevices];
         final VkPhysicalDevice[] candidates = new VkPhysicalDevice[numDevices];
 
         for (int i = 0; i < numDevices; i++) {
             candidates[i] = new VkPhysicalDevice(allDevices.get(i), instance);
-            try (final DeviceMetadata metadata = new DeviceMetadata(stack, candidates[i])) {
+            try (final PhysicalDeviceMetadata metadata = new PhysicalDeviceMetadata(stack, candidates[i])) {
                 scores[i] = Stream.of(scorers).mapToInt(f -> f.applyAsInt(metadata)).sum();
             }
         }
@@ -119,7 +122,7 @@ final class VulkanPhysicalDeviceSelection {
         return candidates[maxAt];
     }
 
-    static ToIntFunction<DeviceMetadata> noComputeQueue(final int penalty) {
+    static ToIntFunction<PhysicalDeviceMetadata> noComputeQueue(final int penalty) {
         return m -> {
             final VkQueueFamilyProperties.Buffer queueFamilies = m.queueFamilies();
             final int numFamilies = queueFamilies != null
@@ -134,7 +137,7 @@ final class VulkanPhysicalDeviceSelection {
         };
     }
 
-    static ToIntFunction<DeviceMetadata> discreteBonus(final int bonus) {
+    static ToIntFunction<PhysicalDeviceMetadata> discreteBonus(final int bonus) {
         return m -> switch (m.device().deviceType()) {
             case VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU -> bonus;
             case VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU,
@@ -143,7 +146,7 @@ final class VulkanPhysicalDeviceSelection {
         };
     }
 
-    static ToIntFunction<DeviceMetadata> seeDeviceNames(final Consumer<String> acceptsNames) {
+    static ToIntFunction<PhysicalDeviceMetadata> seeDeviceNames(final Consumer<String> acceptsNames) {
         return m -> {
             acceptsNames.accept(m.device().deviceNameString());
             return 0;

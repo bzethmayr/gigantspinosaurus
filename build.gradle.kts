@@ -1,8 +1,9 @@
 plugins {
-    kotlin("jvm") version "1.9.23"          // make sure the Kotlin plugin itself supports Java 21
+    kotlin("jvm") version "2.0.0"          // make sure the Kotlin plugin itself supports Java 21
     id("java")
     id("jacoco")
     id("info.solidsoft.pitest") version "1.15.0"
+    id("com.gradleup.shadow") version "8.3.0"
 }
 
 java { toolchain { languageVersion = JavaLanguageVersion.of(21) } }
@@ -116,4 +117,13 @@ pitest {
     targetTests.set(listOf("net.bzethmayr.gigantspinosaurus.*Test"))
     outputFormats.set(listOf("HTML", "XML"))
     reportDir.set(file("build/reports/pitest"))
+}
+
+tasks.shadowJar {
+    // 1. Rename packages to avoid dependency conflicts (Shading)
+    // 2. Set the output file name
+    archiveClassifier.set("all")
+
+    // 3. Merge service files (crucial for libraries like Ktor or loggers)
+    mergeServiceFiles()
 }

@@ -18,7 +18,7 @@ class VulkanPhysicalDeviceSelectionTest {
     void allPhysicalDevices_givenInstanceAndStack_returnsBuffer() {
         try (final VulkanRoot hasInstance = new VulkanRoot(); final MemoryStack stack = stackPush()) {
             hasInstance.withInstance(i -> {
-                final PointerBuffer allDevices = allPhysicalDevices(i, stack);
+                final PointerBuffer allDevices = allPhysicalDevices(stack, i);
 
                 assertNotNull(allDevices);
             });
@@ -28,7 +28,7 @@ class VulkanPhysicalDeviceSelectionTest {
     @Test
     void selectPhysicalDevice_givenInstanceAndStack_whenAllScoresEqual_findsFirstDevice() {
         try (final VulkanRoot hasInstance = new VulkanRoot(); final MemoryStack stack = stackPush()) {
-            final VkPhysicalDevice result = hasInstance.fromInstance(i -> selectPhysicalDevice(i, stack,
+            final VkPhysicalDevice result = hasInstance.fromInstance(i -> selectPhysicalDevice(stack, i,
                     noComputeQueue(0), discreteBonus(0),
                     seeDeviceNames(System.out::println)));
 
@@ -41,7 +41,7 @@ class VulkanPhysicalDeviceSelectionTest {
         try (final VulkanRoot hasInstance = new VulkanRoot(); final MemoryStack stack = stackPush()) {
             hasInstance.withInstance(i -> {
                 final IllegalStateException thrown = assertThrows(IllegalStateException.class, () ->
-                        selectPhysicalDevice(i, stack, m -> -1));
+                        selectPhysicalDevice(stack, i, m -> -1));
 
                 assertThat(thrown.getLocalizedMessage().toLowerCase(),
                         stringContainsInOrder("no", "devices"));

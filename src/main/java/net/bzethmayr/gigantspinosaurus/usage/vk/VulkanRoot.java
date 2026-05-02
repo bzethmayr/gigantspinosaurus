@@ -27,6 +27,7 @@ public final class VulkanRoot implements GpuContext {
     static final String ENGINE_NAME = "vermillion";
     private final VkInstance instance;
     private final VkPhysicalDevice physicalDevice;
+    private final PhysicalDeviceMetadata physicalMetadata;
 //    final VkDevice logicalDevice;
 //    final VkQueue queue;
 //    final int queueFamily;
@@ -44,15 +45,17 @@ public final class VulkanRoot implements GpuContext {
             PointerBuffer instanceBuf = stack.mallocPointer(1);
             checkVk(vkCreateInstance(instanceInfo, null, instanceBuf), "instance creation");
             instance = new VkInstance(instanceBuf.get(0), instanceInfo);
-            physicalDevice = selectPhysicalDevice(instance, stack,
+            physicalDevice = selectPhysicalDevice(stack, instance,
                     noComputeQueue(-100),
                     discreteBonus(50)
             );
+            physicalMetadata = new PhysicalDeviceMetadata(stack, physicalDevice);
         }
     }
 
     @Override
     public void close() {
+        physicalMetadata.close();
         vkDestroyInstance(instance, null);
     }
 
