@@ -6,12 +6,12 @@ import net.zethmayr.fungu.core.declarations.NotDone;
 import java.nio.ByteBuffer;
 
 @NotDone
-public class VkBuffer implements GpuBuffer {
+public class VulkanBuffer implements GpuBuffer {
     final long buffer;
     final long memory;
     final long size;
 
-    public VkBuffer(long buffer, long memory, long size) {
+    public VulkanBuffer(long buffer, long memory, long size) {
         this.buffer = buffer;
         this.memory = memory;
         this.size = size;

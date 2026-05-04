@@ -1,0 +1,98 @@
+package net.bzethmayr.gigantspinosaurus.usage.vk;
+
+import org.lwjgl.system.MemoryStack;
+import org.lwjgl.vulkan.VkApplicationInfo;
+import org.lwjgl.vulkan.VkExtensionProperties;
+import org.lwjgl.vulkan.VkInstanceCreateInfo;
+import org.lwjgl.vulkan.VkLayerProperties;
+
+import java.nio.ByteBuffer;
+import java.nio.IntBuffer;
+import java.util.List;
+import java.util.function.Predicate;
+
+import static net.bzethmayr.gigantspinosaurus.usage.vk.VulkanCommon.OSType.MACOS;
+import static net.bzethmayr.gigantspinosaurus.usage.vk.VulkanCommon.*;
+import static net.zethmayr.fungu.core.ExceptionFactory.becauseStaticsOnly;
+import static org.lwjgl.vulkan.KHRPortabilityEnumeration.VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR;
+import static org.lwjgl.vulkan.VK10.*;
+
+class VulkanInstanceCreation {
+    private VulkanInstanceCreation() {
+        throw becauseStaticsOnly();
+    }
+
+    static VkApplicationInfo appInfo(final MemoryStack stack, final String app, final String engine) {
+        final ByteBuffer appName = stack.UTF8(app);
+        final ByteBuffer engineName = stack.UTF8(engine);
+        return VkApplicationInfo.calloc(stack)
+                .sType$Default()
+                .pApplicationName(appName)
+                .applicationVersion(1)
+                .pEngineName(engineName)
+                .engineVersion(1)
+                .apiVersion(VK_API_VERSION_1_0);
+    }
+
+    @SafeVarargs
+    static List<String> instanceLayerNames(final MemoryStack stack, final Predicate<String>... limitTo) {
+        final IntBuffer layerBuf = stack.callocInt(1);
+        vkEnumerateInstanceLayerProperties(layerBuf, null);
+        final int numLayers = layerBuf.get(0);
+        final VkLayerProperties.Buffer propsBuf = VkLayerProperties.calloc(numLayers, stack);
+        vkEnumerateInstanceLayerProperties(layerBuf, propsBuf);
+        final List<String> layers = filteredList(numLayers, limitTo);
+        final Predicate<String> filter = optionalAny(limitTo);
+        for (int i = 0; i < numLayers; i++) {
+            final VkLayerProperties props = propsBuf.get(i);
+            final String layerName = props.layerNameString();
+            if (filter.test(layerName)) {
+                layers.add(layerName);
+            }
+        }
+        return layers;
+    }
+
+    @SafeVarargs
+    static List<String> instanceExtensionNames(final MemoryStack stack, final Predicate<String>... limitTo) {
+        final IntBuffer extensionBuf = stack.callocInt(1);
+        vkEnumerateInstanceExtensionProperties((String) null, extensionBuf, null);
+        final int numExtensions = extensionBuf.get(0);
+        final VkExtensionProperties.Buffer propsBuf = VkExtensionProperties.calloc(numExtensions, stack);
+        vkEnumerateInstanceExtensionProperties((String) null, extensionBuf, propsBuf);
+        final List<String> extensions = filteredList(numExtensions, limitTo);
+        final Predicate<String> filter = optionalAny(limitTo);
+        for (int i = 0; i < numExtensions; i++) {
+            final VkExtensionProperties props = propsBuf.get(i);
+            final String extensionName = props.extensionNameString();
+            if (filter.test(extensionName)) {
+                extensions.add(extensionName);
+            }
+        }
+        return extensions;
+    }
+
+    static VkInstanceCreateInfo instanceCreateInfo(
+            final MemoryStack stack,
+            final VkApplicationInfo appInfo,
+            final List<String> layerNames,
+            final List<String> extensionNames,
+            final long... next
+    ) {
+        VkInstanceCreateInfo info = VkInstanceCreateInfo.calloc(stack)
+                .sType$Default()
+                .pApplicationInfo(appInfo)
+                .ppEnabledLayerNames(asciiNamesFrom(stack, layerNames))
+                .ppEnabledExtensionNames(utf8NamesFlippedFrom(stack, extensionNames));
+        for (long extension : next) {
+            info = info.pNext(extension);
+        }
+        if (extensionNames.contains(PORTABILITY_EXTENSION)
+                && getOS() == MACOS
+        ) {
+            info.flags(VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR);
+        }
+        return info;
+    }
+
+}

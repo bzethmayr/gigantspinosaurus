@@ -1,6 +1,6 @@
 We have to reduce the video to a form that survives compression while retaining very high uniqueness.
 
-```text
+```
 ALL INTEGER or similarly portable replicability
 Color space conversion (RGB → YCbCr)
 Chroma subsampling (4:2:0)
@@ -55,3 +55,19 @@ Needs to:
 * establish identity
 * for a sample large unto representation
 
+## for laptop testing
+we can expect to need to convert to YUV
+```
+float4 RGBtoYUV420p(float4 rgb)
+{
+    float r = rgb.r;
+    float g = rgb.g;
+    float b = rgb.b;
+
+    float y = 0.299 * r + 0.587 * g + 0.114 * b;
+    float u = -0.168736 * r - 0.331264 * g + 0.5 * b;
+    float v = 0.5 * r - 0.418688 * g - 0.081312 * b;
+
+    return float4(y, u, v, 1.0); // Y, U, V components
+}
+```
