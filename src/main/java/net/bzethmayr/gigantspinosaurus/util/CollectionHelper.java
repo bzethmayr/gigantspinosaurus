@@ -1,10 +1,12 @@
 package net.bzethmayr.gigantspinosaurus.util;
 
+import java.util.List;
 import java.util.Map;
 import java.util.LinkedHashMap;
 import java.util.SequencedMap;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.stream.Collector;
 
 public final class CollectionHelper {
@@ -26,5 +28,10 @@ public final class CollectionHelper {
                 m -> null,
                 Collector.Characteristics.IDENTITY_FINISH
         );
+    }
+
+    @SuppressWarnings("unchecked")
+    public static Predicate<String>[] refilter(final List<String> names) {
+        return names.stream().map(s -> (Predicate<String>) s::equals).toArray(Predicate[]::new);
     }
 }

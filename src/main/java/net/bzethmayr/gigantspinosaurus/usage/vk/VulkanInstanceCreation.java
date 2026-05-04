@@ -35,14 +35,14 @@ class VulkanInstanceCreation {
     }
 
     @SafeVarargs
-    static List<String> allLayerNames(final MemoryStack stack, final Predicate<String>... anyOf) {
+    static List<String> instanceLayerNames(final MemoryStack stack, final Predicate<String>... limitTo) {
         final IntBuffer layerBuf = stack.callocInt(1);
         vkEnumerateInstanceLayerProperties(layerBuf, null);
         final int numLayers = layerBuf.get(0);
         final VkLayerProperties.Buffer propsBuf = VkLayerProperties.calloc(numLayers, stack);
         vkEnumerateInstanceLayerProperties(layerBuf, propsBuf);
-        final List<String> layers = filteredList(numLayers, anyOf);
-        final Predicate<String> filter = optionalAny(anyOf);
+        final List<String> layers = filteredList(numLayers, limitTo);
+        final Predicate<String> filter = optionalAny(limitTo);
         for (int i = 0; i < numLayers; i++) {
             final VkLayerProperties props = propsBuf.get(i);
             final String layerName = props.layerNameString();
@@ -54,14 +54,14 @@ class VulkanInstanceCreation {
     }
 
     @SafeVarargs
-    static List<String> allExtensionNames(final MemoryStack stack, final Predicate<String>... anyOf) {
+    static List<String> instanceExtensionNames(final MemoryStack stack, final Predicate<String>... limitTo) {
         final IntBuffer extensionBuf = stack.callocInt(1);
         vkEnumerateInstanceExtensionProperties((String) null, extensionBuf, null);
         final int numExtensions = extensionBuf.get(0);
         final VkExtensionProperties.Buffer propsBuf = VkExtensionProperties.calloc(numExtensions, stack);
         vkEnumerateInstanceExtensionProperties((String) null, extensionBuf, propsBuf);
-        final List<String> extensions = filteredList(numExtensions, anyOf);
-        final Predicate<String> filter = optionalAny(anyOf);
+        final List<String> extensions = filteredList(numExtensions, limitTo);
+        final Predicate<String> filter = optionalAny(limitTo);
         for (int i = 0; i < numExtensions; i++) {
             final VkExtensionProperties props = propsBuf.get(i);
             final String extensionName = props.extensionNameString();
@@ -82,8 +82,8 @@ class VulkanInstanceCreation {
         VkInstanceCreateInfo info = VkInstanceCreateInfo.calloc(stack)
                 .sType$Default()
                 .pApplicationInfo(appInfo)
-                .ppEnabledLayerNames(layerNamesFrom(stack, layerNames))
-                .ppEnabledExtensionNames(extensionNamesFrom(stack, extensionNames));
+                .ppEnabledLayerNames(asciiNamesFrom(stack, layerNames))
+                .ppEnabledExtensionNames(utf8NamesFlippedFrom(stack, extensionNames));
         for (long extension : next) {
             info = info.pNext(extension);
         }

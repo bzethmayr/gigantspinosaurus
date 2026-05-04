@@ -52,19 +52,26 @@ final class VulkanCommon {
                 : new ArrayList<>();
     }
 
-    static PointerBuffer layerNamesFrom(final MemoryStack stack, final List<String> names) {
+    static PointerBuffer asciiNamesFrom(final MemoryStack stack, final List<String> names) {
         PointerBuffer namesBuf = null;
         if (!names.isEmpty()) {
-            final int numNames = names.size();
-            namesBuf = stack.mallocPointer(numNames);
-            for (int i = 0; i < numNames; i++) {
-                namesBuf.put(i, stack.ASCII(names.get(i)));
-            }
+            namesBuf = stack.mallocPointer(names.size());
+            names.stream().map(stack::ASCII).forEach(namesBuf::put);
         }
         return namesBuf;
     }
 
-    static PointerBuffer extensionNamesFrom(final MemoryStack stack, final List<String> names) {
+    static PointerBuffer asciiNamesFlippedFrom(final MemoryStack stack, final List<String> names) {
+        PointerBuffer namesBuf = null;
+        if (!names.isEmpty()) {
+            namesBuf = stack.mallocPointer(names.size());
+            names.stream().map(stack::ASCII).forEach(namesBuf::put);
+            namesBuf.flip();
+        }
+        return namesBuf;
+    }
+
+    static PointerBuffer utf8NamesFlippedFrom(final MemoryStack stack, final List<String> names) {
         PointerBuffer namesBuf = null;
         if (!names.isEmpty()) {
             final int numNames = names.size();
