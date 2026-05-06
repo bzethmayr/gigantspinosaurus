@@ -10,11 +10,12 @@ import java.util.function.ToIntFunction;
 import java.util.stream.Stream;
 
 import static net.bzethmayr.gigantspinosaurus.usage.vk.VulkanCommon.checkVk;
+import static net.bzethmayr.gigantspinosaurus.usage.vk.VulkanCommon.indexOfMaxScorePassing;
 import static net.zethmayr.fungu.core.ExceptionFactory.becauseStaticsOnly;
 import static org.lwjgl.vulkan.VK10.*;
 
-final class VulkanPhysicalDeviceSelection {
-    private VulkanPhysicalDeviceSelection() {
+final class PhysicalDeviceSelection {
+    private PhysicalDeviceSelection() {
         throw becauseStaticsOnly();
     }
 
@@ -49,18 +50,8 @@ final class VulkanPhysicalDeviceSelection {
                 scores[i] = Stream.of(scorers).mapToInt(f -> f.applyAsInt(metadata)).sum();
             }
         }
-        int maxScore = Integer.MIN_VALUE;
-        int maxAt = 0;
-        for (int i = 0; i < numDevices; i++) {
-            if (scores[i] > maxScore) {
-                maxAt = i;
-                maxScore = scores[i];
-            }
-        }
-        if (maxScore < 0) {
-            throw new IllegalStateException("No supported devices");
-        }
-        return candidates[maxAt];
+
+        return candidates[indexOfMaxScorePassing("No compatible devices", scores)];
     }
 
     static ToIntFunction<PhysicalDeviceMetadata> noComputeQueue(final int penalty) {

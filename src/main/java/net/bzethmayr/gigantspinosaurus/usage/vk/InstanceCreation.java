@@ -17,8 +17,8 @@ import static net.zethmayr.fungu.core.ExceptionFactory.becauseStaticsOnly;
 import static org.lwjgl.vulkan.KHRPortabilityEnumeration.VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR;
 import static org.lwjgl.vulkan.VK10.*;
 
-class VulkanInstanceCreation {
-    private VulkanInstanceCreation() {
+class InstanceCreation {
+    private InstanceCreation() {
         throw becauseStaticsOnly();
     }
 

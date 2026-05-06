@@ -13,9 +13,9 @@ import java.util.Optional;
 
 import static net.bzethmayr.gigantspinosaurus.usage.vk.VulkanCommon.OSType.MACOS;
 import static net.bzethmayr.gigantspinosaurus.usage.vk.VulkanCommon.*;
-import static net.bzethmayr.gigantspinosaurus.usage.vk.VulkanInstanceCreation.*;
-import static net.bzethmayr.gigantspinosaurus.usage.vk.VulkanLogicalDeviceCreation.configureLogicalDevice;
-import static net.bzethmayr.gigantspinosaurus.usage.vk.VulkanPhysicalDeviceSelection.*;
+import static net.bzethmayr.gigantspinosaurus.usage.vk.InstanceCreation.*;
+import static net.bzethmayr.gigantspinosaurus.usage.vk.LogicalDeviceCreation.configureLogicalDevice;
+import static net.bzethmayr.gigantspinosaurus.usage.vk.PhysicalDeviceSelection.*;
 import static net.zethmayr.fungu.CloseableFactory.closeable;
 import static org.lwjgl.system.MemoryStack.stackPush;
 import static org.lwjgl.vulkan.VK10.*;
@@ -70,7 +70,9 @@ public final class VulkanRoot implements GpuContext {
 
     @Override
     public GpuBuffer createBuffer(GpuBuffer.BufferDesc desc) {
-        return null;
+        try (final MemoryStack stack = stackPush()) {
+            return new VulkanBuffer(stack, physicalMetadata, logicalDevice, desc);
+        }
     }
 
     @Override

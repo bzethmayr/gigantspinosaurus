@@ -4,12 +4,15 @@ import net.zethmayr.fungu.Fork;
 import org.junit.jupiter.api.Test;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import static net.bzethmayr.gigantspinosaurus.util.CollectionHelper.adds;
+import static net.bzethmayr.gigantspinosaurus.util.CollectionHelper.refilter;
 import static net.zethmayr.fungu.ForkFactory.overPrior;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
@@ -35,5 +38,20 @@ class CollectionHelperTest {
                 .collect(CollectionHelper.toSequencedMap(Fork::top, Fork::bottom));
 
         assertThat(result.values(), contains(null, 0, 1));
+    }
+
+    @Test
+    void refilter_givenStrings_returnsPredicates() {
+        final List<String> original = List.of("a", "b", "d");
+        final int size = original.size();
+
+        final Predicate<String>[] result = refilter(original);
+
+        assertThat(result, arrayWithSize(size));
+        for (int i = 0; i < size; i++) {
+            assertTrue(result[i].test(original.get(i)));
+            assertFalse(result[i].test(original.get((i + 1) % size)));
+            assertFalse(result[i].test(original.get((i + 2) % size)));
+        }
     }
 }

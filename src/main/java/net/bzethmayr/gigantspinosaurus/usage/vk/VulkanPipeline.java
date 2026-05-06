@@ -4,7 +4,7 @@ import net.bzethmayr.gigantspinosaurus.gpu.GpuProgram;
 import net.zethmayr.fungu.core.declarations.NotDone;
 
 @NotDone
-public final class VulkanPipeline implements GpuProgram {
+final class VulkanPipeline implements GpuProgram {
     final long shaderModule;
     final long descriptorSetLayout;
     final long pipelineLayout;
