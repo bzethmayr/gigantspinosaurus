@@ -11,6 +11,8 @@ import org.lwjgl.vulkan.*;
 import java.util.List;
 import java.util.Optional;
 
+import static net.bzethmayr.gigantspinosaurus.usage.vk.QueueSelection.*;
+import static net.bzethmayr.gigantspinosaurus.usage.vk.QueueSelection.selectQueue;
 import static net.bzethmayr.gigantspinosaurus.usage.vk.VulkanCommon.OSType.MACOS;
 import static net.bzethmayr.gigantspinosaurus.usage.vk.VulkanCommon.*;
 import static net.bzethmayr.gigantspinosaurus.usage.vk.InstanceCreation.*;
@@ -28,7 +30,7 @@ public final class VulkanRoot implements GpuContext {
     private final VkPhysicalDevice physicalDevice;
     private final PhysicalDeviceMetadata physicalMetadata;
     private final VkDevice logicalDevice;
-//    final VkQueue queue;
+    final VulkanQueue queue;
 //    final int queueFamily;
 //    final long commandPool;
 
@@ -47,15 +49,17 @@ public final class VulkanRoot implements GpuContext {
             instance = new VkInstance(instanceBuf.get(0), instanceInfo);
             chain = new ClosingChain(
                     closeable(instance, i -> vkDestroyInstance(i, null)));
+
             physicalDevice = selectPhysicalDevice(stack, instance,
-                    noComputeQueue(-100),
-                    discreteBonus(50)
-            );
+                    noComputeQueue(-100), discreteBonus(50));
             physicalMetadata = new PhysicalDeviceMetadata(stack, physicalDevice);
             chain = chain.link(physicalMetadata);
             logicalDevice = configureLogicalDevice(stack, physicalDevice, physicalMetadata, extensionNames);
             chain = chain.link(
                     closeable(logicalDevice, d -> vkDestroyDevice(d, null)));
+
+            queue = selectQueue(stack, physicalMetadata, logicalDevice, 0,
+                    computeQueueOr(-100), dedicatedCompute(50), countBonus());
         } catch (final Exception e) {
             Optional.ofNullable(chain).ifPresent(ClosingChain::close);
             throw new RuntimeException(e);
