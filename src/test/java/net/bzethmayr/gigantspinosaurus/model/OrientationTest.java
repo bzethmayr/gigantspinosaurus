@@ -1,9 +1,10 @@
 package net.bzethmayr.gigantspinosaurus.model;
 
+import net.bzethmayr.gigantspinosaurus.usage.MarDecoding;
 import org.junit.jupiter.api.RepeatedTest;
 
 import static java.nio.ByteBuffer.wrap;
-import static net.bzethmayr.gigantspinosaurus.model.MarDecoder.decoders;
+import static net.bzethmayr.gigantspinosaurus.usage.MarDecoding.decoders;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class OrientationTest implements TestsModel, TestsWithBytes {
@@ -20,7 +21,7 @@ class OrientationTest implements TestsModel, TestsWithBytes {
 
         final byte[] bytes = underTest.canonicalBytes();
         dump(bytes);
-        final Orientation parsed = MarDecoder.decodeOrientation(wrap(bytes), decoders());
+        final Orientation parsed = MarDecoding.decodeOrientation(wrap(bytes), decoders());
 
         assertEquals(underTest, parsed);
     }
