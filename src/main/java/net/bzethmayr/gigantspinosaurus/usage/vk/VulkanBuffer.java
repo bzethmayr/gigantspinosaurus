@@ -14,13 +14,18 @@ import java.util.Optional;
 
 import static net.bzethmayr.gigantspinosaurus.usage.vk.VulkanCommon.checkVk;
 import static net.zethmayr.fungu.CloseableFactory.closeable;
+import static net.zethmayr.fungu.core.ExceptionFactory.becauseIllegal;
 import static org.lwjgl.system.MemoryUtil.NULL;
+import static org.lwjgl.system.MemoryUtil.memGetAddress;
 import static org.lwjgl.vulkan.VK10.*;
 
 @NotDone
 class VulkanBuffer implements GpuBuffer {
+    private final VkDevice logicalDevice;
     private final long requestedSize;
     private final long buffer;
+    private final int flags;
+    private final long atom;
     private final long memory;
     private long mappedMemory;
     private final PointerBuffer impl;
@@ -33,6 +38,7 @@ class VulkanBuffer implements GpuBuffer {
             final VkDevice logicalDevice,
             final BufferDesc desc
             ) {
+        this.logicalDevice = logicalDevice;
         requestedSize = desc.sizeBytes();
         mappedMemory = NULL;
         ClosingChain chain = null;
@@ -50,11 +56,14 @@ class VulkanBuffer implements GpuBuffer {
 
             final VkMemoryRequirements memReq = VkMemoryRequirements.calloc(stack);
             vkGetBufferMemoryRequirements(logicalDevice, buffer, memReq);
+            final int memoryTypeIndex = findMemoryType(
+                    metadata.memory(), memReq.memoryTypeBits(), encodeMemoryHint(desc.memoryHint()));
+            flags = metadata.memory().memoryTypes(memoryTypeIndex).propertyFlags();
+            atom = metadata.device().limits().nonCoherentAtomSize();
             final VkMemoryAllocateInfo memSpec = VkMemoryAllocateInfo.calloc(stack)
                     .sType$Default()
                     .allocationSize(memReq.size())
-                    .memoryTypeIndex(findMemoryType(
-                            metadata.memory(), memReq.memoryTypeBits(), encodeMemoryHint(desc.memoryHint())));
+                    .memoryTypeIndex(memoryTypeIndex);
             checkVk(vkAllocateMemory(logicalDevice, memSpec, null, xfr),
                     "allocating buffer memory");
             memory = xfr.get(0);
@@ -119,13 +128,68 @@ class VulkanBuffer implements GpuBuffer {
         return requestedSize;
     }
 
+    private void checkSize(final long offset, final long size) {
+        if (offset + size > allocatedSize) {
+            throw becauseIllegal("%s at %s exceeds %s", size, offset, allocatedSize);
+        }
+    }
+
+    private VkMappedMemoryRange computeRange(final MemoryStack stack, final long offset, final long size) {
+        // Round offset down
+        long alignedOffset = offset - (offset % atom);
+
+        // Round size up
+        long end = offset + size;
+        long alignedEnd = (end + atom - 1) / atom * atom;
+        long alignedSize = alignedEnd - alignedOffset;
+        return VkMappedMemoryRange.calloc(stack)
+                .sType(VK_STRUCTURE_TYPE_MAPPED_MEMORY_RANGE)
+                .memory(memory)
+                .offset(alignedOffset)
+                .size(alignedSize);
+    }
+
     @Override
     public void upload(long offset, ByteBuffer src) {
-
+        final long size = src.remaining();
+        checkSize(offset, size);
+        if (mappedMemory == NULL) {
+            try (MemoryStack mapStack = MemoryStack.stackPush()) {
+                PointerBuffer ptr = mapStack.mallocPointer(1);
+                checkVk(vkMapMemory(logicalDevice, memory, 0, allocatedSize, 0, ptr),
+                        "mapping memory for upload");
+                mappedMemory = ptr.get(0);
+            }
+        }
+        final ByteBuffer dest = MemoryUtil.memByteBuffer(mappedMemory, (int) allocatedSize);
+        dest.position((int) offset);
+        dest.put(src);
+        if ((flags & VK_MEMORY_PROPERTY_HOST_COHERENT_BIT) == 0) {
+            try (MemoryStack stack = MemoryStack.stackPush()) {
+                vkFlushMappedMemoryRanges(logicalDevice, computeRange(stack, offset, size));
+            }
+        }
     }
 
     @Override
     public void download(long offset, ByteBuffer dst) {
-
+        final long size = dst.remaining();
+        checkSize(offset, size);
+        if (mappedMemory == NULL) {
+            try (MemoryStack mapStack = MemoryStack.stackPush()) {
+                PointerBuffer ptr = mapStack.mallocPointer(1);
+                checkVk(vkMapMemory(logicalDevice, memory, 0, allocatedSize, 0, ptr),
+                        "mapping memory for download");
+                mappedMemory = ptr.get(0);
+            }
+        }
+        if ((flags & VK_MEMORY_PROPERTY_HOST_COHERENT_BIT) == 0) {
+            try (MemoryStack stack = MemoryStack.stackPush()) {
+                vkInvalidateMappedMemoryRanges(logicalDevice, computeRange(stack, offset, size));
+            }
+        }
+        final ByteBuffer src = MemoryUtil.memByteBuffer(mappedMemory, (int) allocatedSize);
+        src.position((int) offset).limit((int) (offset + size));
+        dst.put(src);
     }
 }
