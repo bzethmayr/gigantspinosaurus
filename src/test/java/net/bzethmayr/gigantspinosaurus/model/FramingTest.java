@@ -4,13 +4,14 @@ import net.bzethmayr.gigantspinosaurus.model.framing.Face;
 import net.bzethmayr.gigantspinosaurus.model.framing.Handedness;
 import net.bzethmayr.gigantspinosaurus.model.framing.North;
 import net.bzethmayr.gigantspinosaurus.model.framing.Vertical;
+import net.bzethmayr.gigantspinosaurus.usage.MarDecoding;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.nio.ByteBuffer;
 
 import static net.bzethmayr.gigantspinosaurus.capabilities.Versioned.VERSION_FIELD;
-import static net.bzethmayr.gigantspinosaurus.model.MarDecoder.decoders;
+import static net.bzethmayr.gigantspinosaurus.usage.MarDecoding.decoders;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -36,7 +37,7 @@ class FramingTest implements TestsModel, TestsWithBytes {
 
         final byte[] bytes = underTest.canonicalBytes();
         dump(bytes);
-        final Framing parsed = MarDecoder.decodeFraming(ByteBuffer.wrap(bytes), decoders());
+        final Framing parsed = MarDecoding.decodeFraming(ByteBuffer.wrap(bytes), decoders());
 
         assertEquals(underTest, parsed);
     }

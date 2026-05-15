@@ -1,5 +1,6 @@
 package net.bzethmayr.gigantspinosaurus.usage.vk;
 
+import net.bzethmayr.gigantspinosaurus.gpu.GpuBuffer;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.system.MemoryStack;
 
@@ -9,6 +10,7 @@ import java.util.Locale;
 import java.util.function.Predicate;
 
 import static net.zethmayr.fungu.PredicateFactory.anyOf;
+import static net.zethmayr.fungu.core.ExceptionFactory.becauseImpossible;
 import static net.zethmayr.fungu.core.ExceptionFactory.becauseStaticsOnly;
 import static org.lwjgl.vulkan.VK10.VK_SUCCESS;
 
@@ -94,5 +96,21 @@ final class VulkanCommon {
         if (invokedResult != VK_SUCCESS) {
             throw new VulkanUsageException(invokedResult, context);
         }
+    }
+
+    static int indexOfMaxScorePassing(final String nonePassing, final int... scores) {
+        int maxScore = Integer.MIN_VALUE;
+        final int size = scores.length;
+        int maxAt = 0;
+        for (int i = 0; i < size; i++) {
+            if (scores[i] > maxScore) {
+                maxAt = i;
+                maxScore = scores[i];
+            }
+        }
+        if (maxScore < 0) {
+            throw becauseImpossible(nonePassing);
+        }
+        return maxAt;
     }
 }

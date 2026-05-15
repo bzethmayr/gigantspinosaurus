@@ -6,7 +6,6 @@ import org.lwjgl.vulkan.*;
 
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Predicate;
 
@@ -15,7 +14,7 @@ import static net.bzethmayr.gigantspinosaurus.util.CollectionHelper.refilter;
 import static org.lwjgl.vulkan.VK10.vkCreateDevice;
 import static org.lwjgl.vulkan.VK10.vkEnumerateDeviceExtensionProperties;
 
-final class VulkanLogicalDeviceCreation {
+final class LogicalDeviceCreation {
 
     static VkDevice configureLogicalDevice(
             final MemoryStack stack,

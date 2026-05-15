@@ -1,12 +1,12 @@
 package net.bzethmayr.gigantspinosaurus.model;
 
+import net.bzethmayr.gigantspinosaurus.usage.MarDecoding;
 import org.junit.jupiter.api.RepeatedTest;
 import org.junit.jupiter.api.Test;
 
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 
-import static net.zethmayr.fungu.test.TestConstants.TEST_RANDOM;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.lessThan;
@@ -65,7 +65,7 @@ class MinimalAttestationRecordTest implements TestsModel, TestsWithBytes {
 
         final byte[] serialForm = underTest.canonicalBytes();
         dump(serialForm);
-        final MinimalAttestationRecord parsed = MarDecoder.decode(ByteBuffer.wrap(serialForm));
+        final MinimalAttestationRecord parsed = MarDecoding.decode(ByteBuffer.wrap(serialForm));
 
         assertEquals(underTest, parsed);
     }
@@ -75,7 +75,7 @@ class MinimalAttestationRecordTest implements TestsModel, TestsWithBytes {
         final ByteBuffer randomBytes = fakeMediaBytes(580);
 
         assertThrows(IllegalArgumentException.class, () ->
-                MarDecoder.decode(randomBytes));
+                MarDecoding.decode(randomBytes));
         assertThat(randomBytes.position(), lessThan(290));
     }
 }

@@ -1,6 +1,5 @@
 package net.bzethmayr.gigantspinosaurus.usage;
 
-import net.bzethmayr.gigantspinosaurus.model.MarDecoder;
 import net.bzethmayr.gigantspinosaurus.model.TestsModel;
 import net.bzethmayr.gigantspinosaurus.model.TestsWithBytes;
 import net.bzethmayr.gigantspinosaurus.model.correlation.HashesMarFrame;
@@ -104,7 +103,7 @@ class MarCreationTest implements TestsModel, TestsWithBytes {
         final ExposesMar result = underTest.intentFrame();
         final byte[] serialized = result.canonicalBytes();
         assertThat(serialized.length, lessThan(600));
-        final ExposesMar parsed = MarDecoder.decode(wrap(serialized));
+        final ExposesMar parsed = MarDecoding.decode(wrap(serialized));
 
         assertEquals(result, parsed);
     }

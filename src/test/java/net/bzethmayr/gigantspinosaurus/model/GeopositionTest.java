@@ -1,11 +1,11 @@
 package net.bzethmayr.gigantspinosaurus.model;
 
+import net.bzethmayr.gigantspinosaurus.usage.MarDecoding;
 import org.junit.jupiter.api.RepeatedTest;
-import org.junit.jupiter.api.Test;
 
 import java.nio.ByteBuffer;
 
-import static net.bzethmayr.gigantspinosaurus.model.MarDecoder.decoders;
+import static net.bzethmayr.gigantspinosaurus.usage.MarDecoding.decoders;
 import static org.junit.jupiter.api.Assertions.*;
 
 class GeopositionTest implements TestsModel {
@@ -15,7 +15,7 @@ class GeopositionTest implements TestsModel {
         Geoposition underTest = randomGeoposition();
 
         final byte[] bytes = underTest.canonicalBytes();
-        final Geoposition parsed = MarDecoder.decodePosition(ByteBuffer.wrap(bytes), decoders());
+        final Geoposition parsed = MarDecoding.decodePosition(ByteBuffer.wrap(bytes), decoders());
 
         assertEquals(underTest, parsed);
     }

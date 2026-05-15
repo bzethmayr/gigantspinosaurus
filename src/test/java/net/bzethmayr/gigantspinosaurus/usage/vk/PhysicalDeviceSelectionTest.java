@@ -5,14 +5,14 @@ import org.lwjgl.PointerBuffer;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.VkPhysicalDevice;
 
-import static net.bzethmayr.gigantspinosaurus.usage.vk.VulkanPhysicalDeviceSelection.*;
+import static net.bzethmayr.gigantspinosaurus.usage.vk.PhysicalDeviceSelection.*;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.stringContainsInOrder;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.lwjgl.system.MemoryStack.stackPush;
 
-class VulkanPhysicalDeviceSelectionTest {
+class PhysicalDeviceSelectionTest {
 
     @Test
     void allPhysicalDevices_givenInstanceAndStack_returnsBuffer() {

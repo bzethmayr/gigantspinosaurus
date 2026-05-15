@@ -1,7 +1,8 @@
-package net.bzethmayr.gigantspinosaurus.model;
+package net.bzethmayr.gigantspinosaurus.usage;
 
 import net.bzethmayr.gigantspinosaurus.capabilities.HasCanonicalAttributes.CanonicalDecoder;
 import net.bzethmayr.gigantspinosaurus.capabilities.HasCanonicalAttributes.CanonizesDecoders;
+import net.bzethmayr.gigantspinosaurus.model.*;
 import net.bzethmayr.gigantspinosaurus.model.framing.CreatesFraming;
 import net.bzethmayr.gigantspinosaurus.model.mar.CreatesMar;
 import net.bzethmayr.gigantspinosaurus.model.media.CreatesMedia;
@@ -15,7 +16,7 @@ import java.util.Map;
 import static net.bzethmayr.gigantspinosaurus.model.framing.ExposesFraming.FRAME_FIELD;
 import static net.bzethmayr.gigantspinosaurus.model.mar.ExposesMar.*;
 
-public final class MarDecoder {
+public final class MarDecoding {
 
     private static final CanonicalDecoder<Orientation> ORIENTATION_DECODER = CreatesOrientation.decodesOrientations(Orientation::new);
 

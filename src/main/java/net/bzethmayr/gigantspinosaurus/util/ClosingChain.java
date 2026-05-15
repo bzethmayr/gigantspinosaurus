@@ -9,6 +9,10 @@ public record ClosingChain(AutoCloseable res, ClosingChain parent) implements Au
         return new ClosingChain(res, this);
     }
 
+    public ClosingChain swap(AutoCloseable res) {
+        return new ClosingChain(this, new ClosingChain(res));
+    }
+
     @Override
     public void close() {
         Exception caught = null;

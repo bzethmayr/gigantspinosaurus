@@ -66,8 +66,28 @@ It is uncentralized by design.
 
 ## agentic involvement
 Limited, with mixed results. Evaluations are specific to the development system.
+
+### opencode
+Competent, but still leans toward workflow capture.
+* Does not introspect ollama for models by default
+* BigPickle - Seems to have written this buffer copying pretty well?
+* Same tool-calling issues for most local models
+* orieg/gemma3-tools:12b-ft - wrong tool format.
+
+### Models
+At about 50k tokens as context:
+* gemma:e4b is much too small for this, drifts rapidly on summarization task
+* *gemma3:12b performs well on summarization task* but is not recognized as tool-capable
+* qwen3.5:9b is a little small for this, did not drift wholesale but summary not fully accurate
+* context overflow for:
+  * qwen2.5-coder:14b and "-instruct
+
+### IDEA plugins
+I cannot currently recommend using anything except IDEA's paid plugin,
+because JetBrains has not exposed APIs in a way necessary for fully competent alternate plugins.
+Difficulty even making tool calls across various models.
 * Poor results from DevoxxGenie - overfeatured and regressing
-  * But, here we are. Everything else misbehaves worse.
+  * Everything else still misbehaves worse, but the regressed state appears to be the stable state these days.
 * No appetite for having the AI plugin self-terminate after 30 days
 * OllamAssist so far has successfully read this file, this is progress!
   * but this has also regressed.
