@@ -80,11 +80,6 @@ public final class VulkanRoot implements GpuContext {
     }
 
     @Override
-    public GpuTexture createTexture(GpuTexture.TextureDesc desc) {
-        return null;
-    }
-
-    @Override
     public GpuProgram createProgram(GpuProgram.ProgramDesc desc) {
         return null;
     }
