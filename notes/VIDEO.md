@@ -10,9 +10,10 @@ Quantization (lossy)
 Entropy coding
 ```
 
+We probably want to downsample up front and feed both DWT and Sobel from it.
+We downsample in another shader: using bilinear filter with integer math only to a 160×90 raster as a uniform buffer.
 We perform a DWT first, at resolution less than or equal to the compressor resolution,
 taking a size-dependent sample of the low-frequency quadrant.
-We downsample post-DWT in another shader: using bilinear filter with integer math only to a 160×90 texture.
 We then perform a 12x12 "feature" grid, detecting the strongest gradient's rough point of origin and orientation in each such cell:
 * we perform Sobel gradient detection over the cell
   ```

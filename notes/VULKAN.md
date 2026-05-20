@@ -1,30 +1,53 @@
-# Vulkan
+# Vulkan Implementation Architecture
 
-## notes
+The `net.bzethmayr.gigantspinosaurus.usage.vk` package provides a Vulkan implementation
+of the `gpu` package's abstractions.
 
-example initialization for initialization structs...
-```java
-var appInfo = VkApplicationInfo.calloc(stack)
-                    .sType$Default()
-                    .pApplicationName(appShortName)
-                    .applicationVersion(1)
-                    .pEngineName(appShortName)
-                    .engineVersion(0)
-                    .apiVersion(VK_API_VERSION_1_3);
-var inst = VkInstanceCreateInfo.calloc(stack)
-                    .sType$Default()
-                    .pNext(extension)   // e.g. debugger, ...
-                    .pApplicationInfo(appInfo)   // VkApplicationInfo
-                    .ppEnabledLayerNames(requiredLayers) // PointerBuffer
-                    .ppEnabledExtensionNames(requiredExtensions); // PointerBuffer
-```
+## Bootstrap pipeline
 
-stack scope isn't awful.
+1. **InstanceCreation** — enumerates instance layers/extensions and builds
+   `VkInstanceCreateInfo`. Supports platform portability on macOS.
+2. **PhysicalDeviceSelection** — enumerates all physical devices and scores them
+   via pluggable `ToIntFunction<PhysicalDeviceMetadata>` scorers. Negative scores
+   act as vetoes (e.g. `noComputeQueue(-100)`).
+3. **PhysicalDeviceMetadata** — `AutoCloseable` cache of device properties,
+   features, memory properties, extensions, and queue family properties.
+4. **LogicalDeviceCreation** — creates a `VkDevice`, filtering requested instance
+   extensions down to those actually supported by the device.
+5. **QueueSelection** — scores queue families with scorers like `computeQueueOr()`,
+   `dedicatedCompute()`, and `countBonus()`.
 
-We want to...
-- arrange comprehensive teardown for all this stuff
-- enable any extensions that the user expects enabled
-  - so we need to determine whether the configurator overrides that for us
+## Core implementations
 
-- discover all our physical devices and pick the nice one
-- discover all our compute queues and get hold of one
+- **VulkanRoot** implements `GpuContext` — owns the instance, device, and queue
+  lifecycle via a `ClosingChain`. Factory for `VulkanBuffer` and `VulkanPipeline`.
+- **VulkanBuffer** implements `GpuBuffer` — wraps `VkBuffer` + `VkDeviceMemory`
+  with lazy mapping, coherent/non-coherent upload/download, and atom-aware range
+  flushing.
+- **VulkanPipeline** implements `GpuProgram` — skeletal, holds shader module,
+  descriptor set layout, pipeline layout, and pipeline handles.
+
+## Supporting classes
+
+- **VulkanCommon** — OS detection, name encoding helpers (ASCII/UTF-8),
+  `checkVk()` error checking, and `indexOfMaxScorePassing()` selection algorithm.
+- **VulkanQueue** — simple record coupling a queue family index with its `VkQueue`.
+- **CmdPool** — placeholder for command pool management.
+
+## Design patterns
+
+- **Scoring-based selection** — both physical devices and queue families are
+  selected by summing scores from small `ToIntFunction` lambdas. This keeps the
+  selection logic composable and avoids rigid if-else chains.
+- **ClosingChain** — deterministic, ordered cleanup of Vulkan resources. Each
+  link wraps a `close()` action; chains can be extended (`.link()`) or swapped
+  (`.swap()`) to handle partial failure during construction.
+- **Stateless utilities** — all helper classes (`InstanceCreation`,
+  `PhysicalDeviceSelection`, `QueueSelection`, `LogicalDeviceCreation`,
+  `VulkanCommon`) have private constructors and expose only static methods.
+
+## Current status
+
+Several components are marked `@NotDone`: `VulkanRoot` (program dispatch
+stubbed), `VulkanPipeline` (empty close), `CmdPool` (empty class). See also
+the `VulkanBuffer.encodeMemoryHint()` which uses raw integer literals.

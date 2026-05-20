@@ -60,6 +60,7 @@ public final class VulkanRoot implements GpuContext {
 
             queue = selectQueue(stack, physicalMetadata, logicalDevice, 0,
                     computeQueueOr(-100), dedicatedCompute(50), countBonus());
+
         } catch (final Exception e) {
             Optional.ofNullable(chain).ifPresent(ClosingChain::close);
             throw new RuntimeException(e);
