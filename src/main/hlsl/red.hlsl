@@ -1,3 +1,7 @@
+ // Invalid example - do not repeat these mistakes:
+ // 1. Textures are not part of our model - we need to be working with buffers.
+ // 2. A valid DWT for our purposes needs to include more than just the red channel.
+ // 3. Produces compilation warnings (see build.gradle.kts for reproduction steps)
  RWTexture2D<uint> inputTex  : register(u0);
  RWTexture2D<uint> outputTex : register(u1);
 

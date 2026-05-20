@@ -1,4 +1,4 @@
-// test_buffer.hlsl — minimal integer compute shader for buffer pipeline validation
+// testu.hlsl — minimal integer compute shader for buffer pipeline validation
 
 // Vulkan 1.0 guaranteed storage buffers
 [[vk::binding(0, 0)]] RWStructuredBuffer<uint> inputBuffer  : register(u0);

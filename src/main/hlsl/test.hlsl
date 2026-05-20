@@ -1,3 +1,6 @@
+// Invalid example - do not repeat these mistakes
+// 1. Textures are not part of our model - we need to be working with buffers.
+// See sibling testu.hlsl for valid example.
 // test.hlsl — minimal integer compute shader for pipeline validation
 
 // Input and output textures (uint per pixel)
