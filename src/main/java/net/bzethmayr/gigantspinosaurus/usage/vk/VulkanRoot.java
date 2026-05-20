@@ -30,9 +30,9 @@ public final class VulkanRoot implements GpuContext {
     private final VkPhysicalDevice physicalDevice;
     private final PhysicalDeviceMetadata physicalMetadata;
     private final VkDevice logicalDevice;
-    final VulkanQueue queue;
-//    final int queueFamily;
-//    final long commandPool;
+    private final VulkanQueue queue;
+    private final int queueFamily;
+    private final CmdPool cmdPool;
 
     @ReuseResults
     public VulkanRoot() {
@@ -60,7 +60,9 @@ public final class VulkanRoot implements GpuContext {
 
             queue = selectQueue(stack, physicalMetadata, logicalDevice, 0,
                     computeQueueOr(-100), dedicatedCompute(50), countBonus());
-
+            queueFamily = queue.familyIndex();
+            cmdPool = new CmdPool(stack, logicalDevice, queueFamily, true);
+            chain = chain.link(cmdPool);
         } catch (final Exception e) {
             Optional.ofNullable(chain).ifPresent(ClosingChain::close);
             throw new RuntimeException(e);
@@ -100,5 +102,9 @@ public final class VulkanRoot implements GpuContext {
 
     PhysicalDeviceMetadata physicalMetadata() {
         return physicalMetadata;
+    }
+
+    int queueFamily() {
+        return queueFamily;
     }
 }
