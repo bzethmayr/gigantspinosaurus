@@ -11,8 +11,8 @@ public interface GpuProgram extends AutoCloseable {
             List<ResourceBinding> bindings
     ) {}
 
-    enum ShaderStage { COMPUTE, VERTEX, FRAGMENT }
-    enum ResourceKind { STORAGE_BUFFER, UNIFORM_BUFFER, SAMPLED_TEXTURE, STORAGE_TEXTURE }
+    enum ShaderStage { COMPUTE }
+    enum ResourceKind { STORAGE_BUFFER, UNIFORM_BUFFER }
 
     record ResourceBinding(
             int slot,
