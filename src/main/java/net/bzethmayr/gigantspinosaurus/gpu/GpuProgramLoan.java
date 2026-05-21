@@ -4,7 +4,7 @@ import java.nio.ByteBuffer;
 
 public interface GpuProgramLoan {
     GpuProgramLoan bindBuffer(int slot, GpuBuffer buffer);
-    GpuProgramLoan setPushConstants(ByteBuffer data);
+    GpuProgramLoan setScalars(ByteBuffer data);
 
     void dispatch(int xGroups, int yGroups, int zGroups);
 }

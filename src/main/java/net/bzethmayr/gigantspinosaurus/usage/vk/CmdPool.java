@@ -33,6 +33,10 @@ class CmdPool implements AutoCloseable, Resettable {
         pool = lp.get(0);
     }
 
+    public long getPool() {
+        return pool;
+    }
+
     @Override
     public void close() {
         vkDestroyCommandPool(logicalDevice, pool, null);

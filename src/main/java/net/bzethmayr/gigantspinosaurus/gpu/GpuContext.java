@@ -6,4 +6,5 @@ public interface GpuContext extends AutoCloseable {
     GpuProgram createProgram(GpuProgram.ProgramDesc desc);
 
     void withProgram(GpuProgram program, UsesGpuProgram user);
+    void asJob(SpecifiesGpuJob specifier);
 }

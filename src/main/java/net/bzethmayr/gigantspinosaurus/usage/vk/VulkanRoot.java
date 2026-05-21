@@ -92,6 +92,12 @@ public final class VulkanRoot implements GpuContext {
 
     }
 
+    @Override
+    public void asJob(final SpecifiesGpuJob specifier) {
+        final GpuJobSpec spec = GpuJobSpec.emptySpec();
+        specifier.accept(spec);
+    }
+
     VkInstance instance() {
         return instance;
     }
