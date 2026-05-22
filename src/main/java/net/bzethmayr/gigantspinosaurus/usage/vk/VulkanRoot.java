@@ -8,9 +8,11 @@ import org.lwjgl.PointerBuffer;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.*;
 
+import java.nio.LongBuffer;
 import java.util.List;
 import java.util.Optional;
 
+import static net.bzethmayr.gigantspinosaurus.gpu.GpuJobSpec.emptySpec;
 import static net.bzethmayr.gigantspinosaurus.usage.vk.QueueSelection.*;
 import static net.bzethmayr.gigantspinosaurus.usage.vk.QueueSelection.selectQueue;
 import static net.bzethmayr.gigantspinosaurus.usage.vk.VulkanCommon.OSType.MACOS;
@@ -30,9 +32,9 @@ public final class VulkanRoot implements GpuContext {
     private final VkPhysicalDevice physicalDevice;
     private final PhysicalDeviceMetadata physicalMetadata;
     private final VkDevice logicalDevice;
-    final VulkanQueue queue;
-//    final int queueFamily;
-//    final long commandPool;
+    private final VulkanQueue queue;
+    private final int queueFamily;
+    private final CmdPool cmdPool;
 
     @ReuseResults
     public VulkanRoot() {
@@ -60,6 +62,10 @@ public final class VulkanRoot implements GpuContext {
 
             queue = selectQueue(stack, physicalMetadata, logicalDevice, 0,
                     computeQueueOr(-100), dedicatedCompute(50), countBonus());
+            queueFamily = queue.familyIndex();
+            cmdPool = new CmdPool(stack, logicalDevice, queueFamily, true);
+            chain = chain.link(cmdPool);
+
         } catch (final Exception e) {
             Optional.ofNullable(chain).ifPresent(ClosingChain::close);
             throw new RuntimeException(e);
@@ -80,18 +86,91 @@ public final class VulkanRoot implements GpuContext {
     }
 
     @Override
-    public GpuTexture createTexture(GpuTexture.TextureDesc desc) {
-        return null;
-    }
-
-    @Override
     public GpuProgram createProgram(GpuProgram.ProgramDesc desc) {
-        return null;
+        try (final MemoryStack stack = stackPush()) {
+            var moduleCreateInfo = VkShaderModuleCreateInfo.calloc(stack)
+                    .sType$Default()
+                    .pCode(desc.spirvOrBinary());
+            LongBuffer pModule = stack.mallocLong(1);
+            checkVk(vkCreateShaderModule(logicalDevice, moduleCreateInfo, null, pModule),
+                    "creating shader module");
+            long shaderModule = pModule.get(0);
+
+            var bindings = desc.bindings();
+            var layoutBindings = VkDescriptorSetLayoutBinding.calloc(bindings.size(), stack);
+            for (int i = 0; i < bindings.size(); i++) {
+                var binding = bindings.get(i);
+                int descriptorType = switch (binding.kind()) {
+                    case STORAGE_BUFFER -> VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+                    case UNIFORM_BUFFER -> VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+                };
+                layoutBindings.get(i)
+                        .binding(binding.slot())
+                        .descriptorType(descriptorType)
+                        .descriptorCount(1)
+                        .stageFlags(VK_SHADER_STAGE_COMPUTE_BIT);
+            }
+            var setLayoutCreateInfo = VkDescriptorSetLayoutCreateInfo.calloc(stack)
+                    .sType$Default()
+                    .pBindings(layoutBindings);
+            LongBuffer pSetLayout = stack.mallocLong(1);
+            checkVk(vkCreateDescriptorSetLayout(logicalDevice, setLayoutCreateInfo, null, pSetLayout),
+                    "creating descriptor set layout");
+            long descriptorSetLayout = pSetLayout.get(0);
+
+            int pushConstantSize = desc.pushConstantSize();
+            VkPushConstantRange.Buffer pushConstantRange = null;
+            if (pushConstantSize > 0) {
+                pushConstantRange = VkPushConstantRange.calloc(1, stack)
+                        .stageFlags(VK_SHADER_STAGE_COMPUTE_BIT)
+                        .offset(0)
+                        .size(pushConstantSize);
+            }
+            var pipelineLayoutCreateInfo = VkPipelineLayoutCreateInfo.calloc(stack)
+                    .sType$Default()
+                    .pSetLayouts(stack.longs(descriptorSetLayout));
+            if (pushConstantRange != null) {
+                pipelineLayoutCreateInfo.pPushConstantRanges(pushConstantRange);
+            }
+            LongBuffer pPipelineLayout = stack.mallocLong(1);
+            checkVk(vkCreatePipelineLayout(logicalDevice, pipelineLayoutCreateInfo, null, pPipelineLayout),
+                    "creating pipeline layout");
+            long pipelineLayout = pPipelineLayout.get(0);
+
+            var computePipelineCreateInfo = VkComputePipelineCreateInfo.calloc(1, stack)
+                    .sType$Default()
+                    .layout(pipelineLayout);
+            computePipelineCreateInfo.stage()
+                    .sType$Default()
+                    .stage(VK_SHADER_STAGE_COMPUTE_BIT)
+                    .module(shaderModule)
+                    .pName(stack.ASCII(desc.entryPoint()));
+            LongBuffer pPipeline = stack.mallocLong(1);
+            checkVk(vkCreateComputePipelines(logicalDevice, VK_NULL_HANDLE,
+                    computePipelineCreateInfo, null, pPipeline),
+                    "creating compute pipeline");
+            long pipeline = pPipeline.get(0);
+
+            return new VulkanPipeline(logicalDevice, shaderModule, descriptorSetLayout,
+                    pipelineLayout, pipeline, bindings);
+        }
     }
 
     @Override
     public void withProgram(GpuProgram program, UsesGpuProgram user) {
+        asJob(s -> s.stage(program, user));
+    }
 
+    @Override
+    public void asJob(final SpecifiesGpuJob specifier) {
+        final GpuJobSpec spec = emptySpec();
+        specifier.accept(spec);
+        try (final CmdBuffer primary = new CmdBuffer(logicalDevice, cmdPool, true, true)) {
+            primary.beginRecording();
+            primary.acceptSpec(spec);
+            primary.endRecording();
+            primary.submitAndWait(queue);
+        }
     }
 
     VkInstance instance() {
@@ -104,5 +183,9 @@ public final class VulkanRoot implements GpuContext {
 
     PhysicalDeviceMetadata physicalMetadata() {
         return physicalMetadata;
+    }
+
+    int queueFamily() {
+        return queueFamily;
     }
 }

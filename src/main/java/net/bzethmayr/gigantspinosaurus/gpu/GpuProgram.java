@@ -8,11 +8,16 @@ public interface GpuProgram extends AutoCloseable {
             String entryPoint,
             ShaderStage stage,
             ByteBuffer spirvOrBinary,
-            List<ResourceBinding> bindings
-    ) {}
+            List<ResourceBinding> bindings,
+            int pushConstantSize
+    ) {
+        public ProgramDesc(String entryPoint, ShaderStage stage, ByteBuffer spirvOrBinary, List<ResourceBinding> bindings) {
+            this(entryPoint, stage, spirvOrBinary, bindings, 0);
+        }
+    }
 
-    enum ShaderStage { COMPUTE, VERTEX, FRAGMENT }
-    enum ResourceKind { STORAGE_BUFFER, UNIFORM_BUFFER, SAMPLED_TEXTURE, STORAGE_TEXTURE }
+    enum ShaderStage { COMPUTE }
+    enum ResourceKind { STORAGE_BUFFER, UNIFORM_BUFFER }
 
     record ResourceBinding(
             int slot,

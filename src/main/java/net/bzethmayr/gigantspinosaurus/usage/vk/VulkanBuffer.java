@@ -104,7 +104,6 @@ class VulkanBuffer implements GpuBuffer {
         return switch (usage) {
             case STORAGE -> VK_BUFFER_USAGE_STORAGE_BUFFER_BIT;
             case UNIFORM -> VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
-            case VERTEX -> VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
             case INDEX -> VK_BUFFER_USAGE_INDEX_BUFFER_BIT;
             case TRANSFER_SRC -> VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
             case TRANSFER_DST -> VK_BUFFER_USAGE_TRANSFER_DST_BIT;
@@ -116,6 +115,10 @@ class VulkanBuffer implements GpuBuffer {
             case CPU_VISIBLE -> 2;
             case GPU_ONLY -> 1;
         };
+    }
+
+    long getVkBuffer() {
+        return buffer;
     }
 
     @Override

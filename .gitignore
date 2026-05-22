@@ -41,3 +41,6 @@ bin/
 ### tooling ###
 .ollamassist
 .proxyai
+
+### explosion debris ###
+**/hs_err_pid*.log

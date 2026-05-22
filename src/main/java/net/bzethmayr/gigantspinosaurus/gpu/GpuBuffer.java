@@ -17,7 +17,6 @@ public interface GpuBuffer extends AutoCloseable {
     enum BufferUsage {
         STORAGE,
         UNIFORM,
-        VERTEX,
         INDEX,
         TRANSFER_SRC,
         TRANSFER_DST
