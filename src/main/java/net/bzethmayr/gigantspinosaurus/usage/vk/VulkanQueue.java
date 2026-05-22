@@ -18,7 +18,7 @@ record VulkanQueue(int familyIndex, VkQueue vkQueue) {
     public void submit(VkCommandBufferSubmitInfo.Buffer commandBuffer, Fence fence) {
         try (final MemoryStack stack = stackPush()) {
             final PointerBuffer pCmds = stack.mallocPointer(1);
-            pCmds.put(0, commandBuffer.address());
+            pCmds.put(0, commandBuffer.commandBuffer());
             var submitInfo = VkSubmitInfo.calloc(1, stack)
                     .sType$Default()
                     .pCommandBuffers(pCmds);

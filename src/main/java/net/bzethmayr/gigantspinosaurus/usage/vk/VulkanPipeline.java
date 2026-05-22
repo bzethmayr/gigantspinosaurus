@@ -46,6 +46,10 @@ final class VulkanPipeline implements GpuProgram {
         try {
             this.descriptorPool = createDescriptorPool(bindings);
             chain = new ClosingChain(closeable(descriptorPool, pool -> vkDestroyDescriptorPool(logicalDevice, pool, null)));
+            chain = chain.link(closeable(shaderModule, m -> vkDestroyShaderModule(logicalDevice, m, null)));
+            chain = chain.link(closeable(descriptorSetLayout, l -> vkDestroyDescriptorSetLayout(logicalDevice, l, null)));
+            chain = chain.link(closeable(pipelineLayout, l -> vkDestroyPipelineLayout(logicalDevice, l, null)));
+            chain = chain.link(closeable(pipeline, p -> vkDestroyPipeline(logicalDevice, p, null)));
         } catch (final Exception e) {
             Optional.ofNullable(chain).ifPresent(ClosingChain::close);
             throw new RuntimeException(e);
