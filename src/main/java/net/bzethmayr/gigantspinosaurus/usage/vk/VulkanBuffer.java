@@ -117,6 +117,10 @@ class VulkanBuffer implements GpuBuffer {
         };
     }
 
+    long getVkBuffer() {
+        return buffer;
+    }
+
     @Override
     public void close() {
         close.close();

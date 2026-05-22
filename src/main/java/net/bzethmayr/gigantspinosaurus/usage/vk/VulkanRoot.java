@@ -11,6 +11,7 @@ import org.lwjgl.vulkan.*;
 import java.util.List;
 import java.util.Optional;
 
+import static net.bzethmayr.gigantspinosaurus.gpu.GpuJobSpec.emptySpec;
 import static net.bzethmayr.gigantspinosaurus.usage.vk.QueueSelection.*;
 import static net.bzethmayr.gigantspinosaurus.usage.vk.QueueSelection.selectQueue;
 import static net.bzethmayr.gigantspinosaurus.usage.vk.VulkanCommon.OSType.MACOS;
@@ -63,6 +64,7 @@ public final class VulkanRoot implements GpuContext {
             queueFamily = queue.familyIndex();
             cmdPool = new CmdPool(stack, logicalDevice, queueFamily, true);
             chain = chain.link(cmdPool);
+
         } catch (final Exception e) {
             Optional.ofNullable(chain).ifPresent(ClosingChain::close);
             throw new RuntimeException(e);
@@ -89,13 +91,18 @@ public final class VulkanRoot implements GpuContext {
 
     @Override
     public void withProgram(GpuProgram program, UsesGpuProgram user) {
-
+        asJob(s -> s.stage(program, user));
     }
 
     @Override
     public void asJob(final SpecifiesGpuJob specifier) {
-        final GpuJobSpec spec = GpuJobSpec.emptySpec();
+        final GpuJobSpec spec = emptySpec();
         specifier.accept(spec);
+        try (final CmdBuffer primary = new CmdBuffer(logicalDevice, cmdPool, true, true)) {
+            primary.beginRecording();
+            primary.acceptSpec(spec);
+            primary.endRecording();
+        }
     }
 
     VkInstance instance() {
