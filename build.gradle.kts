@@ -34,6 +34,10 @@ dependencies {
     testImplementation(platform("org.junit:junit-bom:5.10.0"))
     testImplementation("org.mockito:mockito-core:5.12.0")
     testImplementation("org.mockito:mockito-junit-jupiter:5.12.0")
+
+    testImplementation("com.twelvemonkeys.imageio:imageio-core:3.13.1")
+    testImplementation("com.twelvemonkeys.imageio:imageio-webp:3.13.1")
+    testImplementation("com.github.jai-imageio:jai-imageio-jpeg2000:1.4.0")
 }
 
 sourceSets {
