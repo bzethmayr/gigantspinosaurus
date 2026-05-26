@@ -1,4 +1,4 @@
-package net.bzethmayr.gigantspinosaurus.usage;
+package net.bzethmayr.gigantspinosaurus.usage.images;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;

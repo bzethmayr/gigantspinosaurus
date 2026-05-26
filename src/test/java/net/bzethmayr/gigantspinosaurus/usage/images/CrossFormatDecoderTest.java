@@ -1,4 +1,4 @@
-package net.bzethmayr.gigantspinosaurus.usage;
+package net.bzethmayr.gigantspinosaurus.usage.images;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -11,7 +11,7 @@ import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class CrossFormatTest {
+class CrossFormatDecoderTest {
 
     private static final Path CROSS_FORMAT_DIR = Path.of("src/test/resources/cross-format");
 
