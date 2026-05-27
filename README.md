@@ -4,8 +4,14 @@ To retain the possibility of a point of fact.
 ## cryptographically signed attestations at point of fact as evidence watermark / provenance marker
 
 The notion here is to take point-of-capture image, video, or audio evidence and
-watermark it with a durable provenance and content signature,
+produce a durable provenance and content signature,
 preventing trivial repudiation or manipulation.
+For video, the frame is downsampled, wavelet-transformed,
+and reduced to gradient features via a Sobel grid,
+producing a compact signature that survives compression.
+The resulting attestation is embedded as a QR-code-derived mark
+using bipolar luma modulation with temporal persistence;
+extraction uses rolling-frame subtraction and ZXing decode.
 A user presents intent to record. We generate an "Intent" MAR consisting of the conditions of recording at index -1.
 We don't ask what the user says they are recording. We provide a unique reference to the event,
 interpretation beyond the conditions of capture are intentionally out of our domain.
@@ -20,33 +26,41 @@ Each frame's SipHash key consists of the nonce followed by the prior hash.
 We continue to update the attestation, at frequency per application, with updated conditions and the media index.
 We can publish Frame 0, intermediate attestations, or Frame N.
 
-Signatures are embedded into the evidence as well as propagated to one or more external registrars,
-which may use any durable ledger to record the fact of acquisition.
+Signatures are embedded into the evidence.
 
 ### Intent frame
-Signed conditions of capture, with random nonce and prior hash, media hash zero, index -1,
+Signed conditions of capture, with random nonce and prior hash,
+a zero-value media field (no media content), index -1,
 and a current hash over those data.
 
 ### Media frame
 Signed conditions of capture including nonce and prior hashes based on the previous frame,
-a media content hash,
+a BLAKE3 hash of the reduced media,
 a valid current hash, and non-negative index.
+The media is reduced according to the declared `ReductionStep`s
+before hashing; the frame receiver operates on pre-reduced data.
 
 ## MAR
 The core datatype here is the MAR (Minimal Attestation Record),
 which carries the provenance and verification information and specifies the byte-level representation.
 The MAR is transmitted independently of the artifact.
 
-### Open
-#### embeddings 
-#### device bindings
-#### key access/persistence
+### Planned ecosystem
+These are necessary for production deployment but not yet implemented in the library.
 
-
-### On install:
+#### install flow
 - generate hardware-backed keypair (Ed25519)
 - store private key in secure hardware
 - store public key in app storage
+
+#### embeddings
+
+#### device bindings
+
+#### key access/persistence
+
+#### registrar propagation
+Propagation of MAR frames to durable external ledgers for establishing a referential spine of attestations.
 
 ### On MAR creation:
 - encode MAR_core fields (conditions)
@@ -56,19 +70,39 @@ The MAR is transmitted independently of the artifact.
 - signature = Sign(privateKey, encodedMAR)
 - embed publicKey + signature in MAR
 
+### Application interface
+
+The MAR creation and verification pipeline depends on a `BindsEnvironment`
+record that supplies `GeneratesNonce`, `HashesMarFrame` (SipHash),
+`HashesMedia` (BLAKE3), `ExposesUtcDoubleSeconds`, position/orientation/framing sources,
+and a `Signatory`. This is the application's interface boundary.
+The library supplies `Blake3MediaHasher`, `SipMarHasher`, and `SignsForJava15`
+as reasonable defaults for desktop use; position, orientation, and framing
+sources are application-specific.
+
 ### properties
 The MAR in the artifact allows verification.
-The set of stored MAR form a referential spine.
+In a production deployment, the accumulated MAR frames form a referential spine.
 It stores attestations, not artifacts.
 It prevents lying, not disagreement.
 It has no authority node, no ontology, and no interpretive layer.
 It is uncentralized by design.
 
+### In Core Library
+
+- **MAR creation, verification, decoding** — `MarCreation`, `MarVerification`, `MarDecoding`
+- **Canonical serialization** — `{key:value,}` map format via `HasCanonicalAttributes`
+- **ReductionStep pipeline** — 4-slot configurable media reduction before BLAKE3 hashing
+- **VideoMarring** — dual-thread near-real-time frame attestation worker
+- **GPU/Vulkan compute pipeline** — `gpu/` + `usage/vk/` for compute-shader-accelerated reduction and marking
+- **Framing/orientation/position model** — quaternion orientation, cardinal-direction enums, elevation
+- **Desktop environment defaults** — `Blake3MediaHasher`, `SipMarHasher`, `SignsForJava15`, `DesktopOrientation`, `DesktopPosition`
+
 ## agentic involvement
 Limited, with mixed results. Evaluations are specific to the development system.
 
 ### opencode
-Competent, but still leans toward workflow capture.
+Competent. If you aren't paying for anything already, you should probably use this.
 * Does not introspect ollama for models by default
 * BigPickle - Seems to have written this buffer copying pretty well?
 * Same tool-calling issues for most local models
