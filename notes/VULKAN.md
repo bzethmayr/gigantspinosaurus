@@ -19,35 +19,76 @@ of the `gpu` package's abstractions.
 
 ## Core implementations
 
-- **VulkanRoot** implements `GpuContext` — owns the instance, device, and queue
-  lifecycle via a `ClosingChain`. Factory for `VulkanBuffer` and `VulkanPipeline`.
+- **VulkanRoot** implements `GpuContext` — owns the instance, device, queue,
+  and command pool lifecycle via a `ClosingChain`. `withProgram()` and `asJob()`
+  create a `CmdBuffer`, record the `GpuJobSpec`, submit via `Fence`, and wait
+  for completion. Factory for `VulkanBuffer` and `VulkanPipeline`.
 - **VulkanBuffer** implements `GpuBuffer` — wraps `VkBuffer` + `VkDeviceMemory`
   with lazy mapping, coherent/non-coherent upload/download, and atom-aware range
   flushing.
-- **VulkanPipeline** implements `GpuProgram` — skeletal, holds shader module,
-  descriptor set layout, pipeline layout, and pipeline handles.
+- **VulkanPipeline** implements `GpuProgram` — manages shader module, descriptor
+  set layout, pipeline layout, pipeline handle, and a descriptor pool. Resource
+  cleanup is handled via `ClosingChain` (`createDescriptorPool()` allocates a
+  `VkDescriptorPool` sized for up to 16 descriptor sets).
 
-## Supporting classes
+## Generic Supporting
 
-- **VulkanCommon** — OS detection, name encoding helpers (ASCII/UTF-8),
-  `checkVk()` error checking, and `indexOfMaxScorePassing()` selection algorithm.
-- **VulkanQueue** — simple record coupling a queue family index with its `VkQueue`.
-- **CmdPool** — placeholder for command pool management.
+*(utilities referenced by the Vulkan package that are broadly reusable outside
+Vulkan)*
+
+- **ClosingChain** — deterministic, ordered cleanup; each link wraps a `close()`
+  action; chains can be extended (`.link()`) or swapped (`.swap()`) to handle
+  partial failure during construction. Defined in
+  `net.bzethmayr.gigantspinosaurus.util`.
+
+- **Resettable** — single-method capability interface (`void reset()`) for
+  resources that can be returned to their initial state. Implemented by
+  `CmdPool` and `Fence`. Defined in
+  `net.bzethmayr.gigantspinosaurus.capabilities`.
+
+- **VulkanCommon** — OS detection (`getOS()`), direct buffer allocation
+  (`javaBuffer()`), predicate composition (`optionalAny()`, `filteredList()`),
+  name encoding helpers (`asciiNamesFrom()`, `utf8NamesFlippedFrom()`),
+  `checkVk()` error checking, and `indexOfMaxScorePassing()` selection
+  algorithm (generic `int[]` argmax with negative-score veto).
+
+## Specific Supporting
+
+*(Vulkan-specific utility classes shared across multiple core implementations)*
+
+- **VulkanQueue** — record coupling a queue family index with its `VkQueue`.
+  Exposes `submit(VkCommandBufferSubmitInfo, Fence)` and `waitIdle()`.
+
+- **CmdPool** — manages a `VkCommandPool` lifecycle; implements `AutoCloseable`
+  and `Resettable`. Supports `RESET_COMMAND_BUFFER_BIT` (configurable at
+  construction). Created during `VulkanRoot` construction for the selected queue
+  family.
+
+- **CmdBuffer** — allocates and records command buffers from a `CmdPool`.
+  `beginRecording()`/`endRecording()` frame CPU-side recording;
+  `acceptSpec(GpuJobSpec)` iterates job stages, binding pipelines, allocating
+  descriptor sets, handling barriers, and dispatching compute work.
+  `submitAndWait(VulkanQueue)` submits via a `Fence` and waits. Inner
+  `VulkanProgramLoan` record implements `GpuProgramLoan` for per-dispatch
+  descriptor/buffer binding and push constants.
+
+- **Fence** — wraps a `VkFence`; implements `AutoCloseable` and `Resettable`.
+  Constructed signalled or unsignalled. `fenceWait()` blocks until the GPU
+  signals. Used by `CmdBuffer.submitAndWait()`.
 
 ## Design patterns
 
 - **Scoring-based selection** — both physical devices and queue families are
   selected by summing scores from small `ToIntFunction` lambdas. This keeps the
   selection logic composable and avoids rigid if-else chains.
-- **ClosingChain** — deterministic, ordered cleanup of Vulkan resources. Each
-  link wraps a `close()` action; chains can be extended (`.link()`) or swapped
-  (`.swap()`) to handle partial failure during construction.
 - **Stateless utilities** — all helper classes (`InstanceCreation`,
   `PhysicalDeviceSelection`, `QueueSelection`, `LogicalDeviceCreation`,
   `VulkanCommon`) have private constructors and expose only static methods.
+- **Resettable capability** — `CmdPool` and `Fence` both implement
+  `net.bzethmayr.gigantspinosaurus.capabilities.Resettable`, allowing command
+  pools and fences to be reused across multiple submissions.
 
 ## Current status
 
-Several components are marked `@NotDone`: `VulkanRoot` (program dispatch
-stubbed), `VulkanPipeline` (empty close), `CmdPool` (empty class). See also
-the `VulkanBuffer.encodeMemoryHint()` which uses raw integer literals.
+Two classes retain `@NotDone`: `VulkanPipeline` and `VulkanBuffer`. The
+`CmdBuffer.submitAndWait()` method is also `@NotDone`.

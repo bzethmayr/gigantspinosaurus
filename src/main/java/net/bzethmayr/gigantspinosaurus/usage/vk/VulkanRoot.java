@@ -25,7 +25,6 @@ import static net.zethmayr.fungu.CloseableFactory.closeable;
 import static org.lwjgl.system.MemoryStack.stackPush;
 import static org.lwjgl.vulkan.VK10.*;
 
-@NotDone
 public final class VulkanRoot implements GpuContext {
     static final String ENGINE_NAME = "vermillion";
     private final ClosingChain closeChain;
