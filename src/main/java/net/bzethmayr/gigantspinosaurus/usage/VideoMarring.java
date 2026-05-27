@@ -17,13 +17,11 @@ import static net.zethmayr.fungu.core.ExceptionFactory.becauseImpossible;
  * offloading as much work as possible away from the media thread.
  */
 public class VideoMarring {
-    private final Object copyLock = new Object();
+    private final Locking locking = new Locking();
     private final BindsMediaPipeline pipeline;
     private final MarCreation.ReducedFrameReceiver marsReduced;
     private volatile WorkerState workerState = GRAB_FRAME;
-    private volatile Thread mediaThread;
     private final AtomicReference<ByteBuffer> mediaRef = new AtomicReference<>();
-    private volatile Thread calcThread;
     private final ByteBuffer mark;
     private volatile int mediaIndex;
     private volatile int copiedIndex;
@@ -35,7 +33,14 @@ public class VideoMarring {
         GRAB_FRAME,
         CALCULATE_MARK,
         APPLY_MARK,
-        WAIT_EMPTY
+        WAIT_EMPTY,
+        BROKEN
+    }
+
+    private static final class Locking {
+        private final Object copyLock = new Object();
+        private volatile Thread mediaThread;
+        private volatile Thread calcThread;
     }
 
     public VideoMarring(
@@ -75,13 +80,9 @@ public class VideoMarring {
         return background;
     }
 
-    protected static IllegalStateException becauseBadWorkerState(final WorkerState state) {
-        return becauseImpossible("Unknown worker state %s", state);
-    }
-
     private ByteBuffer initCopyBuffer(final ByteBuffer sourceBuffer, final AtomicReference<ByteBuffer> copyRef) {
         if (copyRef.get() == null)
-            synchronized (copyLock) {
+            synchronized (locking.copyLock) {
                 if (copyRef.get() == null) {
                     final ByteBuffer copyBuffer = ByteBuffer.allocate(sourceBuffer.limit());
                     copyRef.compareAndSet(null, copyBuffer);
@@ -96,24 +97,24 @@ public class VideoMarring {
 
     private void snaffleMediaThread() {
         final Thread current = currentThread();
-        if (mediaThread == null) {
-            mediaThread = current;
-        } else if (current != mediaThread) {
+        if (locking.mediaThread == null) {
+            locking.mediaThread = current;
+        } else if (current != locking.mediaThread) {
             throw becauseIllegal("Non-media thread %s acting as media thread", current);
         }
-        if (mediaThread == calcThread) {
+        if (locking.mediaThread == locking.calcThread) {
             throw becauseSameThreads();
         }
     }
 
     private void snaffleCalcThread() {
         final Thread current = currentThread();
-        if (calcThread == null) {
-            calcThread = current;
-        } else if (current != calcThread) {
+        if (locking.calcThread == null) {
+            locking.calcThread = current;
+        } else if (current != locking.calcThread) {
             throw becauseIllegal("Non-calculation thread %s acting as calc thread", current);
         }
-        if (calcThread == mediaThread) {
+        if (locking.calcThread == locking.mediaThread) {
             throw becauseSameThreads();
         }
     }
@@ -128,42 +129,60 @@ public class VideoMarring {
             snaffleMediaThread();
             mediaIndex = index;
             final WorkerState current = workerState;
-            switch (current) {
-                case GRAB_FRAME -> {
-                    final ByteBuffer in = initCopyBuffer(rawBuffer, mediaRef);
-                    copiedIndex = mediaIndex;
-                    displayUntil = copiedIndex + cadenceFrames;
-                    firstDisplay = Integer.MIN_VALUE;
-                    firstEmpty = Integer.MIN_VALUE;
-                    in.clear();
-                    in.put(rawBuffer);
-                    in.flip();
-                    workerState = WorkerState.CALCULATE_MARK;
-                    LockSupport.unpark(calcThread);
+            try {
+                switch (current) {
+                    case GRAB_FRAME -> {
+                        final ByteBuffer in = initCopyBuffer(rawBuffer, mediaRef);
+                        copiedIndex = mediaIndex;
+                        displayUntil = copiedIndex + cadenceFrames;
+                        firstDisplay = Integer.MIN_VALUE;
+                        firstEmpty = Integer.MIN_VALUE;
+                        in.clear();
+                        in.put(rawBuffer);
+                        in.flip();
+                        workerState = WorkerState.CALCULATE_MARK;
+                        LockSupport.unpark(locking.calcThread);
+                    }
+                    case CALCULATE_MARK -> LockSupport.unpark(locking.calcThread); // buffers belong to calculation
+                    case APPLY_MARK -> {
+                        pipeline.marker().mark(mark, rawBuffer);
+                        mark.rewind();
+                        if (firstDisplay < 0) {
+                            firstDisplay = mediaIndex;
+                        }
+                        if (mediaIndex > displayUntil && mediaIndex > firstDisplay + emptyFrames) {
+                            displayUntil = mediaIndex + emptyFrames;
+                            workerState = WAIT_EMPTY;
+                        }
+                    }
+                    case WAIT_EMPTY -> {
+                        if (firstEmpty < 0) {
+                            firstEmpty = mediaIndex;
+                        }
+                        if (mediaIndex > displayUntil && mediaIndex > firstEmpty + emptyFrames) {
+                            workerState = GRAB_FRAME;
+                        }
+                    }
+                    case BROKEN -> itsBroken();
                 }
-                case CALCULATE_MARK -> LockSupport.unpark(calcThread); // buffers belong to calculation
-                case APPLY_MARK -> {
-                    pipeline.marker().mark(mark, rawBuffer);
-                    mark.rewind();
-                    if (firstDisplay < 0) {
-                        firstDisplay = mediaIndex;
-                    }
-                    if (mediaIndex > displayUntil && mediaIndex > firstDisplay + emptyFrames) {
-                        displayUntil = mediaIndex + emptyFrames;
-                        workerState = WAIT_EMPTY;
-                    }
-                }
-                case WAIT_EMPTY -> {
-                    if (firstEmpty < 0) {
-                        firstEmpty = mediaIndex;
-                    }
-                    if (mediaIndex > displayUntil && mediaIndex > firstEmpty + emptyFrames) {
-                        workerState = GRAB_FRAME;
-                    }
-                }
-                default -> throw becauseBadWorkerState(current);
+            } catch (final Throwable t) {
+                weBrokeThis(locking.calcThread);
             }
         }
+    }
+
+    private void weBrokeThis(final Thread partner) {
+        workerState = BROKEN;
+        partner.interrupt();
+    }
+
+    private void waitToProceed() {
+        LockSupport.park(); // buffers belong to the media thread
+    }
+
+    private void itsBroken() {
+        Thread.interrupted();
+        throw becauseImpossible("The pipeline is broken");
     }
 
     private class CalculationThreadWorker implements BackgroundCalculator {
@@ -172,18 +191,23 @@ public class VideoMarring {
             snaffleCalcThread();
             final WorkerState current = workerState;
             switch (current) {
-                case GRAB_FRAME, APPLY_MARK, WAIT_EMPTY -> LockSupport.park(); // buffers belong to the media thread
+                case GRAB_FRAME, APPLY_MARK, WAIT_EMPTY -> waitToProceed(); // buffers belong to the media thread
+                case BROKEN -> itsBroken();
                 case CALCULATE_MARK -> {
-                    final ByteBuffer mediaFrame = mediaRef.get();
-                    final ByteBuffer reduced = pipeline.reducer().apply(mediaFrame);
-                    final ExposesMar mar = marsReduced.reducedFrame(reduced, copiedIndex);
-                    mark.clear();
-                    pipeline.combiner().accept(mar.canonicalBytes(), mark);
-                    mark.flip();
-                    workerState = APPLY_MARK;
-                    LockSupport.unpark(mediaThread);
+                    try {
+                        final ByteBuffer mediaFrame = mediaRef.get();
+                        final ByteBuffer reduced = pipeline.reducer().apply(mediaFrame);
+                        final ExposesMar mar = marsReduced.reducedFrame(reduced, copiedIndex);
+                        mark.clear();
+                        pipeline.combiner().accept(mar.canonicalBytes(), mark);
+                        mark.flip();
+                        workerState = APPLY_MARK;
+                    } catch (final Throwable t) {
+                        weBrokeThis(locking.mediaThread);
+                    } finally {
+                        LockSupport.unpark(locking.mediaThread);
+                    }
                 }
-                default -> throw becauseBadWorkerState(current);
             }
         }
     }

@@ -22,11 +22,11 @@ public record Orientation(
     }
 
     public Orientation withQ4(final double[] q4) {
-        return new Orientation(q4[0], q4[1], q4[2], q4[3], framing, ORIENTATION_VERSION);
+        return new Orientation(q4[0], q4[1], q4[2], q4[3], framing, version);
     }
 
     @Override
     public Orientation withFraming(final ExposesFraming obtained) {
-        return new Orientation(QW, QX, QY, QZ, obtained, ORIENTATION_VERSION);
+        return new Orientation(QW, QX, QY, QZ, obtained, version);
     }
 }
