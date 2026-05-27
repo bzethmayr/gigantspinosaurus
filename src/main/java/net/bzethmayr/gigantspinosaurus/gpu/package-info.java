@@ -3,12 +3,14 @@
  * Note that textures are intentionally not supported. We work via buffers instead.
  * Note also that e.g. image and swapchain extensions are therefore unnecessary.
  *
- * <p>The package is built around four core abstractions:
+ * <p>The package is built around six core abstractions:
  *
  * <dl>
  *   <dt>{@link net.bzethmayr.gigantspinosaurus.gpu.GpuContext}</dt>
  *   <dd>Factory and lifecycle owner. Creates {@link net.bzethmayr.gigantspinosaurus.gpu.GpuBuffer} and {@link net.bzethmayr.gigantspinosaurus.gpu.GpuProgram}
- *       instances, and mediates program execution via {@link net.bzethmayr.gigantspinosaurus.gpu.GpuContext#withProgram}.</dd>
+ *       instances, and mediates program execution via
+ *       {@link net.bzethmayr.gigantspinosaurus.gpu.GpuContext#withProgram} and
+ *       {@link net.bzethmayr.gigantspinosaurus.gpu.GpuContext#asJob}.</dd>
  *
  *   <dt>{@link net.bzethmayr.gigantspinosaurus.gpu.GpuBuffer}</dt>
  *   <dd>Opaque, typed data buffer. Supports upload/download from the CPU and can be
@@ -31,11 +33,26 @@
  *       dispatches. This follows an RAII-style loan pattern: the loan is valid only
  *       within the enclosing
  *       {@link net.bzethmayr.gigantspinosaurus.gpu.GpuContext#withProgram} call.</dd>
+ *
+ *   <dt>{@link net.bzethmayr.gigantspinosaurus.gpu.GpuJobSpec}</dt>
+ *   <dd>Mutable builder for specifying multi-stage GPU jobs. Accepts
+ *       {@link net.bzethmayr.gigantspinosaurus.gpu.GpuJobSpec.Stage} and
+ *       {@link net.bzethmayr.gigantspinosaurus.gpu.GpuJobSpec.Barrier} parts
+ *       to describe dependent compute dispatches.</dd>
+ *
+ *   <dt>{@link net.bzethmayr.gigantspinosaurus.gpu.SpecifiesGpuJob}</dt>
+ *   <dd>A {@link java.util.function.Consumer} of {@link net.bzethmayr.gigantspinosaurus.gpu.GpuJobSpec},
+ *       intended for use as a lambda when submitting multi-stage work via
+ *       {@link net.bzethmayr.gigantspinosaurus.gpu.GpuContext#asJob}.</dd>
  * </dl>
  *
  * <p>{@link net.bzethmayr.gigantspinosaurus.gpu.UsesGpuProgram} is a {@link java.lang.FunctionalInterface} extending
  * {@link java.util.function.Consumer}&lt;{@link net.bzethmayr.gigantspinosaurus.gpu.GpuProgramLoan}&gt;, intended for use as a lambda or method reference
  * when submitting work to the GPU.
+ *
+ * <p>For multi-stage jobs, use {@link net.bzethmayr.gigantspinosaurus.gpu.GpuContext#asJob}
+ * with a {@link net.bzethmayr.gigantspinosaurus.gpu.SpecifiesGpuJob} lambda that composes
+ * stages and barriers via a {@link net.bzethmayr.gigantspinosaurus.gpu.GpuJobSpec}.
  *
  * <p>All major types extend {@link java.lang.AutoCloseable} so that resources can be managed
  * with try-with-resources or explicit {@link java.lang.AutoCloseable#close()} calls.
