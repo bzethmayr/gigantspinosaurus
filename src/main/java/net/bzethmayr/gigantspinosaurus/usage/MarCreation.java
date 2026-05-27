@@ -48,18 +48,17 @@ public class MarCreation {
             throw becauseTooManyReducers();
         }
         final GeneratesNonce nonceSource = env.nonceSource();
-        final ExposesUtcDoubleSeconds timeSource = env.timeSource();
-        final ExposesPosition positionSource = env.positionSource();
-        final ExposesOrientation<?> orientationSource = env.orientationSource();
         final Signatory signatory = env.signatory();
         final MutableMar bufferZero = new MutableMar();
         bufferZero.version(MAR_VERSION);
         bufferZero.nonce(nonceSource.getAsLong());
         bufferZero.index(-1);
         bufferZero.priorSipH4_8(nonceSource.getAsLong());
-        bufferZero.utcEpochSeconds(timeSource.utcDoubleSeconds());
-        bufferZero.position(ctors.positionCtor().copyPosition(positionSource));
-        bufferZero.orientation(ctors.orientationCtor().copyOrientation(orientationSource));
+        bufferZero.utcEpochSeconds(env.timeSource().utcDoubleSeconds());
+        bufferZero.position(ctors.positionCtor().copyPosition(env.positionSource()));
+        bufferZero.orientation(ctors.orientationCtor()
+                .copyOrientation(env.orientationSource())
+                .withFraming(env.framingSource()));
         bufferZero.media(ctors.mediaCtor().createMedia(
                 stepOrNoStep(0, reductionSteps),
                 stepOrNoStep(1, reductionSteps),
@@ -69,7 +68,7 @@ public class MarCreation {
         final byte[] bufferZeroBytes = bufferZero.canonicalBytes();
         bufferZero.currentSipH4_8(env.marHasher().applyAsLong(bufferZero.sipHashKey(), bufferZeroBytes));
         final byte[] toSign = bufferZero.canonicalBytes();
-        final byte[] signature = env.signatory().apply(toSign);
+        final byte[] signature = signatory.apply(toSign);
         bufferZero.signature(ctors.signatureCtor().createSignature(
                 signatory.get(), signature, SIGNATURE_VERSION));
         return ctors.marCtor().copyMar(bufferZero);
@@ -97,7 +96,9 @@ public class MarCreation {
             nextBuffer.priorSipH4_8(prior.currentSipH4_8());
             nextBuffer.utcEpochSeconds(env.timeSource().utcDoubleSeconds());
             nextBuffer.position(ctors.positionCtor().copyPosition(env.positionSource()));
-            nextBuffer.orientation(ctors.orientationCtor().copyOrientation(env.orientationSource()));
+            nextBuffer.orientation(ctors.orientationCtor()
+                    .copyOrientation(env.orientationSource())
+                    .withFraming(env.framingSource()));
             final ExposesMedia priorMedia = prior.media();
             nextBuffer.media(ctors.mediaCtor().createMedia(
                     priorMedia.r0(),
@@ -110,7 +111,7 @@ public class MarCreation {
             final byte[] conditions = nextBuffer.canonicalBytes();
             nextBuffer.currentSipH4_8(env.marHasher().applyAsLong(nextBuffer.sipHashKey(), conditions));
             final byte[] toSign = nextBuffer.canonicalBytes();
-            final byte[] signature = env.signatory().apply(toSign);
+            final byte[] signature = signatory.apply(toSign);
             nextBuffer.signature(ctors.signatureCtor().createSignature(
                     signatory.get(), signature, SIGNATURE_VERSION
             ));

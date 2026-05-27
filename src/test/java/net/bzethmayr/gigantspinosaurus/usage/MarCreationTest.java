@@ -1,5 +1,6 @@
 package net.bzethmayr.gigantspinosaurus.usage;
 
+import net.bzethmayr.gigantspinosaurus.model.Framing;
 import net.bzethmayr.gigantspinosaurus.model.TestsModel;
 import net.bzethmayr.gigantspinosaurus.model.TestsWithBytes;
 import net.bzethmayr.gigantspinosaurus.model.correlation.HashesMarFrame;
@@ -12,15 +13,23 @@ import net.bzethmayr.gigantspinosaurus.model.position.ExposesPosition;
 import net.bzethmayr.gigantspinosaurus.model.signature.Signatory;
 import net.bzethmayr.gigantspinosaurus.model.time.ExposesUtcDoubleSeconds;
 import net.bzethmayr.gigantspinosaurus.usage.MarCreation.ReducedFrameReceiver;
+import org.hamcrest.Matcher;
 import org.junit.jupiter.api.Test;
 
 import static java.nio.ByteBuffer.wrap;
+import static net.bzethmayr.gigantspinosaurus.model.framing.ExposesFraming.FRAMING_VERSION;
 import static net.bzethmayr.gigantspinosaurus.model.mar.ExposesMar.MAR_VERSION;
 import static net.bzethmayr.gigantspinosaurus.model.media.ExposesMedia.MEDIA_HASH_BYTES;
+import static net.bzethmayr.gigantspinosaurus.model.media.ExposesMedia.MEDIA_VERSION;
 import static net.bzethmayr.gigantspinosaurus.model.media.ReductionStep.noStep;
+import static net.bzethmayr.gigantspinosaurus.model.orientation.ExposesOrientation.ORIENTATION_VERSION;
+import static net.bzethmayr.gigantspinosaurus.model.position.ExposesPosition.POSITION_VERSION;
+import static net.bzethmayr.gigantspinosaurus.model.signature.ExposesSignature.SIGNATURE_VERSION;
 import static net.bzethmayr.gigantspinosaurus.usage.BindsConstructors.defaultConstructors;
 import static net.bzethmayr.gigantspinosaurus.usage.BindsEnvironment.desktopEnvironment;
+import static net.zethmayr.fungu.test.MatcherFactory.has;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.lessThan;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -50,6 +59,20 @@ class MarCreationTest implements TestsModel, TestsWithBytes {
                 framingSource,
                 signatory
         ));
+        doReturn(POSITION_VERSION).when(positionSource).version();
+        doReturn(ORIENTATION_VERSION).when(orientationSource).version();
+        doReturn(FRAMING_VERSION).when(framingSource).version();
+    }
+
+    static Matcher<ExposesMar> hasCurrentVersions() {
+        return allOf(
+                has(ExposesMar::version, MAR_VERSION),
+                has((ExposesMar e) -> e.media().version(), MEDIA_VERSION),
+                has((ExposesMar e) -> e.orientation().version(), ORIENTATION_VERSION),
+                has((ExposesMar e) -> e.orientation().framing().version(), FRAMING_VERSION),
+                has((ExposesMar e) -> e.position().version(), POSITION_VERSION),
+                has((ExposesMar e) -> e.signature().version(), SIGNATURE_VERSION)
+        );
     }
 
     @Test
@@ -59,7 +82,7 @@ class MarCreationTest implements TestsModel, TestsWithBytes {
         final ExposesMar result = underTest.intentFrame();
 
         assertNotNull(result);
-        assertEquals(MAR_VERSION, result.version());
+        assertThat(result, hasCurrentVersions());
         assertEquals(-1, result.index());
         verify(nonceSource, times(2)).getAsLong();
         verify(timeSource).utcDoubleSeconds();
@@ -78,13 +101,13 @@ class MarCreationTest implements TestsModel, TestsWithBytes {
         final ExposesMar second = receiver.reducedFrame(fakeMediaBytes(MANY), 1);
         verifyNoMoreInteractions(nonceSource);
 
-        assertEquals(MAR_VERSION, first.version());
+        assertThat(first, hasCurrentVersions());
         assertEquals(0, first.index());
         verify(timeSource, times(3)).utcDoubleSeconds();
         assertNotNull(first.position());
         assertNotNull(first.orientation());
         assertNotNull(first.signature());
-        assertEquals(MAR_VERSION, second.version());
+        assertThat(second, hasCurrentVersions());
         assertEquals(1, second.index());
         assertEquals(first.nonce(), second.nonce());
         assertNotNull(second.position());

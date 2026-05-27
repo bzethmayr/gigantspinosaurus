@@ -2,7 +2,7 @@ plugins {
     kotlin("jvm") version "2.0.0"          // make sure the Kotlin plugin itself supports Java 21
     id("java")
     id("jacoco")
-    id("info.solidsoft.pitest") version "1.15.0"
+    id("info.solidsoft.pitest") version "1.19.0"
     id("com.gradleup.shadow") version "8.3.0"
 }
 
@@ -34,6 +34,10 @@ dependencies {
     testImplementation(platform("org.junit:junit-bom:5.10.0"))
     testImplementation("org.mockito:mockito-core:5.12.0")
     testImplementation("org.mockito:mockito-junit-jupiter:5.12.0")
+
+    testImplementation("com.twelvemonkeys.imageio:imageio-core:3.13.1")
+    testImplementation("com.twelvemonkeys.imageio:imageio-webp:3.13.1")
+    testImplementation("com.github.jai-imageio:jai-imageio-jpeg2000:1.4.0")
 }
 
 sourceSets {
@@ -59,16 +63,18 @@ tasks.register("compileHlsl") {
             .filter { it.isFile && it.extension == "hlsl" }
             .forEach { src ->
                 val out = spvOutDir.resolve(src.nameWithoutExtension + ".spv")
-                exec {
-                    commandLine(
+                val proc = ProcessBuilder(
                         dxcPath,
                         "-spirv",
                         "-T", "cs_6_0",        // compute shader target
                         "-E", "main",          // entry point
                         "-Fo", out.absolutePath,
                         src.absolutePath
-                    )
-                }
+                )
+                    .inheritIO()
+                    .start()
+                val exit = proc.waitFor()
+                if (exit != 0) throw GradleException("dxc exited with code $exit")
             }
     }
 }
@@ -115,8 +121,16 @@ pitest {
     junit5PluginVersion.set("1.2.3")
     targetClasses.set(listOf("net.bzethmayr.gigantspinosaurus.*"))
     targetTests.set(listOf("net.bzethmayr.gigantspinosaurus.*Test"))
+    excludedTestClasses.set(listOf(
+            "net.bzethmayr.gigantspinosaurus.usage.vk.*"
+    ))
     outputFormats.set(listOf("HTML", "XML"))
     reportDir.set(file("build/reports/pitest"))
+    threads.set(Runtime.getRuntime().availableProcessors().coerceAtMost(4))
+    mainProcessJvmArgs.set(listOf(
+            "-Xmx2048m",
+            "-XX:+UseParallelGC"
+    ))
 }
 
 tasks.shadowJar {

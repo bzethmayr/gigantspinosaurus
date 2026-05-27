@@ -5,9 +5,9 @@ import net.bzethmayr.gigantspinosaurus.gpu.GpuProgram;
 import org.junit.jupiter.api.Test;
 
 import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
 import java.util.List;
 
+import static net.bzethmayr.gigantspinosaurus.usage.vk.VulkanCommon.javaBuffer;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
@@ -53,15 +53,13 @@ class VulkanRootTest {
             try (var input = root.createBuffer(bufferDesc);
                  var output = root.createBuffer(bufferDesc)) {
 
-                var inputBuf = ByteBuffer.allocateDirect(numElements * Integer.BYTES)
-                        .order(ByteOrder.LITTLE_ENDIAN);
+                var inputBuf = javaBuffer(numElements * Integer.BYTES);
                 inputBuf.asIntBuffer().put(inputData);
                 inputBuf.position(numElements * Integer.BYTES);
                 inputBuf.flip();
                 input.upload(0, inputBuf);
 
-                var pushConstants = ByteBuffer.allocateDirect(8)
-                        .order(ByteOrder.LITTLE_ENDIAN);
+                var pushConstants = javaBuffer(8);
                 pushConstants.putInt(0, 8).putInt(4, 8);
 
                 root.withProgram(program, loan ->
@@ -70,8 +68,7 @@ class VulkanRootTest {
                                 .setScalars(pushConstants)
                                 .dispatch(1, 1, 1));
 
-                var result = ByteBuffer.allocateDirect(numElements * Integer.BYTES)
-                        .order(ByteOrder.LITTLE_ENDIAN);
+                var result = javaBuffer(numElements * Integer.BYTES);
                 output.download(0, result);
                 result.flip();
                 var actual = new int[numElements];

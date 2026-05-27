@@ -10,9 +10,9 @@ public record Geoposition(double DNLat, double DELong, double MUp, North north, 
         this(DNLat, DELong, Double.NaN);
     }
     Geoposition(double DNLat, double DELong, North north) {
-        this(DNLat, DELong, Double.NaN, north, (short) 0);
+        this(DNLat, DELong, Double.NaN, north, POSITION_VERSION);
     }
     Geoposition(double DNLat, double DELong, double MUp) {
-        this(DNLat, DELong, MUp, North.U_NORTH, (short) 0);
+        this(DNLat, DELong, MUp, North.U_NORTH, POSITION_VERSION);
     }
 }
