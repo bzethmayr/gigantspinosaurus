@@ -16,7 +16,7 @@ import static net.zethmayr.fungu.core.ExceptionFactory.becauseImpossible;
 import static net.zethmayr.fungu.core.ExceptionFactory.becauseStaticsOnly;
 import static org.lwjgl.vulkan.VK10.VK_SUCCESS;
 
-public final class VulkanCommon {
+final class VulkanCommon {
     private VulkanCommon() {
         throw becauseStaticsOnly();
     }
@@ -42,7 +42,7 @@ public final class VulkanCommon {
         return result;
     }
 
-    public static ByteBuffer javaBuffer(final int capacity) {
+    static ByteBuffer javaBuffer(final int capacity) {
         return ByteBuffer.allocateDirect(capacity)
                 .order(ByteOrder.LITTLE_ENDIAN);
     }

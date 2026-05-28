@@ -5,7 +5,6 @@ import net.bzethmayr.gigantspinosaurus.gpu.GpuContext;
 import net.bzethmayr.gigantspinosaurus.gpu.GpuProgram;
 
 import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
 
 import static net.bzethmayr.gigantspinosaurus.model.media.ReductionIds.*;
 
@@ -100,12 +99,8 @@ public class VideoPipeline implements AutoCloseable {
         return result;
     }
 
-    private static ByteBuffer directBuf(final int capacity) {
-        return ByteBuffer.allocateDirect(capacity).order(ByteOrder.LITTLE_ENDIAN);
-    }
-
     private ByteBuffer downsamplePush() {
-        final var buf = directBuf(16);
+        final var buf = context.exchangeBuffer(16);
         buf.putInt(0, inWidth);
         buf.putInt(4, inHeight);
         buf.putInt(8, DOWNSAMPLE_WIDTH);
@@ -114,7 +109,7 @@ public class VideoPipeline implements AutoCloseable {
     }
 
     private ByteBuffer dwtPush() {
-        final var buf = directBuf(12);
+        final var buf = context.exchangeBuffer(12);
         buf.putInt(0, DOWNSAMPLE_WIDTH);
         buf.putInt(4, DOWNSAMPLE_HEIGHT);
         buf.putInt(8, 2);
@@ -122,7 +117,7 @@ public class VideoPipeline implements AutoCloseable {
     }
 
     private ByteBuffer sobelPush() {
-        final var buf = directBuf(12);
+        final var buf = context.exchangeBuffer(12);
         buf.putInt(0, DOWNSAMPLE_WIDTH);
         buf.putInt(4, DOWNSAMPLE_HEIGHT);
         buf.putInt(8, 4);
@@ -131,7 +126,7 @@ public class VideoPipeline implements AutoCloseable {
 
     private byte[] packOutput(final GpuBuffer srcBuf, final int numCells) {
         final int bufBytes = numCells * Integer.BYTES;
-        final var raw = directBuf(bufBytes);
+        final var raw = context.exchangeBuffer(bufBytes);
         srcBuf.download(0, raw);
         raw.rewind();
         final var packed = new byte[numCells];
