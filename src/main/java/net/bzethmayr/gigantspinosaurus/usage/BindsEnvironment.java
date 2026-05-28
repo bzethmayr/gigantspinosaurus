@@ -1,5 +1,6 @@
 package net.bzethmayr.gigantspinosaurus.usage;
 
+import net.bzethmayr.gigantspinosaurus.gpu.GpuContext;
 import net.bzethmayr.gigantspinosaurus.model.correlation.HashesMarFrame;
 import net.bzethmayr.gigantspinosaurus.model.correlation.HashesMedia;
 import net.bzethmayr.gigantspinosaurus.model.framing.ExposesFraming;
@@ -26,7 +27,20 @@ public record BindsEnvironment(GeneratesNonce nonceSource,
                                ExposesPosition positionSource,
                                ExposesOrientation<?> orientationSource,
                                ExposesFraming framingSource,
-                               Signatory signatory) {
+                               Signatory signatory,
+                               GpuContext gpuContext) {
+
+    public BindsEnvironment(GeneratesNonce nonceSource,
+                            HashesMarFrame marHasher,
+                            HashesMedia mediaHasher,
+                            ExposesUtcDoubleSeconds timeSource,
+                            ExposesPosition positionSource,
+                            ExposesOrientation<?> orientationSource,
+                            ExposesFraming framingSource,
+                            Signatory signatory) {
+        this(nonceSource, marHasher, mediaHasher, timeSource, positionSource,
+                orientationSource, framingSource, signatory, null);
+    }
 
     public static BindsEnvironment desktopEnvironment() {
         final SecureRandom random = new SecureRandom();

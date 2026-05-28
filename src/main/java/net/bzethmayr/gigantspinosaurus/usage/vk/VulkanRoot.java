@@ -8,6 +8,7 @@ import org.lwjgl.PointerBuffer;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.*;
 
+import java.nio.ByteBuffer;
 import java.nio.LongBuffer;
 import java.util.List;
 import java.util.Optional;
@@ -171,6 +172,11 @@ public final class VulkanRoot implements GpuContext {
             primary.endRecording();
             primary.submitAndWait(queue);
         }
+    }
+
+    @Override
+    public ByteBuffer exchangeBuffer(final int capacity) {
+        return VulkanCommon.javaBuffer(capacity);
     }
 
     VkInstance instance() {
