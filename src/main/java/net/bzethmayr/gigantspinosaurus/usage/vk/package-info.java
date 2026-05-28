@@ -8,7 +8,10 @@
  * compute work.
  *
  * <p>Call {@code close()} or use try-with-resources to tear down all Vulkan state
- * deterministically via the internal {@code ClosingChain}.
+ * deterministically via {@link net.bzethmayr.gigantspinosaurus.util.ClosingChain}.
+ *
+ * <p>Use {@code asJob()} with a {@link net.bzethmayr.gigantspinosaurus.gpu.SpecifiesGpuJob}
+ * to compose multi-stage pipelines via {@link net.bzethmayr.gigantspinosaurus.gpu.GpuJobSpec}.
  *
  * @see net.bzethmayr.gigantspinosaurus.gpu.GpuContext
  * @see net.bzethmayr.gigantspinosaurus.gpu.GpuBuffer
