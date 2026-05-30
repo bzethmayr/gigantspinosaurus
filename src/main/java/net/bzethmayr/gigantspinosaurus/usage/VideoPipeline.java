@@ -3,8 +3,10 @@ package net.bzethmayr.gigantspinosaurus.usage;
 import net.bzethmayr.gigantspinosaurus.gpu.GpuBuffer;
 import net.bzethmayr.gigantspinosaurus.gpu.GpuContext;
 import net.bzethmayr.gigantspinosaurus.gpu.GpuProgram;
+import net.bzethmayr.gigantspinosaurus.util.ClosingChain;
 
 import java.nio.ByteBuffer;
+import java.util.Optional;
 
 import static net.bzethmayr.gigantspinosaurus.model.media.ReductionIds.*;
 
@@ -24,6 +26,7 @@ public class VideoPipeline implements AutoCloseable {
     private final GpuBuffer yBuf;
     private final GpuBuffer dwtOut;
     private final GpuBuffer sobelOut;
+    private final ClosingChain close;
 
     private static final int INPUT_BUF_BYTES = DOWNSAMPLE_WIDTH * DOWNSAMPLE_HEIGHT * Integer.BYTES;
     private static final int OUTPUT_BUF_BYTES = SOBEL_OUTPUT_CELLS * Integer.BYTES;
@@ -33,36 +36,27 @@ public class VideoPipeline implements AutoCloseable {
         this.inWidth = inWidth;
         this.inHeight = inHeight;
 
-        this.downsampleProg = loadProgram("/spv/downsample.spv", 2, 16);
-        this.dwtProg = loadProgram("/spv/dwt_ll.spv", 2, 12);
-        this.sobelProg = loadProgram("/spv/sobel_feature.spv", 2, 12);
-
-        this.inputBuf = createStorageBuf((long) inWidth * inHeight * Integer.BYTES);
-        this.yBuf = createStorageBuf(INPUT_BUF_BYTES);
-        this.dwtOut = createStorageBuf(OUTPUT_BUF_BYTES);
-        this.sobelOut = createStorageBuf(OUTPUT_BUF_BYTES);
-    }
-
-    private GpuProgram loadProgram(final String resourcePath, final int numBindings, final int pushConstantSize) {
-        try (final var stream = getClass().getResourceAsStream(resourcePath)) {
-            if (stream == null) {
-                throw new RuntimeException("Shader not found: " + resourcePath);
-            }
-            final var spvBytes = stream.readAllBytes();
-            final var spvBuffer = ByteBuffer.allocateDirect(spvBytes.length);
-            spvBuffer.put(spvBytes);
-            spvBuffer.flip();
-
-            final var bindingList = new java.util.ArrayList<GpuProgram.ResourceBinding>();
-            for (int i = 0; i < numBindings; i++) {
-                bindingList.add(new GpuProgram.ResourceBinding(i, GpuProgram.ResourceKind.STORAGE_BUFFER));
-            }
-            final var desc = new GpuProgram.ProgramDesc("main", GpuProgram.ShaderStage.COMPUTE,
-                    spvBuffer, bindingList, pushConstantSize);
-            return context.createProgram(desc);
+        ClosingChain chain = null;
+        try {
+            this.downsampleProg = context.loadProgram(getClass(), "/spv/downsample.spv", 2, 16);
+            chain = new ClosingChain(downsampleProg);
+            this.dwtProg = context.loadProgram(getClass(), "/spv/dwt_ll.spv", 2, 12);
+            chain = chain.link(dwtProg);
+            this.sobelProg = context.loadProgram(getClass(), "/spv/sobel_feature.spv", 2, 12);
+            chain = chain.link(sobelProg);
+            this.inputBuf = createStorageBuf((long) inWidth * inHeight * Integer.BYTES);
+            chain = chain.link(inputBuf);
+            this.yBuf = createStorageBuf(INPUT_BUF_BYTES);
+            chain = chain.link(yBuf);
+            this.dwtOut = createStorageBuf(OUTPUT_BUF_BYTES);
+            chain = chain.link(dwtOut);
+            this.sobelOut = createStorageBuf(OUTPUT_BUF_BYTES);
+            chain = chain.link(sobelOut);
         } catch (final Exception e) {
-            throw new RuntimeException("Failed to load program: " + resourcePath, e);
+            Optional.ofNullable(chain).ifPresent(ClosingChain::close);
+            throw new RuntimeException(e);
         }
+        close = chain;
     }
 
     private GpuBuffer createStorageBuf(final long size) {
@@ -138,20 +132,6 @@ public class VideoPipeline implements AutoCloseable {
 
     @Override
     public void close() throws Exception {
-        final var ex = new java.util.ArrayList<Throwable>();
-        try { inputBuf.close(); } catch (final Throwable t) { ex.add(t); }
-        try { yBuf.close(); } catch (final Throwable t) { ex.add(t); }
-        try { dwtOut.close(); } catch (final Throwable t) { ex.add(t); }
-        try { sobelOut.close(); } catch (final Throwable t) { ex.add(t); }
-        try { downsampleProg.close(); } catch (final Throwable t) { ex.add(t); }
-        try { dwtProg.close(); } catch (final Throwable t) { ex.add(t); }
-        try { sobelProg.close(); } catch (final Throwable t) { ex.add(t); }
-        if (!ex.isEmpty()) {
-            final var first = (Exception) ex.get(0);
-            for (int i = 1; i < ex.size(); i++) {
-                first.addSuppressed(ex.get(i));
-            }
-            throw first;
-        }
+        close.close();
     }
 }
