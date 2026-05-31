@@ -1,39 +1,39 @@
 package net.bzethmayr.gigantspinosaurus.usage;
 
 import net.bzethmayr.gigantspinosaurus.gpu.GpuContext;
-import net.bzethmayr.gigantspinosaurus.model.media.ColorSpaceReduction;
 import net.bzethmayr.gigantspinosaurus.model.media.ReducesMedia;
 import net.bzethmayr.gigantspinosaurus.model.media.ReductionStep;
 
 import java.nio.ByteBuffer;
-import java.util.Arrays;
+
+import static net.bzethmayr.gigantspinosaurus.model.media.ReductionIds.YCBCR_ID;
+import static net.bzethmayr.gigantspinosaurus.model.media.ReductionIds.YCBCR_VERSION;
 
 public class VideoReduction implements ReducesMedia, AutoCloseable {
-    private final ColorSpaceReduction ycbcr;
     private final SpatialReduction spatial;
 
-    public VideoReduction(final ColorSpaceReduction ycbcr, final SpatialReduction spatial) {
-        this.ycbcr = ycbcr;
+    public VideoReduction(final SpatialReduction spatial) {
         this.spatial = spatial;
     }
 
     public VideoReduction(final GpuContext context, final int width, final int height) {
-        this(new ColorSpaceReduction(width, height), new SpatialReduction(context, width, height));
+        this(new SpatialReduction(context, width, height,
+                new ReductionStep(YCBCR_ID, YCBCR_VERSION)));
+    }
+
+    public VideoReduction(final GpuContext context, final int width, final int height,
+                          final ReductionStep... optionalSteps) {
+        this(new SpatialReduction(context, width, height, optionalSteps));
     }
 
     @Override
     public ReductionStep[] reductions() {
-        final var ycbcrSteps = ycbcr.reductions();
-        final var spatialSteps = spatial.reductions();
-        final var combined = Arrays.copyOf(ycbcrSteps, ycbcrSteps.length + spatialSteps.length);
-        System.arraycopy(spatialSteps, 0, combined, ycbcrSteps.length, spatialSteps.length);
-        return combined;
+        return spatial.reductions();
     }
 
     @Override
     public ByteBuffer apply(final ByteBuffer rgbBuffer) {
-        final ByteBuffer yBuffer = ycbcr.apply(rgbBuffer);
-        return spatial.apply(yBuffer);
+        return spatial.apply(rgbBuffer);
     }
 
     @Override
