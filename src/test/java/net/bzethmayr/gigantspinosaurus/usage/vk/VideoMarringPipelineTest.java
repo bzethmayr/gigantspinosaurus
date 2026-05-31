@@ -1,11 +1,11 @@
-package net.bzethmayr.gigantspinosaurus.usage;
+package net.bzethmayr.gigantspinosaurus.usage.vk;
 
 import net.bzethmayr.gigantspinosaurus.model.media.ColorSpaceReduction;
 import net.bzethmayr.gigantspinosaurus.model.media.ReducesMedia;
 import net.bzethmayr.gigantspinosaurus.model.media.ReductionStep;
+import net.bzethmayr.gigantspinosaurus.usage.*;
 import net.bzethmayr.gigantspinosaurus.usage.images.CrossFormatDecoder;
 import net.bzethmayr.gigantspinosaurus.usage.images.CrossFormatDecoder.Raster;
-import net.bzethmayr.gigantspinosaurus.usage.vk.VulkanRoot;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
