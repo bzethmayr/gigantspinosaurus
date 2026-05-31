@@ -4,7 +4,6 @@ import net.bzethmayr.gigantspinosaurus.gpu.GpuBuffer;
 import net.bzethmayr.gigantspinosaurus.gpu.GpuJobSpec;
 import net.bzethmayr.gigantspinosaurus.gpu.GpuProgram;
 import net.bzethmayr.gigantspinosaurus.gpu.GpuProgramLoan;
-import net.zethmayr.fungu.core.declarations.NotDone;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.*;
@@ -109,7 +108,6 @@ class CmdBuffer implements AutoCloseable {
         return vkCommandBuffer;
     }
 
-    @NotDone
     public void submitAndWait(final VulkanQueue queue) {
         try (Fence fence = new Fence(logicalDevice, false)) {
             try (var stack = stackPush()) {

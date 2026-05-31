@@ -7,7 +7,6 @@ import org.junit.jupiter.api.Test;
 import java.nio.ByteBuffer;
 import java.util.List;
 
-import static net.bzethmayr.gigantspinosaurus.usage.vk.VulkanCommon.javaBuffer;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
@@ -53,13 +52,13 @@ class VulkanRootTest {
             try (var input = root.createBuffer(bufferDesc);
                  var output = root.createBuffer(bufferDesc)) {
 
-                var inputBuf = javaBuffer(numElements * Integer.BYTES);
+                var inputBuf = root.exchangeBuffer(numElements * Integer.BYTES);
                 inputBuf.asIntBuffer().put(inputData);
                 inputBuf.position(numElements * Integer.BYTES);
                 inputBuf.flip();
                 input.upload(0, inputBuf);
 
-                var pushConstants = javaBuffer(8);
+                var pushConstants = root.exchangeBuffer(8);
                 pushConstants.putInt(0, 8).putInt(4, 8);
 
                 root.withProgram(program, loan ->
@@ -68,7 +67,7 @@ class VulkanRootTest {
                                 .setScalars(pushConstants)
                                 .dispatch(1, 1, 1));
 
-                var result = javaBuffer(numElements * Integer.BYTES);
+                var result = root.exchangeBuffer(numElements * Integer.BYTES);
                 output.download(0, result);
                 result.flip();
                 var actual = new int[numElements];

@@ -1,15 +1,22 @@
 package net.bzethmayr.gigantspinosaurus.capabilities;
 
-import net.zethmayr.fungu.core.declarations.NotDone;
-
 import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 
 /**
- * The transport type.
+ * Key-value attribute access for transport-layer data.
+ *
+ * <p>The single abstract method {@link #getAttributeValue(String)} returns the
+ * raw bytes for a named attribute, or {@code null} if the attribute is absent.
+ * Composition methods {@link #prefixWith(HasMappedAttributes)} and
+ * {@link #suffixWith(HasMappedAttributes)} let callers layer override and
+ * default contexts without mutation.
+ *
+ * <p>Utility methods
+ * ({@link #deepCopyMappedAttributes(BiConsumer, SequencedSet)} and overloads)
+ * provide safe, value-copied transfer between attribute sources and sinks.
  */
-@NotDone
 @FunctionalInterface
 public interface HasMappedAttributes {
     /**

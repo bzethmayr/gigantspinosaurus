@@ -1,11 +1,8 @@
 package net.bzethmayr.gigantspinosaurus.usage.vk;
 
-import net.bzethmayr.gigantspinosaurus.gpu.GpuBuffer;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.system.MemoryStack;
 
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -40,11 +37,6 @@ final class VulkanCommon {
         }
 
         return result;
-    }
-
-    static ByteBuffer javaBuffer(final int capacity) {
-        return ByteBuffer.allocateDirect(capacity)
-                .order(ByteOrder.LITTLE_ENDIAN);
     }
 
     @SafeVarargs
