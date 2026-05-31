@@ -2,7 +2,6 @@ package net.bzethmayr.gigantspinosaurus.usage.vk;
 
 import net.bzethmayr.gigantspinosaurus.gpu.*;
 import net.bzethmayr.gigantspinosaurus.util.ClosingChain;
-import net.zethmayr.fungu.core.declarations.NotDone;
 import net.zethmayr.fungu.core.declarations.ReuseResults;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.system.MemoryStack;

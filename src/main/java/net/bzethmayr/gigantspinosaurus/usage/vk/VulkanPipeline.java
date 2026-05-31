@@ -2,7 +2,6 @@ package net.bzethmayr.gigantspinosaurus.usage.vk;
 
 import net.bzethmayr.gigantspinosaurus.gpu.GpuProgram;
 import net.bzethmayr.gigantspinosaurus.util.ClosingChain;
-import net.zethmayr.fungu.core.declarations.NotDone;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.vulkan.VkDescriptorPoolCreateInfo;
 import org.lwjgl.vulkan.VkDevice;
@@ -17,7 +16,6 @@ import static net.zethmayr.fungu.CloseableFactory.closeable;
 import static org.lwjgl.system.MemoryStack.stackPush;
 import static org.lwjgl.vulkan.VK10.*;
 
-@NotDone
 final class VulkanPipeline implements GpuProgram {
     final VkDevice logicalDevice;
     final long shaderModule;

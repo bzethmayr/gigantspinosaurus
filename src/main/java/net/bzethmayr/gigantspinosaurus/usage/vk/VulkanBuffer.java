@@ -2,7 +2,6 @@ package net.bzethmayr.gigantspinosaurus.usage.vk;
 
 import net.bzethmayr.gigantspinosaurus.gpu.GpuBuffer;
 import net.bzethmayr.gigantspinosaurus.util.ClosingChain;
-import net.zethmayr.fungu.core.declarations.NotDone;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.MemoryUtil;
@@ -19,7 +18,6 @@ import static org.lwjgl.system.MemoryUtil.NULL;
 import static org.lwjgl.system.MemoryUtil.memGetAddress;
 import static org.lwjgl.vulkan.VK10.*;
 
-@NotDone
 class VulkanBuffer implements GpuBuffer {
     private final VkDevice logicalDevice;
     private final long requestedSize;
