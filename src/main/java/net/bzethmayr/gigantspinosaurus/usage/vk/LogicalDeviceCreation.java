@@ -11,10 +11,14 @@ import java.util.function.Predicate;
 
 import static net.bzethmayr.gigantspinosaurus.usage.vk.VulkanCommon.*;
 import static net.bzethmayr.gigantspinosaurus.util.CollectionHelper.refilter;
+import static net.zethmayr.fungu.core.ExceptionFactory.becauseStaticsOnly;
 import static org.lwjgl.vulkan.VK10.vkCreateDevice;
 import static org.lwjgl.vulkan.VK10.vkEnumerateDeviceExtensionProperties;
 
 final class LogicalDeviceCreation {
+    private LogicalDeviceCreation() {
+        throw becauseStaticsOnly();
+    }
 
     static VkDevice configureLogicalDevice(
             final MemoryStack stack,

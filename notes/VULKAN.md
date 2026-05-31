@@ -46,8 +46,7 @@ Vulkan)*
   `CmdPool` and `Fence`. Defined in
   `net.bzethmayr.gigantspinosaurus.capabilities`.
 
-- **VulkanCommon** — OS detection (`getOS()`), direct buffer allocation
-  (`javaBuffer()`), predicate composition (`optionalAny()`, `filteredList()`),
+- **VulkanCommon** — OS detection (`getOS()`), predicate composition (`optionalAny()`, `filteredList()`),
   name encoding helpers (`asciiNamesFrom()`, `utf8NamesFlippedFrom()`),
   `checkVk()` error checking, and `indexOfMaxScorePassing()` selection
   algorithm (generic `int[]` argmax with negative-score veto).
@@ -88,7 +87,16 @@ Vulkan)*
   `net.bzethmayr.gigantspinosaurus.capabilities.Resettable`, allowing command
   pools and fences to be reused across multiple submissions.
 
-## Current status
+## Status
 
-Two classes retain `@NotDone`: `VulkanPipeline` and `VulkanBuffer`. The
-`CmdBuffer.submitAndWait()` method is also `@NotDone`.
+Stable?
+
+## Resource lifecycle
+
+GPU resources exposed to callers (`VulkanBuffer`, `VulkanPipeline`,
+`CmdBuffer`, `Fence`) implement `AutoCloseable`.  You are only responsible
+for closing objects you create directly — every `createBuffer` / `createProgram`
+call returns a resource you own.  Resources owned by `VulkanRoot` (instance,
+device, queue, command pool) are managed by its `ClosingChain` and closed
+automatically when the root is closed.  Transient resources such as the
+`Fence` inside `submitAndWait` are scoped by try-with-resources.

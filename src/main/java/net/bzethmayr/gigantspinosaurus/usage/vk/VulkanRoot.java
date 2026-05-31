@@ -172,11 +172,6 @@ public final class VulkanRoot implements GpuContext {
         }
     }
 
-    @Override
-    public ByteBuffer exchangeBuffer(final int capacity) {
-        return VulkanCommon.javaBuffer(capacity);
-    }
-
     VkInstance instance() {
         return instance;
     }
