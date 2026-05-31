@@ -10,7 +10,9 @@ public class Blake3MediaHasher implements HashesMedia {
     @Override
     public byte[] apply(final ByteBuffer payload) {
         final Blake3 hasher = Blake3.newInstance();
-        hasher.update(payload.array());
+        final byte[] bytes = new byte[payload.remaining()];
+        payload.duplicate().get(bytes);
+        hasher.update(bytes);
         return hasher.digest();
     }
 }

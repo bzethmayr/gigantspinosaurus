@@ -40,7 +40,7 @@ class CrossFormatDecoderTest {
                 describedAs("an expected raster height for %0",
                         has(Raster::height, oneOf(3072, 2048)), fileName),
                 describedAs("no length mismatch for %s",
-                        has(r -> (r.width() * r.height() * 3L) - r.rgb().length, equalTo(0L)), fileName),
+                        has(r -> (r.width() * r.height() * 4L) - r.rgb().length, equalTo(0L)), fileName),
                 hasSomeNonZeroes(imageFile)
         );
     }

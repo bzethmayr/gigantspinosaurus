@@ -30,6 +30,7 @@ public class ColorSpaceReduction implements ReducesMedia {
             final int r = rgbBuffer.get() & 0xFF;
             final int g = rgbBuffer.get() & 0xFF;
             final int b = rgbBuffer.get() & 0xFF;
+            rgbBuffer.get(); // slack byte
             final int y = (77 * r + 150 * g + 29 * b) >> 8;
             out.putInt(y);
         }

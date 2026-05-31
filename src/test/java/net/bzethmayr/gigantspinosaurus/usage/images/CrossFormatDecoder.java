@@ -18,7 +18,7 @@ public final class CrossFormatDecoder {
         final BufferedImage img = ImageIO.read(path.toFile());
         final int w = img.getWidth();
         final int h = img.getHeight();
-        final byte[] rgb = new byte[w * h * 3];
+        final byte[] rgb = new byte[w * h * 4];
         int off = 0;
         for (int y = 0; y < h; y++) {
             for (int x = 0; x < w; x++) {
@@ -26,6 +26,7 @@ public final class CrossFormatDecoder {
                 rgb[off++] = (byte) ((argb >> 16) & 0xFF);
                 rgb[off++] = (byte) ((argb >> 8) & 0xFF);
                 rgb[off++] = (byte) (argb & 0xFF);
+                rgb[off++] = (byte) 0;
             }
         }
         return new Raster(w, h, rgb);
