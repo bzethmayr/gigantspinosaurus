@@ -1,3 +1,8 @@
+// reduction result concatenation - structural,
+// sharing reduction ID 2 defined at net.bzethmayr.gigantspinosaurus.model.media.ReductionIds.SPATIAL_ID
+// and reduction version tracked at net.bzethmayr.gigantspinosaurus.model.media.ReductionIds.SPATIAL_VERSION
+// This is part of a versioned step - changes to the logic of this file must be accompanied by a version increase.
+
 [[vk::binding(0, 0)]] RWStructuredBuffer<uint> inputDwt   : register(u0);
 [[vk::binding(1, 0)]] RWStructuredBuffer<uint> inputSobel : register(u1);
 [[vk::binding(2, 0)]] RWStructuredBuffer<uint> outputPacked : register(u2);

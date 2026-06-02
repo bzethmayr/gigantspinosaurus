@@ -1,3 +1,8 @@
+// optional YCbCr reduction,
+// with reduction ID 1 defined at net.bzethmayr.gigantspinosaurus.model.media.ReductionIds.YCBCR_ID
+// and reduction version tracked at net.bzethmayr.gigantspinosaurus.model.media.ReductionIds.YCBCR_VERSION
+// This is a versioned step - changes to the logic of this file must be accompanied by a version increase.
+
 [[vk::binding(0, 0)]] RWStructuredBuffer<uint> inputRgb  : register(u0);
 [[vk::binding(1, 0)]] RWStructuredBuffer<uint> outputY   : register(u1);
 

@@ -1,4 +1,4 @@
-package net.bzethmayr.gigantspinosaurus.usage;
+package net.bzethmayr.gigantspinosaurus.usage.pipelines;
 
 import net.bzethmayr.gigantspinosaurus.gpu.GpuContext;
 import net.bzethmayr.gigantspinosaurus.model.media.ReducesMedia;
@@ -9,6 +9,11 @@ import java.nio.ByteBuffer;
 import static net.bzethmayr.gigantspinosaurus.model.media.ReductionIds.YCBCR_ID;
 import static net.bzethmayr.gigantspinosaurus.model.media.ReductionIds.YCBCR_VERSION;
 
+/**
+ * Video frame reducer.
+ * Currently, lightly wraps the YCbCr/"spatial" reductions as a combined pipeline
+ * and declares YCbCr reduction as a default step.
+ */
 public class VideoReduction implements ReducesMedia, AutoCloseable {
     private final SpatialReduction spatial;
 

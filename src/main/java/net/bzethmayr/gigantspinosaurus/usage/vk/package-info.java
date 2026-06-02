@@ -16,5 +16,9 @@
  * @see net.bzethmayr.gigantspinosaurus.gpu.GpuContext
  * @see net.bzethmayr.gigantspinosaurus.gpu.GpuBuffer
  * @see net.bzethmayr.gigantspinosaurus.gpu.GpuProgram
+ *
+ * @implSpec This package's code accesses hardware at a low-level
+ * and therefore must not be subjected to mutation testing,
+ * at risk of JVM crash, system crash, or hardware damage.
  */
 package net.bzethmayr.gigantspinosaurus.usage.vk;

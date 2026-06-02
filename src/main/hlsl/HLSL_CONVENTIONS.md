@@ -62,3 +62,19 @@
 | `GpuProgram`         | Compiled SPIR-V module                   |
 | `GpuProgramLoan`     | Per-dispatch binding + push-constants    |
 | `ResourceBinding`    | `[[vk::binding(slot, set)]]` attribute   |
+
+## Protocol Version Tracking
+
+Each shader in the real pipeline belongs to a *reduction* which has a version constant in
+`net.bzethmayr.gigantspinosaurus.model.media.ReductionIds`:
+
+| Shader(s) | Reduction | ID constant | Version constant |
+|---|---|---|---|
+| `ycbcr_reduction.hlsl` | YCbCr (separable) | `YCBCR_ID` = `1` | `YCBCR_VERSION` |
+| `downsample.hlsl`, `dwt_ll.hlsl`, `sobel_feature.hlsl`, `cell_packing.hlsl` | Spatial (4-part) | `SPATIAL_ID` = `2` | `SPATIAL_VERSION` |
+
+Changes to shader logic that alter the reduction output **must** increment the corresponding
+version constant. The YCbCr reduction is independently versioned because it is a separable step.
+
+Mark calculation (watermarking) is handled entirely in Java — no shader participates — and is
+intentionally left outside the versioned protocol so that marks never affect reduction results.

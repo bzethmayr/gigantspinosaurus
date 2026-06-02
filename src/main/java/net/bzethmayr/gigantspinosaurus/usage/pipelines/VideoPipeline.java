@@ -1,4 +1,4 @@
-package net.bzethmayr.gigantspinosaurus.usage;
+package net.bzethmayr.gigantspinosaurus.usage.pipelines;
 
 import net.bzethmayr.gigantspinosaurus.gpu.GpuBuffer;
 import net.bzethmayr.gigantspinosaurus.gpu.GpuContext;
