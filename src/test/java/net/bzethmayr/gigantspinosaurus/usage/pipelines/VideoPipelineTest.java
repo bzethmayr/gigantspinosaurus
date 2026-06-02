@@ -1,7 +1,7 @@
-package net.bzethmayr.gigantspinosaurus.usage.vk;
+package net.bzethmayr.gigantspinosaurus.usage.pipelines;
 
-import net.bzethmayr.gigantspinosaurus.usage.VideoReduction;
 import net.bzethmayr.gigantspinosaurus.usage.images.CrossFormatDecoder;
+import net.bzethmayr.gigantspinosaurus.usage.vk.VulkanRoot;
 import org.junit.jupiter.api.Test;
 
 import java.nio.file.Files;

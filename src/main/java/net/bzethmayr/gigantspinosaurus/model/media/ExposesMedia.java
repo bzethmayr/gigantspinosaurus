@@ -20,7 +20,7 @@ public interface ExposesMedia extends HasCanonicalAttributes {
 
     int MAX_REDUCERS = 4;
     int MEDIA_HASH_BYTES = 32;
-    short MEDIA_VERSION = 0;
+    short MEDIA_VERSION = 1;
 
     ReductionStep r0();
     ReductionStep r1();

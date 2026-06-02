@@ -121,8 +121,10 @@ pitest {
     junit5PluginVersion.set("1.2.3")
     targetClasses.set(listOf("net.bzethmayr.gigantspinosaurus.*"))
     targetTests.set(listOf("net.bzethmayr.gigantspinosaurus.*Test"))
+    // If you mutate code that calls Vulkan, your machine will crash.
     excludedTestClasses.set(listOf(
-            "net.bzethmayr.gigantspinosaurus.usage.vk.*"
+        "net.bzethmayr.gigantspinosaurus.usage.vk.*",
+        "net.bzethmayr.gigantspinosaurus.usage.pipelines.*"
     ))
     outputFormats.set(listOf("HTML", "XML"))
     reportDir.set(file("build/reports/pitest"))
