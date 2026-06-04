@@ -1,6 +1,5 @@
 package net.bzethmayr.gigantspinosaurus.usage;
 
-import net.bzethmayr.gigantspinosaurus.model.Framing;
 import net.bzethmayr.gigantspinosaurus.model.TestsModel;
 import net.bzethmayr.gigantspinosaurus.model.TestsWithBytes;
 import net.bzethmayr.gigantspinosaurus.model.correlation.HashesMarFrame;

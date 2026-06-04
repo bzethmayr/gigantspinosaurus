@@ -1,17 +1,19 @@
-This adds a layer of temporal complexity. Since the QR code is "self-describing" (it contains the frame index it references), you don't need a strict 1:1 sync between the embedder and the extractor. However, updating the mark "sometimes" creates a risk of ghosting if you use the frame-averaging extraction technique.
-Here is how to handle the data density and temporal updates in Java/GLSL for a programmatic "hidden" channel.
+Since the QR code is "self-describing" (it contains the frame index it references),
+you don't need a strict 1:1 sync between the embedder and the extractor. However, updating the mark "sometimes" creates a risk of ghosting if you use the frame-averaging extraction technique.
 ------------------------------
 ## 🕒 Temporal Logic: The "Persistence" Rule
-To make 600 bytes recoverable via a program, the signal must exist long enough for the extraction algorithm to distinguish it from the video's motion.
+To make 600 bytes recoverable via a program, the signal must exist
+long enough for the extraction algorithm to distinguish it from the video's motion.
 
 * Minimum Duration: Keep the same QR pattern for at least 3–5 frames (at 30/60fps).
-* Transition Handling: When you update the mark to a new index, do not cross-fade. A hard cut between QR textures is better for a program, as it prevents "mixed data" frames that would fail CRC checks.
-* The Asserted Index: Since the payload includes the frame index, your extractor should simply keep a "voting" buffer. If it decodes the same index from three consecutive frame-groups, it accepts that data as "True."
+* Transition Handling: When you update the mark to a new index, do not cross-fade.
+  A hard cut between QR textures is better for a program, as it prevents "mixed data" frames that would fail CRC checks.
+* The Asserted Index: Since the payload includes the frame index, your extractor should simply keep a "voting" buffer.
+  If it decodes the same index from three consecutive frame-groups, it accepts that data as "True."
 
 ------------------------------
 ## 🛠️ Enhanced GLSL for "Programmable" Hiding
-Since you are extracting via software, you can use Chroma (Color) Modulation instead of Luma. Standard video encoders (H.264) compress color much more aggressively (4:2:0 subsampling), but humans are terrible at seeing high-frequency color changes.
-If you stick to Luminosity, use a Bipolar Offset to maintain the "Average Brightness" of the frame. This makes the code almost invisible even at higher strengths.
+with Luminosity, use a Bipolar Offset to maintain the "Average Brightness" of the frame. This makes the code almost invisible even at higher strengths.
 
 // GLSL Fragment Shader: Bipolar Bit-Modulationvoid main() {
 vec4 tex = texture2D(videoTexture, vTexCoord);
