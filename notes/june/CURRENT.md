@@ -93,9 +93,11 @@ point-of-fact attestations.  One component of a larger evidence-provenance syste
 ## Remaining: INTERNAL (library scope gaps)
 
 1. **QR bipolar luma modulation mark** (README §13, `notes/QR.md`)
-   - `MarkEmbedder` is a trivial XOR placeholder
-   - Need: ZXing QR `BitMatrix` generation from MAR canonical bytes → bipolar luma modulation GLSL shader → temporal persistence (3-5 frame hold) → rolling-frame difference extraction → ZXing decoder pass
-   - Target params: QR version 16-M (81×81), ECC M (15%), luma offset ±3/255, 2×2 module size
+   - `PreparesMark` side done: ZXing encodes Version 18-M BitMatrix from MAR canonical bytes
+   - `MarksMedia.mark` implementation is a deprecated XOR placeholder — does not spatially render the QR
+   - Need: Vulkan compute shader that reads the 89×89 module buffer and applies bipolar luma modulation onto the video frame at correct module positions → temporal persistence (3-5 frame hold)
+   - Target params: QR version 18-M (89×89), ECC M (15%), luma offset ±3/255, 4×4 module size (at 1080p)
+   - extraction path: marked frames → rolling-frame difference extraction → ZXing decoder pass
 
 2. **Android/ARCore pipeline** (`notes/ANDROID.md`)
    - CameraX `ImageAnalysis` for raw `ImageProxy` interception

@@ -53,7 +53,14 @@ public class MarkEmbedder implements PreparesMark, MarksMedia {
         markBuffer.flip();
     }
 
+    /**
+     * @deprecated XOR placeholder — does not spatially render the QR code.
+     * Will be replaced by a Vulkan compute shader that reads the module buffer
+     * (255/0 bytes at {@value #QR_MODULES}&times;{@value #QR_MODULES}) and applies
+     * bipolar luma modulation onto the video frame at the correct module positions.
+     */
     @Override
+    @Deprecated(forRemoval = true)
     public void mark(final ByteBuffer mark, final ByteBuffer target) {
         final int markLen = Math.min(mark.remaining(), target.remaining());
         mark.rewind();
