@@ -1,67 +1,67 @@
-Since the QR code is "self-describing" (it contains the frame index it references),
-you don't need a strict 1:1 sync between the embedder and the extractor. However, updating the mark "sometimes" creates a risk of ghosting if you use the frame-averaging extraction technique.
-------------------------------
-## 🕒 Temporal Logic: The "Persistence" Rule
-To make 600 bytes recoverable via a program, the signal must exist
-long enough for the extraction algorithm to distinguish it from the video's motion.
+# QR Mark Scope
 
-* Minimum Duration: Keep the same QR pattern for at least 3–5 frames (at 30/60fps).
-* Transition Handling: When you update the mark to a new index, do not cross-fade.
-  A hard cut between QR textures is better for a program, as it prevents "mixed data" frames that would fail CRC checks.
-* The Asserted Index: Since the payload includes the frame index, your extractor should simply keep a "voting" buffer.
-  If it decodes the same index from three consecutive frame-groups, it accepts that data as "True."
+## Approach
 
-------------------------------
-## 🛠️ Enhanced GLSL for "Programmable" Hiding
-with Luminosity, use a Bipolar Offset to maintain the "Average Brightness" of the frame. This makes the code almost invisible even at higher strengths.
+MAR canonical bytes are encoded into a **fixed Version 18-M** QR code via ZXing. The resulting BitMatrix (89×89 modules) is packed into the mark buffer for GPU upload. All ZXing logic is encapsulated inside `PreparesMark` — nothing outside touches it.
 
-// GLSL Fragment Shader: Bipolar Bit-Modulationvoid main() {
+## Key Decisions
+
+- **Fixed Version 18-M**: Known geometry (89×89 modules) means the GLSL shader has compile-time constants for module addressing. No runtime version selection, no geometry back-derivation.
+- **Raw binary in byte mode**: No BASE64 or other transcoding — MAR canonical bytes go directly into QR byte mode via ISO-8859-1 encoding.
+- **`emptyMark(int marCanonicalSize)`**: Allocates a direct ByteBuffer of 7921 bytes (89×89, 1 byte per module). The `marCanonicalSize` parameter is accepted for interface consistency and potential future capacity assertions. Buffer size is fixed.
+- **`accept(marBytes, markBuffer)`**: ZXing `QRCodeWriter.encode()` with version=18, ECC=M, character set ISO-8859-1. BitMatrix is packed as byte-per-module: 255 for black, 0 for white.
+
+## Pipeline
+
+1. `VideoMarring` constructor: create `MarCreation`, produce intent frame, measure `intent.canonicalBytes().length`, call `emptyMark(marSize)` → direct ByteBuffer(7921)
+2. Per-frame calculation: ZXing encodes `mar.canonicalBytes()` → `BitMatrix(89×89)` → packed into mark buffer via `accept(marBytes, markBuffer)`
+3. `MarksMedia.mark(mark, target)`: blends QR module data into video frame (current: XOR; planned: GLSL bipolar luma modulation)
+
+## Parameters
+
+| Variable | Value |
+|---|---|
+| QR Version | 18 |
+| ECC Level | M (15%) |
+| Modules | 89×89 |
+| Data mode | Byte |
+| Mark buffer size | 7921 bytes (1 byte/module) |
+| Module values | 255 (black), 0 (white) |
+| Luma Offset | ±3/255 (1.2%) |
+| Persistence | 3-5 frames |
+
+## Temporal Persistence
+
+To make the QR signal recoverable via extraction, the same QR pattern must persist long enough for the extraction algorithm to distinguish it from video motion.
+
+- **Minimum Duration**: Keep the same QR pattern for at least 3-5 frames (at 30/60 fps).
+- **Transition Handling**: Hard cuts only — no cross-fade between QR textures. Mixed-data frames would fail CRC checks.
+- **Asserted Index**: The MAR frame includes the index in its payload. The extractor uses a voting buffer: if the same index is decoded from three consecutive frame-groups, it accepts that data as "True."
+
+## Extraction Strategy
+
+1. **Frame Capture**: Store the last 5 frames in a circular buffer.
+2. **Noise Reduction**: Subtract the current frame from the average of the buffer to "pop" the static QR pattern.
+3. **Thresholding**: Apply a global histogram threshold to the result.
+4. **ZXing Decoding**: Pass the resulting 1-bit image to ZXing QRCodeReader with HybridBinarizer.
+
+## GLSL Modulation (planned)
+
+```glsl
 vec4 tex = texture2D(videoTexture, vTexCoord);
 float qr = texture2D(qrTexture, qrCoord).r; // 1.0 for Black module, 0.0 for White
+float mask = (tex.r + tex.g + tex.b) / 3.0;
+float adaptiveOffset = lumaOffset * clamp(mask, 0.2, 0.8);
+float mod = (qr > 0.5) ? -adaptiveOffset : adaptiveOffset;
+gl_FragColor = vec4(tex.rgb + mod, tex.a);
+```
 
-    // Calculate a 'Strength' that scales with brightness
-    // (We hide data better in darker/busier areas)
-    float mask = (tex.r + tex.g + tex.b) / 3.0;
-    float adaptiveOffset = lumaOffset * clamp(mask, 0.2, 0.8);
+## Summary of Changes from Prior Approach
 
-    // Apply: +Offset for white modules, -Offset for black modules
-    // This keeps the local average luma nearly identical
-    float mod = (qr > 0.5) ? -adaptiveOffset : adaptiveOffset;
-
-    gl_FragColor = vec4(tex.rgb + mod, tex.a);
-}
-
-------------------------------
-## 🖥️ Java / CPU Side: Managing the 600 Bytes
-For 600 bytes + a frame index, you are pushing the limits of a single QR code's density.
-
-* Data Packaging:
-* Frame Index: 4 bytes (int)
-    * Payload: 596 bytes
-    * Total: 600 bytes
-* Version 16-M: Provides 662 bytes of capacity. This gives you about 10% headroom for future metadata or padding.
-* Throughput: If you update the mark every 10 frames at 60fps, you are effectively streaming 3.6 KB/s of hidden metadata.
-
-------------------------------
-## 🧪 Extraction Strategy (The "Reader" Code)
-Since your QR asserts an index, your reader program should use a Rolling Difference Buffer:
-
-1. Frame Capture: Store the last 5 frames in a circular buffer.
-2. Noise Reduction: Subtract the current frame from the average of the buffer. This "pops" the static QR pattern out of the moving background.
-3. Thresholding: Apply a Global Histogram Threshold to the result.
-4. ZXing Integration: Pass the resulting 1-bit image to the ZXing QRCodeReader.
-* Note: In Java, use HybridBinarizer; it is specifically designed for QR codes with low contrast or non-uniform lighting.
-
-------------------------------
-## 🏁 Summary of Parameters for Success
-
-| Variable | Value for "Unobtrusive" | Value for "Robust" |
-|---|---|---|
-| QR Version | 16 (81x81) | 16 (81x81) |
-| ECC Level | M (15%) | H (30%) |
-| Luma Offset | ±3/255 (1.2%) | ±10/255 (4%) |
-| Module Size | 2x2 px (at 320p) | 4x4 px (at 1080p) |
-| Persistence | 2 frames | 6+ frames |
-
-If you'd like, I can provide a Java snippet using ZXing to generate the BitMatrix and convert it into a ByteBuffer ready for glTexImage2D. Would that be helpful for your bridge between the CPU and GPU?
-
+| Previous (QR.md v1) | Current |
+|---|---|
+| QR Version 16-M, 600-byte payload | Version 18-M fixed, 89×89 modules |
+| Fixed `MARK_SIZE = 600` in code | Buffer sized to BitMatrix (7921 bytes) |
+| `emptyMark()` — no parameter | `emptyMark(int marCanonicalSize)` |
+| ZXing not yet used | ZXing `QRCodeWriter` inside `PreparesMark.accept()` |
+| 600-byte constant coupled to version | Version is explicit, no magic capacity constant |

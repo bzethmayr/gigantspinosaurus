@@ -53,8 +53,10 @@ public class VideoMarring {
         this.pipeline = pipeline;
         this.cadenceFrames = cadenceFrames;
         this.emptyFrames = emptyFrames;
-        this.marsReduced = new MarCreation(ctors, env).intentToRecord(pipeline.reducer().reductions());
-        mark = pipeline.combiner().emptyMark();
+        final MarCreation marCreator = new MarCreation(ctors, env);
+        final ExposesMar intent = marCreator.intentFrame(pipeline.reducer().reductions());
+        mark = pipeline.combiner().emptyMark(intent.canonicalBytes().length);
+        this.marsReduced = marCreator.intentToRecord(intent);
         mediaFrames = new FrameThreadWorker();
         background = new CalculationThreadWorker();
     }

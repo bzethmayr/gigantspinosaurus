@@ -45,22 +45,8 @@ The core datatype here is the MAR (Minimal Attestation Record),
 which carries the provenance and verification information and specifies the byte-level representation.
 The MAR is transmitted independently of the artifact.
 
-### Planned ecosystem
-These are necessary for production deployment but not yet implemented in the library.
-
-#### install flow
-- generate hardware-backed keypair (Ed25519)
-- store private key in secure hardware
-- store public key in app storage
-
-#### embeddings
-
-#### device bindings
-
-#### key access/persistence
-
-#### registrar propagation
-Propagation of MAR frames to durable external ledgers for establishing a referential spine of attestations.
+### Versioning
+Each part of the MAR data format is independently versioned.
 
 ### On MAR creation:
 - encode MAR_core fields (conditions)
@@ -97,6 +83,29 @@ It is uncentralized by design.
 - **GPU/Vulkan compute pipeline** — `gpu/` + `usage/vk/` for compute-shader-accelerated reduction and marking
 - **Framing/orientation/position model** — quaternion orientation, cardinal-direction enums, elevation
 - **Desktop environment defaults** — `Blake3MediaHasher`, `SipMarHasher`, `SignsForJava15`, `DesktopOrientation`, `DesktopPosition`
+
+### Planned ecosystem
+These are necessary for production deployment but not yet implemented in the library.
+
+#### install flow
+- generate hardware-backed keypair (Ed25519)
+- store private key in secure hardware
+- store public key in app storage
+
+Could be brought into library scope, given common OS support for this workflow.
+
+#### embeddings
+In progress for sequences of frames.
+
+#### device bindings
+E.g. Android, iOS, OSX, Windows, Linux - access to the sensors needed to make Orientation and Framing meaningful.
+
+#### key access/persistence
+Mostly covered in install flow - this is explicitly not in our direct scopes.
+
+#### registrar propagation
+Propagation of MAR frames to durable external ledgers for establishing a referential spine of attestations.
+This is definitely an application vs a library scope, or at least it's a different library's scope.
 
 ## agentic involvement
 Limited, with mixed results. Evaluations are specific to the development system.

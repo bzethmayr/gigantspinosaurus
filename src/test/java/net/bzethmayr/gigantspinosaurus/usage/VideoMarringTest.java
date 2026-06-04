@@ -48,7 +48,7 @@ class VideoMarringTest implements TestsModel, TestsWithBytes {
 
     private Consumer<BindsMediaPipeline> fakePreparer() {
         return p -> doAnswer(iom ->
-                fakeMediaBytes(MANY)).when(p.combiner()).emptyMark();
+                fakeMediaBytes(MANY)).when(p.combiner()).emptyMark(anyInt());
     }
 
     private Consumer<BindsMediaPipeline> minimalFakes() {
