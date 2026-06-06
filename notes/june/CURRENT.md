@@ -48,7 +48,7 @@ point-of-fact attestations.  One component of a larger evidence-provenance syste
 ### Default implementations
 - `BindsEnvironment.desktopEnvironment()` — wires `SipMarHasher` + `Blake3MediaHasher` + `SignsForJava15` + desktop sensor stubs
 - `BindsConstructors.defaultConstructors()` — wires all model constructors
-- `BindsMediaPipeline` — reducer + combiner + marker
+- `BindsMarkingPipeline` — reducer + combiner + marker
 - `SipMarHasher` — SipHash 4-8 via `io.whitfin:siphash`
 - `Blake3MediaHasher` — BLAKE3 via `io.github.rctcwyvrn:blake3`
 - `SignsForJava15` — Ed25519 via `java.security.Signature`
@@ -56,8 +56,15 @@ point-of-fact attestations.  One component of a larger evidence-provenance syste
 ### Near-real-time video marring
 - `VideoMarring` — dual-thread state machine (GRAB_FRAME→CALCULATE_MARK→APPLY_MARK→WAIT_EMPTY)
 
-### Mark embedding (stub level)
-- `MarkEmbedder` — trivial 600-byte XOR copy into target buffer (placeholder)
+### QR mark rendering
+- `MarkEmbedder` — deprecated XOR placeholder (still wired into `VideoMarringPipelineTest`)
+- `QrSpatialMark` — CPU spatial renderer: configurable position, module pixel size, luma offset; TIM sense via frameIndex parity; used by `VideoMarringTimTest`
+
+### QR mark extraction & decoding
+- `RollingBufferExtractsMarks` — configurable rolling-average extraction with running integer sum
+- `ZxingDecodesMar` — ZXing `QRCodeReader` wrapper feeding mask bytes as ARGB to `HybridBinarizer`
+- `VideoVerification` — streaming orchestrator: `acceptFrame(ByteBuffer, int) → Optional<byte[]>`, `flush()`, `reset()`
+- `BindsExtractionPipeline` — one-shot `extractAndDecode(ByteBuffer) → Optional<byte[]>`
 
 ### Desktop sensor stubs
 - `DesktopPosition` — returns zeros for all fields
@@ -76,6 +83,7 @@ point-of-fact attestations.  One component of a larger evidence-provenance syste
 - `GeopositionTest`, `OrientationTest`, `FramingTest`, `QuaternionHelperTest`
 - `VulkanRootTest`, `VulkanBufferTest`, `InstanceCreationTest`, `PhysicalDeviceSelectionTest`, `LogicalDeviceCreationTest`
 - `VideoPipelineTest`, `VideoMarringPipelineTest`, `VideoMarringTest`
+- `VideoMarringTimTest` — TIM alternating mark + extraction + ZXing decode + cryptographic verification
 - `CrossFormatDecoder` (image test utility)
 
 ---
@@ -93,11 +101,12 @@ point-of-fact attestations.  One component of a larger evidence-provenance syste
 ## Remaining: INTERNAL (library scope gaps)
 
 1. **QR bipolar luma modulation mark** (README §13, `notes/QR.md`)
-   - `PreparesMark` side done: ZXing encodes Version 18-M BitMatrix from MAR canonical bytes
-   - `MarksMedia.mark` implementation is a deprecated XOR placeholder — does not spatially render the QR
-   - Need: Vulkan compute shader that reads the 89×89 module buffer and applies bipolar luma modulation onto the video frame at correct module positions → temporal persistence (3-5 frame hold)
-   - Target params: QR version 18-M (89×89), ECC M (15%), luma offset ±3/255, 4×4 module size (at 1080p)
-   - extraction path: marked frames → rolling-frame difference extraction → ZXing decoder pass
+   - **DONE**: `PreparesMark` — ZXing encodes Version 18-M BitMatrix from MAR canonical bytes (with MARGIN=0)
+   - **DONE**: `QrSpatialMark` — CPU spatial renderer with configurable position, module size, luma offset, TIM sense
+   - **DONE**: Extraction pipeline — `RollingBufferExtractsMarks` + `ZxingDecodesMar` + `BindsExtractionPipeline`
+   - **DONE**: Streaming verification — `VideoVerification` orchestrator
+   - **DONE**: Full integration test — `VideoMarringTimTest` (mark → extract → decode → verify)
+   - **REMAINING**: Vulkan compute shader that reads the 89×89 module buffer and applies bipolar luma modulation onto the video frame at correct module positions. CPU path is sufficient for single-stream 1080p; GPU optimization deferred.
 
 2. **Android/ARCore pipeline** (`notes/ANDROID.md`)
    - CameraX `ImageAnalysis` for raw `ImageProxy` interception

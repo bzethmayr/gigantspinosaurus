@@ -107,7 +107,7 @@ class VideoMarringTest implements TestsModel, TestsWithBytes {
     void mediaPipelineCrash_setsBrokenState() throws Exception {
         setUpMockPipeline(
                 reducerSteps(), fakeReducer(), fakePreparer(),
-                p -> doThrow(new OutOfMemoryError("Vulkan device lost")).when(p.marker()).mark(any(), any()));
+                p -> doThrow(new OutOfMemoryError("Vulkan device lost")).when(p.marker()).mark(any(), any(), anyInt()));
 
         final var media = underTest.mediaFrame();
         final var background = underTest.background();

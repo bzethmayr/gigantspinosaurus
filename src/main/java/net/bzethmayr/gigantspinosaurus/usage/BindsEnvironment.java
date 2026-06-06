@@ -9,6 +9,9 @@ import net.bzethmayr.gigantspinosaurus.model.orientation.ExposesOrientation;
 import net.bzethmayr.gigantspinosaurus.model.position.ExposesPosition;
 import net.bzethmayr.gigantspinosaurus.model.signature.Signatory;
 import net.bzethmayr.gigantspinosaurus.model.time.ExposesUtcDoubleSeconds;
+import net.bzethmayr.gigantspinosaurus.usage.defaults.Blake3MediaHasher;
+import net.bzethmayr.gigantspinosaurus.usage.defaults.SignsForJava15;
+import net.bzethmayr.gigantspinosaurus.usage.defaults.SipMarHasher;
 import net.bzethmayr.gigantspinosaurus.usage.desktop.DesktopOrientation;
 import net.bzethmayr.gigantspinosaurus.usage.desktop.DesktopPosition;
 

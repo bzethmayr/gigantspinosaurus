@@ -1,4 +1,4 @@
-package net.bzethmayr.gigantspinosaurus.usage;
+package net.bzethmayr.gigantspinosaurus.usage.defaults;
 
 import net.bzethmayr.gigantspinosaurus.model.signature.ExposesSignature;
 import net.bzethmayr.gigantspinosaurus.model.signature.Signatory;

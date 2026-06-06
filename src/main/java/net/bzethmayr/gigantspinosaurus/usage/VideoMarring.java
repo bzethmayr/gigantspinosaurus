@@ -147,7 +147,7 @@ public class VideoMarring {
                     }
                     case CALCULATE_MARK -> LockSupport.unpark(locking.calcThread); // buffers belong to calculation
                     case APPLY_MARK -> {
-                        pipeline.marker().mark(mark, rawBuffer);
+                        pipeline.marker().mark(mark, rawBuffer, mediaIndex);
                         mark.rewind();
                         if (firstDisplay < 0) {
                             firstDisplay = mediaIndex;

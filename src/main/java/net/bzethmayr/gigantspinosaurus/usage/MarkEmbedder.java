@@ -17,7 +17,7 @@ import java.util.Map;
 public class MarkEmbedder implements PreparesMark, MarksMedia {
     private static final int QR_VERSION = 18;
     private static final ErrorCorrectionLevel QR_ECC = ErrorCorrectionLevel.M;
-    private static final int QR_MODULES = QR_VERSION * 4 + 17;
+    static final int QR_MODULES = QR_VERSION * 4 + 17;
     private static final int MARK_SIZE = QR_MODULES * QR_MODULES;
     private static final Map<EncodeHintType, Object> HINTS;
 
@@ -26,6 +26,7 @@ public class MarkEmbedder implements PreparesMark, MarksMedia {
         hints.put(EncodeHintType.ERROR_CORRECTION, QR_ECC);
         hints.put(EncodeHintType.QR_VERSION, QR_VERSION);
         hints.put(EncodeHintType.CHARACTER_SET, "ISO-8859-1");
+        hints.put(EncodeHintType.MARGIN, 0);
         HINTS = Collections.unmodifiableMap(hints);
     }
 
@@ -61,7 +62,7 @@ public class MarkEmbedder implements PreparesMark, MarksMedia {
      */
     @Override
     @Deprecated(forRemoval = true)
-    public void mark(final ByteBuffer mark, final ByteBuffer target) {
+    public void mark(final ByteBuffer mark, final ByteBuffer target, final int frameIndex) {
         final int markLen = Math.min(mark.remaining(), target.remaining());
         mark.rewind();
         target.rewind();
