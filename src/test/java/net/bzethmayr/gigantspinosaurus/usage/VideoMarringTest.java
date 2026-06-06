@@ -22,36 +22,36 @@ class VideoMarringTest implements TestsModel, TestsWithBytes {
     private static final int CADENCE = 60;
     private static final int EMPTY = 10;
 
-    private BindsMediaPipeline pipeline;
+    private BindsMarkingPipeline pipeline;
     private VideoMarring underTest;
 
     @SafeVarargs
-    private void setUpMockPipeline(final Consumer<BindsMediaPipeline>... configs) {
+    private void setUpMockPipeline(final Consumer<BindsMarkingPipeline>... configs) {
         final ReducesMedia mockReduction = mock();
         final PreparesMark mockPreparation = mock();
         final MarksMedia mockMarking = mock();
-        pipeline = new BindsMediaPipeline(mockReduction, mockPreparation, mockMarking);
+        pipeline = new BindsMarkingPipeline(mockReduction, mockPreparation, mockMarking);
         Stream.of(configs).forEach(c -> c.accept(pipeline));
         underTest = new VideoMarring(
                 BindsConstructors.defaultConstructors(), BindsEnvironment.desktopEnvironment(),
                 pipeline, CADENCE, EMPTY);
     }
 
-    private Consumer<BindsMediaPipeline> reducerSteps(final ReductionStep... steps) {
+    private Consumer<BindsMarkingPipeline> reducerSteps(final ReductionStep... steps) {
         return p -> doReturn(steps).when(p.reducer()).reductions();
     }
 
-    private Consumer<BindsMediaPipeline> fakeReducer() {
+    private Consumer<BindsMarkingPipeline> fakeReducer() {
         return p -> doAnswer(iom ->
                 fakeMediaBytes(SOME)).when(p.reducer()).apply(any());
     }
 
-    private Consumer<BindsMediaPipeline> fakePreparer() {
+    private Consumer<BindsMarkingPipeline> fakePreparer() {
         return p -> doAnswer(iom ->
                 fakeMediaBytes(MANY)).when(p.combiner()).emptyMark(anyInt());
     }
 
-    private Consumer<BindsMediaPipeline> minimalFakes() {
+    private Consumer<BindsMarkingPipeline> minimalFakes() {
         return reducerSteps().andThen(fakeReducer()).andThen(fakePreparer());
     }
 

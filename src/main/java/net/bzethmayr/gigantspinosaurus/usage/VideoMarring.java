@@ -18,7 +18,7 @@ import static net.zethmayr.fungu.core.ExceptionFactory.becauseImpossible;
  */
 public class VideoMarring {
     private final Locking locking = new Locking();
-    private final BindsMediaPipeline pipeline;
+    private final BindsMarkingPipeline pipeline;
     private final MarCreation.ReducedFrameReceiver marsReduced;
     private volatile WorkerState workerState = GRAB_FRAME;
     private final AtomicReference<ByteBuffer> mediaRef = new AtomicReference<>();
@@ -46,7 +46,7 @@ public class VideoMarring {
     public VideoMarring(
             final BindsConstructors ctors,
             final BindsEnvironment env,
-            final BindsMediaPipeline pipeline,
+            final BindsMarkingPipeline pipeline,
             final int cadenceFrames,
             final int emptyFrames
     ) {

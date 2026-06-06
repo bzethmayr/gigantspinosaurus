@@ -58,7 +58,7 @@ class VideoMarringPipelineTest {
         final var reduction = new CpuReduction(raster.width(), raster.height());
 
         final var embedder = new MarkEmbedder();
-        final var pipeline = new BindsMediaPipeline(reduction, embedder, embedder);
+        final var pipeline = new BindsMarkingPipeline(reduction, embedder, embedder);
         final var underTest = new VideoMarring(
                 BindsConstructors.defaultConstructors(),
                 BindsEnvironment.desktopEnvironment(),
@@ -119,7 +119,7 @@ class VideoMarringPipelineTest {
         final var reduction = new CpuReduction(w, h);
 
         final var embedder = new MarkEmbedder();
-        final var pipeline = new BindsMediaPipeline(reduction, embedder, embedder);
+        final var pipeline = new BindsMarkingPipeline(reduction, embedder, embedder);
         final var underTest = new VideoMarring(
                 BindsConstructors.defaultConstructors(),
                 BindsEnvironment.desktopEnvironment(),
@@ -170,7 +170,7 @@ class VideoMarringPipelineTest {
              var reduction = new VideoReduction(gpu, raster.width(), raster.height())) {
 
             final var embedder = new MarkEmbedder();
-            final var pipeline = new BindsMediaPipeline(reduction, embedder, embedder);
+            final var pipeline = new BindsMarkingPipeline(reduction, embedder, embedder);
             final var underTest = new VideoMarring(
                     BindsConstructors.defaultConstructors(),
                     BindsEnvironment.desktopEnvironment(),
@@ -230,7 +230,7 @@ class VideoMarringPipelineTest {
              var reduction = new VideoReduction(gpu, w, h)) {
 
             final var embedder = new MarkEmbedder();
-            final var pipeline = new BindsMediaPipeline(reduction, embedder, embedder);
+            final var pipeline = new BindsMarkingPipeline(reduction, embedder, embedder);
             final var underTest = new VideoMarring(
                     BindsConstructors.defaultConstructors(),
                     BindsEnvironment.desktopEnvironment(),

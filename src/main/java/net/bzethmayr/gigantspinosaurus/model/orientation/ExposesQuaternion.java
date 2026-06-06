@@ -1,6 +1,8 @@
 package net.bzethmayr.gigantspinosaurus.model.orientation;
 
 public interface ExposesQuaternion<R extends ExposesQuaternion<R>> {
+    // Capital Q-prefixed field names (QW, QX, QY, QZ) are intentional:
+    // they stand out in wire-format forensic analysis as quaternion components.
     String W_FIELD = "QW";
     String X_FIELD = "QX";
     String Y_FIELD = "QY";
