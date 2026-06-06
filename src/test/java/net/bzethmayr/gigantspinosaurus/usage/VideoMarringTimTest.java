@@ -14,7 +14,9 @@ import net.bzethmayr.gigantspinosaurus.usage.images.CrossFormatDecoder;
 import net.bzethmayr.gigantspinosaurus.usage.images.CrossFormatDecoder.Raster;
 import org.junit.jupiter.api.Test;
 
+import java.awt.image.BufferedImage;
 import java.io.IOException;
+import javax.imageio.ImageIO;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -189,5 +191,56 @@ class VideoMarringTimTest implements TestsWithBytes {
 
         assertTrue(verifier.verifyMedia(decodedMar, reducedFrame0),
                 "Decoded MAR should cryptographically verify against original frame media");
+    }
+
+    private static void writeRasterAsPng(final ByteBuffer buf, final int width, final int height, final Path path) throws IOException {
+        final BufferedImage img = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+        buf.rewind();
+        for (int y = 0; y < height; y++) {
+            for (int x = 0; x < width; x++) {
+                final int off = (y * width + x) * 4;
+                final int r = buf.get(off) & 0xFF;
+                final int g = buf.get(off + 1) & 0xFF;
+                final int b = buf.get(off + 2) & 0xFF;
+                img.setRGB(x, y, (r << 16) | (g << 8) | b);
+            }
+        }
+        ImageIO.write(img, "png", path.toFile());
+    }
+
+    @Test
+    void generateTimResourceFrames() throws Exception {
+        final Path imagePath = losslessPngs().findFirst().orElseThrow();
+        final String baseName = imagePath.getFileName().toString().replace("_lossless.png", "");
+        final Raster raster = CrossFormatDecoder.decode(imagePath);
+
+        final var ctors = defaultConstructors();
+        final var env = desktopEnvironment();
+        final var reduction = new CpuReduction(raster.width(), raster.height());
+        final var creation = new MarCreation(ctors, env);
+        final var embedder = new MarkEmbedder();
+
+        final ReducedFrameReceiver receiver = creation.intentToRecord(reduction.reductions());
+        final ByteBuffer cleanFrame = raster.toBuffer();
+        final ByteBuffer reducedFrame0 = reduction.apply(cleanFrame);
+        final ExposesMar mar0 = receiver.reducedFrame(reducedFrame0, 0);
+
+        final ByteBuffer markBuffer = embedder.emptyMark(mar0.canonicalBytes().length);
+        embedder.accept(mar0.canonicalBytes(), markBuffer);
+
+        final var marker = QrSpatialMark.autoFit(
+                QrSpatialMark.DEFAULT_LUMA_OFFSET, raster.width(), raster.height());
+
+        // PLUS version (even frame index)
+        final ByteBuffer plusFrame = ByteBuffer.wrap(Arrays.copyOf(raster.rgb(), raster.rgb().length));
+        marker.mark(markBuffer, plusFrame, 0);
+        writeRasterAsPng(plusFrame, raster.width(), raster.height(),
+                CROSS_FORMAT_DIR.resolve(baseName + "_lossless_plus.png"));
+
+        // MINUS version (odd frame index)
+        final ByteBuffer minusFrame = ByteBuffer.wrap(Arrays.copyOf(raster.rgb(), raster.rgb().length));
+        marker.mark(markBuffer, minusFrame, 1);
+        writeRasterAsPng(minusFrame, raster.width(), raster.height(),
+                CROSS_FORMAT_DIR.resolve(baseName + "_lossless_minus.png"));
     }
 }
