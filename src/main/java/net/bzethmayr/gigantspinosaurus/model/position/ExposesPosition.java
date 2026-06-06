@@ -14,6 +14,8 @@ import static net.bzethmayr.gigantspinosaurus.util.CollectionHelper.adds;
 
 public interface ExposesPosition extends HasCanonicalAttributes {
     short POSITION_VERSION = 2;
+    // Non-camelCase field names (DNLat, DELong, MUp) are intentional:
+    // captured-field naming aids manual and automated spotting in serialized data.
     String LAT_FIELD = "DNLat";
     String LONG_FIELD = "DELong";
     String ELEV_FIELD = "MUp";

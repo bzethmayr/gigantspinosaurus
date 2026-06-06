@@ -4,5 +4,5 @@ import java.nio.ByteBuffer;
 
 @FunctionalInterface
 public interface MarksMedia {
-    void mark(final ByteBuffer mark, final ByteBuffer target);
+    void mark(final ByteBuffer mark, final ByteBuffer target, final int frameIndex);
 }

@@ -16,6 +16,7 @@ public interface ExposesMedia extends HasCanonicalAttributes {
     String REDUCTION_1_FIELD = "r1";
     String REDUCTION_2_FIELD = "r2";
     String REDUCTION_3_FIELD = "r3";
+    // BLK3 is a deliberately terse marker for the BLAKE3 media hash in the wire format.
     String MEDIA_HASH_FIELD = "BLK3";
 
     int MAX_REDUCERS = 4;

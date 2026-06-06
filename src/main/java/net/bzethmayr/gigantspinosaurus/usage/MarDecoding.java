@@ -32,7 +32,7 @@ public final class MarDecoding {
 
     public static final CanonicalDecoder<Media> MEDIA_DECODER = CreatesMedia.decodesMedias(Media::new);
 
-    private static final CanonicalDecoder<MarSignature> SIGNATURE_DECODER = CreatesSignature.createsSignatures(MarSignature::new);
+    private static final CanonicalDecoder<MarSignature> SIGNATURE_DECODER = CreatesSignature.decodesSignatures(MarSignature::new);
 
     public static MarSignature decodeSignature(final ByteBuffer in, final CanonizesDecoders decoders) {
         return SIGNATURE_DECODER.decode(in, decoders);

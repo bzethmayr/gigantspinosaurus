@@ -1,4 +1,4 @@
-package net.bzethmayr.gigantspinosaurus.usage;
+package net.bzethmayr.gigantspinosaurus.usage.defaults;
 
 import io.whitfin.siphash.SipHash;
 import net.bzethmayr.gigantspinosaurus.model.correlation.HashesMarFrame;

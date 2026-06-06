@@ -4,5 +4,5 @@ import java.nio.ByteBuffer;
 import java.util.function.BiConsumer;
 
 public interface PreparesMark extends BiConsumer<byte[], ByteBuffer> {
-    ByteBuffer emptyMark();
+    ByteBuffer emptyMark(int marCanonicalSize);
 }

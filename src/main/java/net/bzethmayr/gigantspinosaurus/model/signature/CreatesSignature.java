@@ -1,5 +1,7 @@
 package net.bzethmayr.gigantspinosaurus.model.signature;
 
+import net.bzethmayr.gigantspinosaurus.capabilities.HasCanonicalAttributes.CanonicalDecoder;
+
 import java.util.HashSet;
 import java.util.Set;
 
@@ -14,7 +16,7 @@ public interface CreatesSignature<T extends ExposesSignature> {
                                      byte[] ed25519,
                                      short version);
 
-    static <T extends ExposesSignature> CanonicalDecoder<T> createsSignatures(final CreatesSignature<T> ctor) {
+    static <T extends ExposesSignature> CanonicalDecoder<T> decodesSignatures(final CreatesSignature<T> ctor) {
         return (in, decoders) -> {
             expect(in, OPEN);
 

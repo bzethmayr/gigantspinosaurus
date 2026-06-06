@@ -1,4 +1,4 @@
-package net.bzethmayr.gigantspinosaurus.usage;
+package net.bzethmayr.gigantspinosaurus.usage.defaults;
 
 import io.github.rctcwyvrn.blake3.Blake3;
 import net.bzethmayr.gigantspinosaurus.model.correlation.HashesMedia;

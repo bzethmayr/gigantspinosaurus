@@ -20,10 +20,12 @@ The index is stale with probability approaching certainty.
 Look at files instead of guessing their contents.
 
 ## first
-1. `README.md`
-2. `src/main/java/net/bzethmayr/gigantspinosaurus/capabilities/HasCanonicalAttributes.java`
-3. `src/main/java/net/bzethmayr/gigantspinosaurus/model/mar/ExposesMar.java`
-4. `src/main/java/net/bzethmayr/gigantspinosaurus/usage/MarCreation.java`
+1. `notes/IDEA.md`
+2. `README.md`
+3. `src/main/java/net/bzethmayr/gigantspinosaurus/capabilities/HasCanonicalAttributes.java`
+4. `src/main/java/net/bzethmayr/gigantspinosaurus/model/mar/ExposesMar.java`
+5. `src/main/java/net/bzethmayr/gigantspinosaurus/usage/MarCreation.java`
+6. `src/main/java/net/bzethmayr/gigantspinosaurus/usage/MarVerification.java`
 
 ## detailed structure
 * the `src/main/java/net/bzethmayr/gigantspinosaurus/capabilities` package

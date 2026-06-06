@@ -18,7 +18,7 @@ import static net.zethmayr.fungu.core.ExceptionFactory.becauseImpossible;
  */
 public class VideoMarring {
     private final Locking locking = new Locking();
-    private final BindsMediaPipeline pipeline;
+    private final BindsMarkingPipeline pipeline;
     private final MarCreation.ReducedFrameReceiver marsReduced;
     private volatile WorkerState workerState = GRAB_FRAME;
     private final AtomicReference<ByteBuffer> mediaRef = new AtomicReference<>();
@@ -46,15 +46,17 @@ public class VideoMarring {
     public VideoMarring(
             final BindsConstructors ctors,
             final BindsEnvironment env,
-            final BindsMediaPipeline pipeline,
+            final BindsMarkingPipeline pipeline,
             final int cadenceFrames,
             final int emptyFrames
     ) {
         this.pipeline = pipeline;
         this.cadenceFrames = cadenceFrames;
         this.emptyFrames = emptyFrames;
-        this.marsReduced = new MarCreation(ctors, env).intentToRecord(pipeline.reducer().reductions());
-        mark = pipeline.combiner().emptyMark();
+        final MarCreation marCreator = new MarCreation(ctors, env);
+        final ExposesMar intent = marCreator.intentFrame(pipeline.reducer().reductions());
+        mark = pipeline.combiner().emptyMark(intent.canonicalBytes().length);
+        this.marsReduced = marCreator.intentToRecord(intent);
         mediaFrames = new FrameThreadWorker();
         background = new CalculationThreadWorker();
     }
@@ -145,7 +147,7 @@ public class VideoMarring {
                     }
                     case CALCULATE_MARK -> LockSupport.unpark(locking.calcThread); // buffers belong to calculation
                     case APPLY_MARK -> {
-                        pipeline.marker().mark(mark, rawBuffer);
+                        pipeline.marker().mark(mark, rawBuffer, mediaIndex);
                         mark.rewind();
                         if (firstDisplay < 0) {
                             firstDisplay = mediaIndex;
