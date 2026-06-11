@@ -4,10 +4,11 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import static net.zethmayr.fungu.core.ExceptionFactory.becauseIllegal;
 
-final class NonBlockingMarringCoordinator implements VideoMarringCoordinator {
+final class NonBlockingMarringCoordinator implements MarringCoordinatorAccess, VideoMarringCoordinator {
     private final ReentrantLock lock = new ReentrantLock();
     private volatile WorkerState state = WorkerState.GRAB_FRAME;
     private volatile boolean broken;
+    private volatile Throwable brokenThrowable;
 
     private Thread mediaThread;
     private Thread calcThread;
@@ -53,8 +54,9 @@ final class NonBlockingMarringCoordinator implements VideoMarringCoordinator {
     }
 
     @Override
-    public void pipelineBroken() {
+    public void pipelineBroken(final Throwable t) {
         broken = true;
+        brokenThrowable = t;
         state = WorkerState.BROKEN;
         if (mediaThread != null) {
             mediaThread.interrupt();
@@ -70,11 +72,17 @@ final class NonBlockingMarringCoordinator implements VideoMarringCoordinator {
     }
 
     @Override
+    public Throwable brokeWith() {
+        return brokenThrowable;
+    }
+
+    @Override
     public void reset() {
         lock.lock();
         try {
             state = WorkerState.GRAB_FRAME;
             broken = false;
+            brokenThrowable = null;
         } finally {
             lock.unlock();
         }

@@ -16,7 +16,7 @@ import static net.zethmayr.fungu.core.ExceptionFactory.becauseImpossible;
  * offloading as much work as possible away from the media thread.
  */
 public class VideoMarring {
-    private final VideoMarringCoordinator coordinator;
+    private final MarringCoordinatorAccess coordinator;
     private final BindsMarkingPipeline pipeline;
     private final MarCreation.ReducedFrameReceiver marsReduced;
     private ByteBuffer copyBuffer;
@@ -37,7 +37,7 @@ public class VideoMarring {
             final int emptyFrames
     ) {
         this.pipeline = pipeline;
-        this.coordinator = coordinator;
+        this.coordinator = (MarringCoordinatorAccess) coordinator;
         this.cadenceFrames = cadenceFrames;
         this.emptyFrames = emptyFrames;
         final MarCreation marCreator = new MarCreation(ctors, env);
@@ -129,7 +129,7 @@ public class VideoMarring {
                     case BROKEN -> itsBroken();
                 }
             } catch (final Throwable t) {
-                coordinator.pipelineBroken();
+                coordinator.pipelineBroken(t);
             } finally {
                 coordinator.mediaLeave();
             }
@@ -152,7 +152,7 @@ public class VideoMarring {
                     coordinator.unparkMedia();
                 }
             } catch (final Throwable t) {
-                coordinator.pipelineBroken();
+                coordinator.pipelineBroken(t);
             } finally {
                 coordinator.calcLeave();
             }
