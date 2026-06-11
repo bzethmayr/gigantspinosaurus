@@ -6,7 +6,7 @@ public interface ExposesSigningKeys extends Supplier<byte[]> {
 
     /**
      * {@inheritDoc}
-     * @return the 32-byte exposable (public) key.
+     * @return the 44-byte X509-encoded public key.
      */
     @Override
     byte[] get();

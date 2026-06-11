@@ -74,7 +74,7 @@ point-of-fact attestations.  One component of a larger evidence-provenance syste
 
 ### Desktop sensor stubs
 - `DesktopPosition` — returns zeros for all fields
-- `DesktopOrientation` — fixed quaternion (1, 0, 1, 0); `withFraming` returns null
+- `DesktopOrientation` — fixed quaternion (1, 0, 1, 0); `withFraming` returns new instance
 
 ### Capabilities
 - `Resettable` — reset-to-initial-state contract
@@ -123,7 +123,7 @@ point-of-fact attestations.  One component of a larger evidence-provenance syste
 
 3. **Real sensor sources** (replace desktop stubs)
    - GPS/network location (DesktopPosition returns zeros)
-   - Accelerometer/gyro/magnetometer orientation (DesktopOrientation.withFraming returns null)
+   - Accelerometer/gyro/magnetometer orientation (DesktopOrientation.withFraming returns new instance)
    - Camera intrinsics / exposure metadata (none wired)
    - Each is per-platform (Android vs desktop)
 

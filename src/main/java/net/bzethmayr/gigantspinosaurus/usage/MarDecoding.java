@@ -38,7 +38,7 @@ public final class MarDecoding {
         return SIGNATURE_DECODER.decode(in, decoders);
     }
 
-    private static final CanonicalDecoder<Framing> FRAMING_DECODER = CreatesFraming.createsFramings(Framing::new);
+    private static final CanonicalDecoder<Framing> FRAMING_DECODER = CreatesFraming.decodesFramings(Framing::new);
 
     public static Framing decodeFraming(final ByteBuffer in, final CanonizesDecoders decoders) {
         return FRAMING_DECODER.decode(in, decoders);

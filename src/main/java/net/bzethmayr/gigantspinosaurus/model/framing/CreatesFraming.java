@@ -28,7 +28,7 @@ public interface CreatesFraming<T extends ExposesFraming> {
                           North north,
                           short version);
 
-    static <T extends ExposesFraming> CanonicalDecoder<T> createsFramings(final CreatesFraming<T> ctor) {
+    static <T extends ExposesFraming> CanonicalDecoder<T> decodesFramings(final CreatesFraming<T> ctor) {
         return (in, decoders) -> {
             expect(in, OPEN);
 
