@@ -172,4 +172,13 @@ independent version number. The MAR wire format is `MAR_VERSION` below.
 
 | Version | Introduced | Changes |
 |---------|------------|---------|
-| **1** | **6bf77f1 (lib 0.4.0)** | Created alongside MAR v7. Unchanged since introduction. |
+| 0 | `6bf77f1` (lib 0.4.0) | Initial. Created alongside MAR v7. |
+| **1** | **272b4a1 (lib 0.6.0)** | Protocol versioning rules acked across all model types. |
+
+### `REDUCTION_STEPS` — Known reduction step identifiers
+
+| ID | Name | Version | Introduced | Changes |
+|----|------|---------|------------|---------|
+| 0 | (sentinel) | -1 | `6bf77f1` (lib 0.4.0) | No-reduction sentinel. Not a real reducer. |
+| 1 | YCbCr (luma) | 0 | `017ba09` (lib 0.5.x) | Initial. RGB→luma via integer math. |
+| 2 | Spatial (DWT+Sobel) | 0 | `017ba09` (lib 0.5.x) | Initial. DWT LL subband + Sobel features. |
