@@ -44,3 +44,5 @@ bin/
 
 ### explosion debris ###
 **/hs_err_pid*.log
+**/*_minus.png
+**/*_plus.png

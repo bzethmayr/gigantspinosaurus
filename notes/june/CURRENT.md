@@ -54,17 +54,23 @@ point-of-fact attestations.  One component of a larger evidence-provenance syste
 - `SignsForJava15` — Ed25519 via `java.security.Signature`
 
 ### Near-real-time video marring
-- `VideoMarring` — dual-thread state machine (GRAB_FRAME→CALCULATE_MARK→APPLY_MARK→WAIT_EMPTY)
+- `VideoMarring` — dual-thread state machine (GRAB_FRAME→CALCULATE_MARK→APPLY_MARK→WAIT_EMPTY),
+  thread coordination extracted into pluggable `VideoMarringCoordinator`
+- `VideoMarringCoordinator` — interface for media/calc thread synchronization
+- `BlockingMarringCoordinator` — `ReentrantLock` + `Condition`-based coordinator (blocks calc thread waiting for work)
+- `NonBlockingMarringCoordinator` — lock-only coordinator (no parking, suitable for busy-polling)
+- `WorkerState` — extracted enum: GRAB_FRAME, CALCULATE_MARK, APPLY_MARK, WAIT_EMPTY, BROKEN
 
-### QR mark rendering
-- `MarkEmbedder` — deprecated XOR placeholder (still wired into `VideoMarringPipelineTest`)
-- `QrSpatialMark` — CPU spatial renderer: configurable position, module pixel size, luma offset; TIM sense via frameIndex parity; used by `VideoMarringTimTest`
+### QR mark rendering (`usage.qr`)
+- `QrSpatialMark` — CPU spatial renderer: configurable position, module pixel size, luma offset; TIM sense via frameIndex parity
+- `QrMarkEmbedder` — ZXing `QRCodeWriter` wrapper: fixed Version 18-M, byte mode ISO-8859-1, MARGIN=0, byte-per-module packing
 
-### QR mark extraction & decoding
-- `RollingBufferExtractsMarks` — configurable rolling-average extraction with running integer sum
-- `ZxingDecodesMar` — ZXing `QRCodeReader` wrapper feeding mask bytes as ARGB to `HybridBinarizer`
-- `VideoVerification` — streaming orchestrator: `acceptFrame(ByteBuffer, int) → Optional<byte[]>`, `flush()`, `reset()`
+### QR mark extraction & decoding (`usage.qr` + `usage.video`)
+- `RollingBufferExtractsMarks` (`usage.video`) — configurable rolling-average extraction with running integer sum
+- `ZxingDecodesMar` (`usage.qr`) — ZXing `QRCodeReader` wrapper feeding mask bytes as ARGB to `HybridBinarizer`
+- `VideoVerification` (`usage.video`) — streaming orchestrator: accepts `BindsExtractionPipeline`, exposes `acceptFrame(ByteBuffer, int) → Optional<byte[]>`, `flush()`, `reset()`
 - `BindsExtractionPipeline` — one-shot `extractAndDecode(ByteBuffer) → Optional<byte[]>`
+- `QrExtractionPipeline` (`usage.video`) — static factory: `videoTimExtraction(width, height) → BindsExtractionPipeline`
 
 ### Desktop sensor stubs
 - `DesktopPosition` — returns zeros for all fields

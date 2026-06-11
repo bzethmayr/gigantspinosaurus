@@ -1,5 +1,5 @@
 Consuming CURRENT.md
-In QR.md we are (for video)
+In QR.md we have (for video)
 + calculating mark (complete)
 - embedding mark (not yet - needs shader)
   - punted to CPU, it's not _awful_
@@ -9,8 +9,5 @@ In QR.md we are (for video)
 - decoding mark (for MAR content)
 - verifying vs the frame asserted about (not the frame embedded in)
 
-Implying
-- embedding needs shader and shader needs to be fragment shader
-  - why does shader need to be fragment shader?
 
-This does not work for images.
+This does not work for images - the calculation can be much simpler there, but we have no temporal axis to modulate.
