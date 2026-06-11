@@ -4,7 +4,7 @@ import net.bzethmayr.gigantspinosaurus.model.media.MarksMedia;
 
 import java.nio.ByteBuffer;
 
-import static net.bzethmayr.gigantspinosaurus.usage.MarkEmbedder.QR_MODULES;
+import static net.bzethmayr.gigantspinosaurus.usage.QrMarkEmbedder.QR_MODULES;
 import static net.zethmayr.fungu.core.ExceptionFactory.becauseIllegal;
 
 public class QrSpatialMark implements MarksMedia {
@@ -52,6 +52,10 @@ public class QrSpatialMark implements MarksMedia {
         final int ox = (frameWidth - QR_MODULES * mp) / 2;
         final int oy = (frameHeight - QR_MODULES * mp) / 2;
         return new QrSpatialMark(lumaOffset, mp, ox, oy, frameWidth, frameHeight);
+    }
+
+    public static QrSpatialMark autoFit(final int frameWidth, final int frameHeight) {
+        return autoFit(DEFAULT_LUMA_OFFSET, frameWidth, frameHeight);
     }
 
     private static TimSense senseForIndex(final int frameIndex) {

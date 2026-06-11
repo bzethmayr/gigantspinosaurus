@@ -1,5 +1,7 @@
 package net.bzethmayr.gigantspinosaurus.usage.images;
 
+import net.zethmayr.fungu.test.TestRuntimeException;
+
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
@@ -14,22 +16,26 @@ public final class CrossFormatDecoder {
         }
     }
 
-    public static Raster decode(final Path path) throws IOException {
-        final BufferedImage img = ImageIO.read(path.toFile());
-        final int w = img.getWidth();
-        final int h = img.getHeight();
-        final byte[] rgb = new byte[w * h * 4];
-        int off = 0;
-        for (int y = 0; y < h; y++) {
-            for (int x = 0; x < w; x++) {
-                final int argb = img.getRGB(x, y);
-                rgb[off++] = (byte) ((argb >> 16) & 0xFF);
-                rgb[off++] = (byte) ((argb >> 8) & 0xFF);
-                rgb[off++] = (byte) (argb & 0xFF);
-                rgb[off++] = (byte) 0;
+    public static Raster decode(final Path path)  {
+        try {
+            final BufferedImage img = ImageIO.read(path.toFile());
+            final int w = img.getWidth();
+            final int h = img.getHeight();
+            final byte[] rgb = new byte[w * h * 4];
+            int off = 0;
+            for (int y = 0; y < h; y++) {
+                for (int x = 0; x < w; x++) {
+                    final int argb = img.getRGB(x, y);
+                    rgb[off++] = (byte) ((argb >> 16) & 0xFF);
+                    rgb[off++] = (byte) ((argb >> 8) & 0xFF);
+                    rgb[off++] = (byte) (argb & 0xFF);
+                    rgb[off++] = (byte) 0;
+                }
             }
+            return new Raster(w, h, rgb);
+        } catch (final IOException ioe) {
+            throw new TestRuntimeException(ioe);
         }
-        return new Raster(w, h, rgb);
     }
 
     private CrossFormatDecoder() {}

@@ -48,7 +48,7 @@ class VideoMarringTest implements TestsModel, TestsWithBytes {
 
     private Consumer<BindsMarkingPipeline> fakePreparer() {
         return p -> doAnswer(iom ->
-                fakeMediaBytes(MANY)).when(p.combiner()).emptyMark(anyInt());
+                fakeMediaBytes(MANY)).when(p.encoder()).emptyMark(anyInt());
     }
 
     private Consumer<BindsMarkingPipeline> minimalFakes() {
@@ -100,7 +100,7 @@ class VideoMarringTest implements TestsModel, TestsWithBytes {
 
         assertNotNull(calcError.get());
         assertEquals("The pipeline is broken", calcError.get().getMessage());
-        assertFalse(ct.isAlive(), "Calc thread should not hang");
+        assertFalse(ct.isAlive(), "Calc thread should not hang"); // found still running
     }
 
     @Test

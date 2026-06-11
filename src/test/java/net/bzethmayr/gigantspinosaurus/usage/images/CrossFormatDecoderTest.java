@@ -17,40 +17,16 @@ import static net.zethmayr.fungu.test.TestConstants.TEST_RANDOM;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 
-class CrossFormatDecoderTest {
-
-    private static final Path CROSS_FORMAT_DIR = Path.of("src/test/resources/cross-format");
-    private static final int SAMPLE_STRIDE = 7;
-
-    static Stream<Path> imageFiles() throws IOException {
-        return allImages(".png", ".jpg", ".webp", ".jp2");
-    }
-
-    static Stream<Path> sampledImageFiles() throws IOException {
-        final var files = allImages(".png", ".jpg", ".webp", ".jp2").toList();
-        final int offset = TEST_RANDOM.nextInt(SAMPLE_STRIDE);
-        return IntStream.iterate(offset, i -> i + SAMPLE_STRIDE)
-                .takeWhile(i -> i < files.size())
-                .mapToObj(files::get);
-    }
-
-    static Stream<Path> allImages(final String... extensions) throws IOException {
-        final Predicate<Path> filter = Stream.of(extensions)
-                .map(s -> (Predicate<Path>) p -> p.getFileName().toString().toLowerCase().endsWith(s))
-                .reduce(s -> false, Predicate::or);
-        return Files.list(CROSS_FORMAT_DIR)
-                .filter(filter)
-                .sorted();
-    }
+class CrossFormatDecoderTest implements TestsWithImages {
 
     static Matcher<Raster> looksLikeReferenceImage(final Path imageFile) {
         final String fileName = imageFile.getFileName().toString();
         return allOf(
                 describedAs("an expected raster width for %0",
-                        has(Raster::width, oneOf(3072, 2048)), fileName),
+                        has(Raster::width, oneOf(REF_LARGE_DIM, REF_SMALL_DIM)), fileName),
                 describedAs("an expected raster height for %0",
-                        has(Raster::height, oneOf(3072, 2048)), fileName),
-                describedAs("no length mismatch for %s",
+                        has(Raster::height, oneOf(REF_LARGE_DIM, REF_SMALL_DIM)), fileName),
+                describedAs("no length mismatch for %0",
                         has(r -> (r.width() * r.height() * 4L) - r.rgb().length, equalTo(0L)), fileName),
                 hasSomeNonZeroes(imageFile)
         );

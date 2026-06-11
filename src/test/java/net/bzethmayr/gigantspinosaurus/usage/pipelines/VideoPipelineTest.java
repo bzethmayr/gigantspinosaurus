@@ -1,30 +1,28 @@
 package net.bzethmayr.gigantspinosaurus.usage.pipelines;
 
 import net.bzethmayr.gigantspinosaurus.usage.images.CrossFormatDecoder;
+import net.bzethmayr.gigantspinosaurus.usage.images.TestsWithImages;
 import net.bzethmayr.gigantspinosaurus.usage.vk.VulkanRoot;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.stream.Stream;
 
 import static net.bzethmayr.gigantspinosaurus.model.media.ReductionIds.REDUCED_OUTPUT_BYTES;
 import static org.junit.jupiter.api.Assertions.*;
 
-class VideoPipelineTest {
-
-    private static final Path CROSS_FORMAT_DIR = Path.of("src/test/resources/cross-format");
+class VideoPipelineTest implements TestsWithImages {
 
     static Stream<Path> losslessPngs() throws Exception {
-        return Files.list(CROSS_FORMAT_DIR)
-                .filter(p -> p.getFileName().toString().endsWith("_lossless.png"))
-                .sorted();
+        return TestsWithImages.allImages("_lossless.png");
     }
 
-    @Test
-    void pipeline_produces288Bytes_forLosslessPng() throws Exception {
-        final Path first = losslessPngs().findFirst().orElseThrow();
-        final var raster = CrossFormatDecoder.decode(first);
+    @ParameterizedTest
+    @MethodSource("losslessPngs")
+    void pipeline_produces288Bytes_forLosslessPng(final Path each) throws Exception {
+        final var raster = CrossFormatDecoder.decode(each);
 
         try (var root = new VulkanRoot();
              var reduction = new VideoReduction(root, raster.width(), raster.height())) {
@@ -72,10 +70,4 @@ class VideoPipelineTest {
         }
     }
 
-    private static byte[] readAll(final java.nio.ByteBuffer buf) {
-        buf.rewind();
-        final byte[] b = new byte[buf.remaining()];
-        buf.get(b);
-        return b;
-    }
 }
