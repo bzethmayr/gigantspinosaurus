@@ -5,19 +5,18 @@ import net.bzethmayr.gigantspinosaurus.usage.*;
 import net.bzethmayr.gigantspinosaurus.usage.images.CrossFormatDecoder;
 import net.bzethmayr.gigantspinosaurus.usage.images.CrossFormatDecoder.Raster;
 import net.bzethmayr.gigantspinosaurus.usage.images.TestsWithImages;
+import net.bzethmayr.gigantspinosaurus.usage.qr.QrMarkEmbedder;
+import net.bzethmayr.gigantspinosaurus.usage.video.VideoMarring;
+import net.bzethmayr.gigantspinosaurus.usage.video.VideoMarringCoordinator;
 import net.bzethmayr.gigantspinosaurus.usage.vk.VulkanRoot;
 import org.junit.jupiter.api.Test;
 
-import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.stream.Stream;
 
 import static net.bzethmayr.gigantspinosaurus.usage.BindsConstructors.defaultConstructors;
 import static net.bzethmayr.gigantspinosaurus.usage.BindsEnvironment.desktopEnvironment;
@@ -40,7 +39,7 @@ class VideoMarringPipelineTest implements TestsWithImages {
         final var underTest = new VideoMarring(
                 BindsConstructors.defaultConstructors(),
                 BindsEnvironment.desktopEnvironment(),
-                pipeline, 1, 1);
+                pipeline, VideoMarringCoordinator.blockingCoordinator(), 1, 1);
 
         final ByteBuffer frame = raster.toBuffer();
         final var media = underTest.mediaFrame();
@@ -50,15 +49,10 @@ class VideoMarringPipelineTest implements TestsWithImages {
         media.accept(frame, 0);
 
         final CountDownLatch calcReady = new CountDownLatch(1);
-        final AtomicReference<Throwable> calcError = new AtomicReference<>();
         Thread calcThread = new Thread(() -> {
-            try {
-                background.calculate(); // processes frame 0, state → APPLY_MARK
-                calcReady.countDown();
-                background.calculate(); // parks (APPLY_MARK → waitToProceed)
-            } catch (final Throwable t) {
-                calcError.set(t);
-            }
+            background.calculate(); // processes frame 0, state → APPLY_MARK
+            calcReady.countDown();
+            background.calculate(); // parks (APPLY_MARK → await in calcEnter)
         });
         calcThread.start();
         calcReady.await(1, TimeUnit.SECONDS);
@@ -77,7 +71,7 @@ class VideoMarringPipelineTest implements TestsWithImages {
         }
         calcThread.interrupt();
         calcThread.join(1000);
-        assertNull(calcError.get(), "Pipeline should not be broken");
+        assertFalse(underTest.coordinator().isBroken(), "Pipeline should not be broken");
         assertFalse(calcThread.isAlive(), "Calc thread should not hang");
     }
 
@@ -102,7 +96,7 @@ class VideoMarringPipelineTest implements TestsWithImages {
         final var underTest = new VideoMarring(
                 BindsConstructors.defaultConstructors(),
                 BindsEnvironment.desktopEnvironment(),
-                pipeline, 1, 1);
+                pipeline, VideoMarringCoordinator.blockingCoordinator(), 1, 1);
 
         final var media = underTest.mediaFrame();
         final var background = underTest.background();
@@ -111,15 +105,10 @@ class VideoMarringPipelineTest implements TestsWithImages {
         media.accept(rasters.get(0).toBuffer(), 0);
 
         final CountDownLatch calcReady = new CountDownLatch(1);
-        final AtomicReference<Throwable> calcError = new AtomicReference<>();
         Thread calcThread = new Thread(() -> {
-            try {
-                background.calculate(); // processes frame 0, state → APPLY_MARK
-                calcReady.countDown();
-                background.calculate(); // parks (APPLY_MARK → waitToProceed)
-            } catch (final Throwable t) {
-                calcError.set(t);
-            }
+            background.calculate(); // processes frame 0, state → APPLY_MARK
+            calcReady.countDown();
+            background.calculate(); // parks (APPLY_MARK → await in calcEnter)
         });
         calcThread.start();
         calcReady.await(1, TimeUnit.SECONDS);
@@ -136,7 +125,7 @@ class VideoMarringPipelineTest implements TestsWithImages {
         }
         calcThread.interrupt();
         calcThread.join(1000);
-        assertNull(calcError.get(), "Pipeline should not be broken");
+        assertFalse(underTest.coordinator().isBroken(), "Pipeline should not be broken");
         assertFalse(calcThread.isAlive(), "Calc thread should not hang");
     }
 
@@ -153,7 +142,7 @@ class VideoMarringPipelineTest implements TestsWithImages {
             final var underTest = new VideoMarring(
                     BindsConstructors.defaultConstructors(),
                     BindsEnvironment.desktopEnvironment(),
-                    pipeline, 1, 1);
+                    pipeline, VideoMarringCoordinator.blockingCoordinator(), 1, 1);
 
             final ByteBuffer frame = raster.toBuffer();
             final var media = underTest.mediaFrame();
@@ -162,15 +151,10 @@ class VideoMarringPipelineTest implements TestsWithImages {
             media.accept(frame, 0);
 
             final CountDownLatch calcReady = new CountDownLatch(1);
-            final AtomicReference<Throwable> calcError = new AtomicReference<>();
             Thread calcThread = new Thread(() -> {
-                try {
-                    background.calculate();
-                    calcReady.countDown();
-                    background.calculate();
-                } catch (final Throwable t) {
-                    calcError.set(t);
-                }
+                background.calculate();
+                calcReady.countDown();
+                background.calculate();
             });
             calcThread.start();
             calcReady.await(5, TimeUnit.SECONDS);
@@ -186,7 +170,7 @@ class VideoMarringPipelineTest implements TestsWithImages {
             }
             calcThread.interrupt();
             calcThread.join(1000);
-            assertNull(calcError.get(), "GPU pipeline should not be broken");
+            assertFalse(underTest.coordinator().isBroken(), "GPU pipeline should not be broken");
             assertFalse(calcThread.isAlive(), "Calc thread should not hang");
         }
     }
@@ -205,7 +189,7 @@ class VideoMarringPipelineTest implements TestsWithImages {
             final var underTest = new VideoMarring(
                     BindsConstructors.defaultConstructors(),
                     BindsEnvironment.desktopEnvironment(),
-                    pipeline, 1, 1);
+                    pipeline, VideoMarringCoordinator.blockingCoordinator(), 1, 1);
 
             final var media = underTest.mediaFrame();
             final var background = underTest.background();
@@ -213,15 +197,10 @@ class VideoMarringPipelineTest implements TestsWithImages {
             media.accept(rasters.get(0).toBuffer(), 0);
 
             final CountDownLatch calcReady = new CountDownLatch(1);
-            final AtomicReference<Throwable> calcError = new AtomicReference<>();
             Thread calcThread = new Thread(() -> {
-                try {
-                    background.calculate();
-                    calcReady.countDown();
-                    background.calculate();
-                } catch (final Throwable t) {
-                    calcError.set(t);
-                }
+                background.calculate();
+                calcReady.countDown();
+                background.calculate();
             });
             calcThread.start();
             calcReady.await(5, TimeUnit.SECONDS);
@@ -234,7 +213,7 @@ class VideoMarringPipelineTest implements TestsWithImages {
             }
             calcThread.interrupt();
             calcThread.join(1000);
-            assertNull(calcError.get(), "GPU pipeline should not be broken");
+            assertFalse(underTest.coordinator().isBroken(), "GPU pipeline should not be broken");
             assertFalse(calcThread.isAlive(), "Calc thread should not hang");
         }
     }

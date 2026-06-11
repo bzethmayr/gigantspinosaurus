@@ -89,7 +89,7 @@ Vulkan)*
 
 ## Status
 
-Stable?
+Do not PIT — mutation-testing Vulkan tests will crash your machine.
 
 ## Resource lifecycle
 

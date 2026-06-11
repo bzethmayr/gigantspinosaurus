@@ -84,6 +84,50 @@ It is uncentralized by design.
 - **Framing/orientation/position model** — quaternion orientation, cardinal-direction enums, elevation
 - **Desktop environment defaults** — `Blake3MediaHasher`, `SipMarHasher`, `SignsForJava15`, `DesktopOrientation`, `DesktopPosition`
 
+## Build & Run
+
+Requires **Java 21** (toolchain-enforced in Gradle).
+
+| Command | Description |
+|---|---|
+| `./gradlew build` | Compile, test, checkstyle |
+| `./gradlew test` | Run JUnit 5 tests |
+| `./gradlew pitest` | Mutation testing (Vulkan tests excluded — see below) |
+| `./gradlew jacocoTestReport` | Coverage report (80% line threshold) |
+| `./gradlew shadowJar` | Build fat JAR (classifier `all`) |
+| `./gradlew compileHlsl` | Recompile HLSL → SPIR-V (requires `tools/dxc/dxc`) |
+
+### HLSL → SPIR-V toolchain
+
+Shader source lives in `src/main/hlsl/` (buffer-only compute shaders).  Compilation
+depends on the **DirectX Shader Compiler** (`dxc`) at `tools/dxc/dxc`.
+The `compileHlsl` task runs automatically during `processResources`; the resulting
+`.spv` binaries are bundled into the JAR under `spv/`.
+
+### Mutation testing note
+
+PITest is configured with:
+`excludedTestClasses = ["net.bzethmayr.gigantspinosaurus.usage.vk.*", "net.bzethmayr.gigantspinosaurus.usage.pipelines.*"]`
+
+Do not PIT the Vulkan tests — mutation-testing GPU code will crash your machine.
+
+## Stack
+
+| Layer | Technology |
+|---|---|
+| Language | Java 21 |
+| Build | Gradle + Kotlin DSL 2.0.0 |
+| Attestation chaining | SipHash 4-8 (`io.whitfin:siphash:3.0.0`) |
+| Media hashing | BLAKE3 (`io.github.rctcwyvrn:blake3:1.3`) |
+| Signing | Ed25519 via `java.security.Signature` (Java 15+) |
+| QR encoding | ZXing (`com.google.zxing:core:3.5.3`) |
+| GPU compute | LWJGL 3.4.1 + Vulkan + VMA |
+| Shader compilation | HLSL → SPIR-V via dxc |
+| Error/exception utilities | `io.github.bzethmayr.fungu:fungu:1.5.7` |
+| Testing | JUnit Jupiter 5.10, Mockito 5.12 |
+| Coverage | JaCoCo 0.8.12 |
+| Mutation testing | PIT 1.19.0 |
+
 ### Planned ecosystem
 These are necessary for production deployment but not yet implemented in the library.
 

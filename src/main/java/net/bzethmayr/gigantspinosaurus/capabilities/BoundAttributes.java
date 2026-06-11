@@ -13,8 +13,10 @@ import static java.util.Collections.unmodifiableSequencedMap;
 import static net.zethmayr.fungu.UponHelper.upon;
 
 /**
+ * Keeps the attribute bindings for a given class.
+ *
  * @see net.bzethmayr.gigantspinosaurus.capabilities.AttributeValuations for bindings.
- * @param <T>
+ * @param <T> the source type
  */
 public final class BoundAttributes<T extends HasMappedAttributes> {
     private static final HasMappedAttributes EMPTY = s -> null;

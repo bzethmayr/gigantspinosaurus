@@ -11,10 +11,11 @@ When calling tools, output ONLY the tool call in the required JSON format.
 
 
 # Project Context
-# RAG
-If RAG and the file structure disagree, RAG is incorrect.
+# RAG / Memory
+If RAG/MCP and the real filesystem structure disagree, RAG/MCP is incorrect.
 The index is stale with probability approaching certainty.
 **NEVER** treat absence of search results as absence of existence.
+If you find such staleness and can update the index, update the index.
 
 # order of reading
 Look at files instead of guessing their contents.

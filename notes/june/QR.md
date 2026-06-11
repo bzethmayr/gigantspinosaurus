@@ -2,20 +2,32 @@
 
 ## Approach
 
-MAR canonical bytes are encoded into a **fixed Version 18-M** QR code via ZXing. The resulting BitMatrix (89×89 modules) is packed into the mark buffer for GPU upload. All ZXing logic is encapsulated inside `PreparesMark` — nothing outside touches it.
+MAR canonical bytes are encoded into a **fixed Version 18-M** QR code via ZXing. 
+The resulting BitMatrix (89×89 modules) is packed into the mark buffer for GPU upload. 
+All ZXing logic is encapsulated inside two `Qr*` classes — nothing outside touches it.
 
 ## Key Decisions
 
-- **Fixed Version 18-M**: Known geometry (89×89 modules) means the GLSL shader has compile-time constants for module addressing. No runtime version selection, no geometry back-derivation.
-- **Raw binary in byte mode**: No BASE64 or other transcoding — MAR canonical bytes go directly into QR byte mode via ISO-8859-1 encoding.
-- **`emptyMark(int marCanonicalSize)`**: Allocates a direct ByteBuffer of 7921 bytes (89×89, 1 byte per module). The `marCanonicalSize` parameter is accepted for interface consistency and potential future capacity assertions. Buffer size is fixed.
-- **`accept(marBytes, markBuffer)`**: ZXing `QRCodeWriter.encode()` with version=18, ECC=M, character set ISO-8859-1, MARGIN=0 (quiet zone handled by the spatial renderer). BitMatrix is packed as byte-per-module: 255 for black, 0 for white.
+- **Fixed Version 18-M**: Known geometry (89×89 modules) means the GLSL shader has compile-time constants for module addressing. 
+  No runtime version selection, no geometry back-derivation.
+- **Raw binary in byte mode**: No BASE64 or other transcoding — 
+  MAR canonical bytes go directly into QR byte mode via ISO-8859-1 encoding.
+- **`emptyMark(int marCanonicalSize)`**: Allocates a direct ByteBuffer of 7921 bytes (89×89, 1 byte per module). 
+  The `marCanonicalSize` parameter is accepted for interface consistency and potential future capacity assertions. Buffer size is fixed.
+- **`accept(marBytes, markBuffer)`**: ZXing `QRCodeWriter.encode()` with
+  version=18, ECC=M, character set ISO-8859-1, MARGIN=0 (quiet zone handled by the spatial renderer).
+  BitMatrix is packed as byte-per-module: 255 for black, 0 for white.
 
 ## Pipeline
 
-1. `VideoMarring` constructor: create `MarCreation`, produce intent frame, measure `intent.canonicalBytes().length`, call `emptyMark(marSize)` → direct ByteBuffer(7921)
-2. Once per new intent frame: ZXing encodes `mar.canonicalBytes()` → `BitMatrix(89×89)` → packed into mark buffer via `accept(marBytes, markBuffer)`
-3. `MarksMedia.mark(mark, target, frameIndex)`: spatially renders QR module data onto the video frame with bipolar luma modulation. `frameIndex` parity determines TIM sense (even → PLUS, odd → MINUS).
+1. `VideoMarring` constructor: create `MarCreation`, produce intent frame, measure `intent.canonicalBytes().length`,
+  call `emptyMark(marSize)` → direct ByteBuffer(7921)
+2. Once per new intent frame: ZXing encodes `mar.canonicalBytes()` 
+  → `BitMatrix(89×89)` 
+  → packed into mark buffer via `accept(marBytes, markBuffer)`
+3. `QrSpatialMark.mark(mark, target, frameIndex)`: spatially renders QR module data
+  onto the video frame with bipolar luma modulation. 
+  `frameIndex` parity determines TIM sense (even → PLUS, odd → MINUS).
 
 ## Parameters
 
