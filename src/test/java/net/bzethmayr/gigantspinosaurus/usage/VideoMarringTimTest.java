@@ -1,139 +1,32 @@
 package net.bzethmayr.gigantspinosaurus.usage;
 
-import com.google.zxing.BinaryBitmap;
-import com.google.zxing.RGBLuminanceSource;
-import com.google.zxing.common.HybridBinarizer;
-import com.google.zxing.qrcode.QRCodeReader;
 import net.bzethmayr.gigantspinosaurus.model.TestsWithBytes;
 import net.bzethmayr.gigantspinosaurus.model.mar.ExposesMar;
-import net.bzethmayr.gigantspinosaurus.model.media.ColorSpaceReduction;
-import net.bzethmayr.gigantspinosaurus.model.media.ReducesMedia;
-import net.bzethmayr.gigantspinosaurus.model.media.ReductionStep;
 import net.bzethmayr.gigantspinosaurus.usage.MarCreation.ReducedFrameReceiver;
 import net.bzethmayr.gigantspinosaurus.usage.images.CrossFormatDecoder;
 import net.bzethmayr.gigantspinosaurus.usage.images.CrossFormatDecoder.Raster;
+import net.bzethmayr.gigantspinosaurus.usage.images.TestsWithImages;
 import org.junit.jupiter.api.Test;
 
-import java.awt.image.BufferedImage;
-import java.io.IOException;
-import javax.imageio.ImageIO;
 import java.nio.ByteBuffer;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
-import java.util.stream.Stream;
 
-import static net.bzethmayr.gigantspinosaurus.model.media.ReductionIds.YCBCR_ID;
-import static net.bzethmayr.gigantspinosaurus.model.media.ReductionIds.YCBCR_VERSION;
 import static net.bzethmayr.gigantspinosaurus.usage.BindsConstructors.defaultConstructors;
 import static net.bzethmayr.gigantspinosaurus.usage.BindsEnvironment.desktopEnvironment;
 import static org.junit.jupiter.api.Assertions.*;
 
-class VideoMarringTimTest implements TestsWithBytes {
-
-    private static final Path CROSS_FORMAT_DIR = Path.of("src/test/resources/cross-format");
-
-    private static final class CpuReduction implements ReducesMedia {
-        private final ColorSpaceReduction inner;
-        private final ReductionStep[] steps;
-
-        CpuReduction(final int width, final int height) {
-            inner = new ColorSpaceReduction(width, height);
-            steps = new ReductionStep[]{new ReductionStep(YCBCR_ID, YCBCR_VERSION)};
-        }
-
-        @Override
-        public ReductionStep[] reductions() {
-            return steps;
-        }
-
-        @Override
-        public ByteBuffer apply(final ByteBuffer input) {
-            return inner.apply(input);
-        }
-    }
-
-    private static Stream<Path> losslessPngs() throws IOException {
-        return Files.list(CROSS_FORMAT_DIR)
-                .filter(p -> p.getFileName().toString().endsWith("_lossless.png"))
-                .sorted();
-    }
-
-    @Test
-    void zxingDirectBitMatrixDecode() throws Exception {
-        // Encode a MAR, build a BitMatrix manually from mark bytes, decode
-        final var ctors = defaultConstructors();
-        final var env = desktopEnvironment();
-        final var embedder = new MarkEmbedder();
-        final var creation = new MarCreation(ctors, env);
-        final var reduction = new CpuReduction(320, 240);
-        final var receiver = creation.intentToRecord(reduction.reductions());
-        final ByteBuffer reduced = reduction.apply(ByteBuffer.wrap(new byte[320 * 240 * 4]));
-        final ExposesMar mar = receiver.reducedFrame(reduced, 0);
-        final byte[] canonical = mar.canonicalBytes();
-
-        final ByteBuffer markBuf = embedder.emptyMark(canonical.length);
-        embedder.accept(canonical, markBuf);
-
-        // Build a minimal binary image from the mark buffer, plus margins
-        final int scale = 6;
-        final int mod = MarkEmbedder.QR_MODULES;
-        final int qrPx = mod * scale;
-        final int margin = 10;
-        final int W = qrPx + 2 * margin;
-        final int H = qrPx + 2 * margin;
-
-        final byte[] img = new byte[W * H * 4];
-        // White background
-        for (int i = 0; i < img.length; i += 4) {
-            img[i] = (byte) 255;
-            img[i + 1] = (byte) 255;
-            img[i + 2] = (byte) 255;
-        }
-        // Render QR: black = 0, white = 255 in the mark buffer
-        for (int row = 0; row < mod; row++) {
-            for (int col = 0; col < mod; col++) {
-                final int module = markBuf.get(row * mod + col) & 0xFF;
-                if (module == 0) continue; // white module → keep background
-                for (int dy = 0; dy < scale; dy++) {
-                    for (int dx = 0; dx < scale; dx++) {
-                        final int px = (margin + row * scale + dy) * W + (margin + col * scale + dx);
-                        final int off = px * 4;
-                        img[off] = 0;
-                        img[off + 1] = 0;
-                        img[off + 2] = 0;
-                    }
-                }
-            }
-        }
-
-        // Create ARGB int array for ZXing
-        final int[] argb = new int[W * H];
-        for (int i = 0; i < W * H; i++) {
-            final int r = img[i * 4] & 0xFF;
-            final int g = img[i * 4 + 1] & 0xFF;
-            final int b = img[i * 4 + 2] & 0xFF;
-            argb[i] = (0xFF << 24) | (r << 16) | (g << 8) | b;
-        }
-
-        final var source = new RGBLuminanceSource(W, H, argb);
-        final var bitmap = new BinaryBitmap(new HybridBinarizer(source));
-        final var reader = new QRCodeReader();
-        final var result = reader.decode(bitmap);
-        final byte[] decoded = result.getText().getBytes(StandardCharsets.ISO_8859_1);
-        assertArrayEquals(canonical, decoded);
-    }
+class VideoMarringTimTest implements TestsWithBytes, TestsWithImages {
 
     @Test
     void timAlternatingFrames_markExtractAndVerify() throws Exception {
-        final Path imagePath = losslessPngs().findFirst().orElseThrow();
+        final Path imagePath = TestsWithImages.losslessPngs().findFirst().orElseThrow();
         final Raster raster = CrossFormatDecoder.decode(imagePath);
 
         final var ctors = defaultConstructors();
         final var env = desktopEnvironment();
-        final var reduction = new CpuReduction(raster.width(), raster.height());
-        final var embedder = new MarkEmbedder();
+        final var reduction = new FakeReduction(raster.width(), raster.height());
+        final var embedder = new QrMarkEmbedder(raster.width(), raster.height());
         final var creation = new MarCreation(ctors, env);
 
         // Create MAR from the original (unmarked) frame data
@@ -146,21 +39,17 @@ class VideoMarringTimTest implements TestsWithBytes {
         final ByteBuffer markBuffer = embedder.emptyMark(mar0.canonicalBytes().length);
         embedder.accept(mar0.canonicalBytes(), markBuffer);
 
-        // Create spatial mark renderer with auto-fit parameters
-        final var marker = QrSpatialMark.autoFit(
-                QrSpatialMark.DEFAULT_LUMA_OFFSET, raster.width(), raster.height());
-
         // Create 8 individually marked frame copies (TIM alternates by frameIndex)
         final int frameCount = 10;
         final ByteBuffer[] markedFrames = new ByteBuffer[frameCount];
         final byte[] cleanRgb = raster.rgb();
         for (int i = 0; i < frameCount; i++) {
             final ByteBuffer frame = ByteBuffer.wrap(Arrays.copyOf(cleanRgb, cleanRgb.length));
-            marker.mark(markBuffer, frame, i);
+            embedder.mark(markBuffer, frame, i);
             markedFrames[i] = frame;
         }
 
-        // Extraction with rolling buffer
+        // Single-mark extraction with rolling buffer without mark cancellation (unmarred source frame)
         final var extractor = new RollingBufferExtractsMarks(
                 5, 1, raster.width(), raster.height());
         final var qrDecoder = new ZxingDecodesMar(raster.width(), raster.height());
@@ -191,56 +80,5 @@ class VideoMarringTimTest implements TestsWithBytes {
 
         assertTrue(verifier.verifyMedia(decodedMar, reducedFrame0),
                 "Decoded MAR should cryptographically verify against original frame media");
-    }
-
-    private static void writeRasterAsPng(final ByteBuffer buf, final int width, final int height, final Path path) throws IOException {
-        final BufferedImage img = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
-        buf.rewind();
-        for (int y = 0; y < height; y++) {
-            for (int x = 0; x < width; x++) {
-                final int off = (y * width + x) * 4;
-                final int r = buf.get(off) & 0xFF;
-                final int g = buf.get(off + 1) & 0xFF;
-                final int b = buf.get(off + 2) & 0xFF;
-                img.setRGB(x, y, (r << 16) | (g << 8) | b);
-            }
-        }
-        ImageIO.write(img, "png", path.toFile());
-    }
-
-    @Test
-    void generateTimResourceFrames() throws Exception {
-        final Path imagePath = losslessPngs().findFirst().orElseThrow();
-        final String baseName = imagePath.getFileName().toString().replace("_lossless.png", "");
-        final Raster raster = CrossFormatDecoder.decode(imagePath);
-
-        final var ctors = defaultConstructors();
-        final var env = desktopEnvironment();
-        final var reduction = new CpuReduction(raster.width(), raster.height());
-        final var creation = new MarCreation(ctors, env);
-        final var embedder = new MarkEmbedder();
-
-        final ReducedFrameReceiver receiver = creation.intentToRecord(reduction.reductions());
-        final ByteBuffer cleanFrame = raster.toBuffer();
-        final ByteBuffer reducedFrame0 = reduction.apply(cleanFrame);
-        final ExposesMar mar0 = receiver.reducedFrame(reducedFrame0, 0);
-
-        final ByteBuffer markBuffer = embedder.emptyMark(mar0.canonicalBytes().length);
-        embedder.accept(mar0.canonicalBytes(), markBuffer);
-
-        final var marker = QrSpatialMark.autoFit(
-                QrSpatialMark.DEFAULT_LUMA_OFFSET, raster.width(), raster.height());
-
-        // PLUS version (even frame index)
-        final ByteBuffer plusFrame = ByteBuffer.wrap(Arrays.copyOf(raster.rgb(), raster.rgb().length));
-        marker.mark(markBuffer, plusFrame, 0);
-        writeRasterAsPng(plusFrame, raster.width(), raster.height(),
-                CROSS_FORMAT_DIR.resolve(baseName + "_lossless_plus.png"));
-
-        // MINUS version (odd frame index)
-        final ByteBuffer minusFrame = ByteBuffer.wrap(Arrays.copyOf(raster.rgb(), raster.rgb().length));
-        marker.mark(markBuffer, minusFrame, 1);
-        writeRasterAsPng(minusFrame, raster.width(), raster.height(),
-                CROSS_FORMAT_DIR.resolve(baseName + "_lossless_minus.png"));
     }
 }

@@ -55,7 +55,7 @@ public class VideoMarring {
         this.emptyFrames = emptyFrames;
         final MarCreation marCreator = new MarCreation(ctors, env);
         final ExposesMar intent = marCreator.intentFrame(pipeline.reducer().reductions());
-        mark = pipeline.combiner().emptyMark(intent.canonicalBytes().length);
+        mark = pipeline.encoder().emptyMark(intent.canonicalBytes().length);
         this.marsReduced = marCreator.intentToRecord(intent);
         mediaFrames = new FrameThreadWorker();
         background = new CalculationThreadWorker();
@@ -168,7 +168,7 @@ public class VideoMarring {
                     case BROKEN -> itsBroken();
                 }
             } catch (final Throwable t) {
-                weBrokeThis(locking.calcThread);
+                weBrokeThis(locking.calcThread); //!! ... what about our throwable, buddy?
             }
         }
     }
@@ -201,7 +201,7 @@ public class VideoMarring {
                         final ByteBuffer reduced = pipeline.reducer().apply(mediaFrame);
                         final ExposesMar mar = marsReduced.reducedFrame(reduced, copiedIndex);
                         mark.clear();
-                        pipeline.combiner().accept(mar.canonicalBytes(), mark);
+                        pipeline.encoder().accept(mar.canonicalBytes(), mark);
                         mark.flip();
                         workerState = APPLY_MARK;
                     } catch (final Throwable t) {

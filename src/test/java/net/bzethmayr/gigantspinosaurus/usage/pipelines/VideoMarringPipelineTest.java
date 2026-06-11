@@ -1,11 +1,10 @@
 package net.bzethmayr.gigantspinosaurus.usage.pipelines;
 
-import net.bzethmayr.gigantspinosaurus.model.media.ColorSpaceReduction;
-import net.bzethmayr.gigantspinosaurus.model.media.ReducesMedia;
-import net.bzethmayr.gigantspinosaurus.model.media.ReductionStep;
+import net.bzethmayr.gigantspinosaurus.model.mar.ExposesMar;
 import net.bzethmayr.gigantspinosaurus.usage.*;
 import net.bzethmayr.gigantspinosaurus.usage.images.CrossFormatDecoder;
 import net.bzethmayr.gigantspinosaurus.usage.images.CrossFormatDecoder.Raster;
+import net.bzethmayr.gigantspinosaurus.usage.images.TestsWithImages;
 import net.bzethmayr.gigantspinosaurus.usage.vk.VulkanRoot;
 import org.junit.jupiter.api.Test;
 
@@ -13,52 +12,31 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Stream;
 
-import static net.bzethmayr.gigantspinosaurus.model.media.ReductionIds.*;
+import static net.bzethmayr.gigantspinosaurus.usage.BindsConstructors.defaultConstructors;
+import static net.bzethmayr.gigantspinosaurus.usage.BindsEnvironment.desktopEnvironment;
 import static org.junit.jupiter.api.Assertions.*;
 
-class VideoMarringPipelineTest {
+class VideoMarringPipelineTest implements TestsWithImages {
 
-    private static final class CpuReduction implements ReducesMedia {
-        private final ColorSpaceReduction inner;
-        private final ReductionStep[] steps;
-
-        CpuReduction(final int width, final int height) {
-            inner = new ColorSpaceReduction(width, height);
-            steps = new ReductionStep[]{new ReductionStep(YCBCR_ID, YCBCR_VERSION)};
-        }
-
-        @Override
-        public ReductionStep[] reductions() {
-            return steps;
-        }
-
-        @Override
-        public ByteBuffer apply(final ByteBuffer input) {
-            return inner.apply(input);
-        }
-    }
-
-    private static final Path CROSS_FORMAT_DIR = Path.of("src/test/resources/cross-format");
-
-    private static Stream<Path> losslessPngs() throws IOException {
-        return Files.list(CROSS_FORMAT_DIR)
-                .filter(p -> p.getFileName().toString().endsWith("_lossless.png"))
-                .sorted();
+    private Path firstLosslessPng() {
+        return TestsWithImages.losslessPngs().findFirst().orElseThrow();
     }
 
     @Test
     void threeFrames_identicalContent_doesNotBreak() throws Exception {
-        final Path first = losslessPngs().findFirst().orElseThrow();
+        final Path first = firstLosslessPng();
         final Raster raster = CrossFormatDecoder.decode(first);
-        final var reduction = new CpuReduction(raster.width(), raster.height());
+        final var reduction = new FakeReduction(raster.width(), raster.height());
 
-        final var embedder = new MarkEmbedder();
-        final var pipeline = new BindsMarkingPipeline(reduction, embedder, embedder);
+        final var preparation = new QrMarkEmbedder(raster.width(), raster.height());
+        final var pipeline = new BindsMarkingPipeline(reduction, preparation, preparation);
         final var underTest = new VideoMarring(
                 BindsConstructors.defaultConstructors(),
                 BindsEnvironment.desktopEnvironment(),
@@ -103,22 +81,23 @@ class VideoMarringPipelineTest {
         assertFalse(calcThread.isAlive(), "Calc thread should not hang");
     }
 
+    private List<Raster> someLandscapeRasters(final int count) {
+        return TestsWithImages.losslessPngs()
+                .map(CrossFormatDecoder::decode)
+                .filter(r -> r.width() == REF_LARGE_DIM)
+                .limit(count)
+                .toList();
+    }
+
     @Test
     void threeFrames_nonIdenticalContent_doesNotBreak() throws Exception {
-        final var images = losslessPngs().toList();
-        if (images.size() < 3) return;
+        final int w = REF_LARGE_DIM;
+        final int h = REF_SMALL_DIM;
+        final var rasters = someLandscapeRasters(3);
 
-        final var rasters = images.stream()
-                .map(p -> { try { return CrossFormatDecoder.decode(p); }
-                            catch (IOException e) { throw new RuntimeException(e); }})
-                .limit(3)
-                .toList();
+        final var reduction = new FakeReduction(w, h);
 
-        final int w = rasters.stream().mapToInt(Raster::width).max().orElseThrow();
-        final int h = rasters.stream().mapToInt(Raster::height).max().orElseThrow();
-        final var reduction = new CpuReduction(w, h);
-
-        final var embedder = new MarkEmbedder();
+        final var embedder = new QrMarkEmbedder(w, h);
         final var pipeline = new BindsMarkingPipeline(reduction, embedder, embedder);
         final var underTest = new VideoMarring(
                 BindsConstructors.defaultConstructors(),
@@ -163,13 +142,13 @@ class VideoMarringPipelineTest {
 
     @Test
     void threeFrames_gpu_identicalContent_doesNotBreak() throws Exception {
-        final Path first = losslessPngs().findFirst().orElseThrow();
+        final Path first = firstLosslessPng();
         final Raster raster = CrossFormatDecoder.decode(first);
 
         try (var gpu = new VulkanRoot();
              var reduction = new VideoReduction(gpu, raster.width(), raster.height())) {
 
-            final var embedder = new MarkEmbedder();
+            final var embedder = new QrMarkEmbedder(raster.width(), raster.height());
             final var pipeline = new BindsMarkingPipeline(reduction, embedder, embedder);
             final var underTest = new VideoMarring(
                     BindsConstructors.defaultConstructors(),
@@ -214,22 +193,14 @@ class VideoMarringPipelineTest {
 
     @Test
     void threeFrames_gpu_nonIdenticalContent_doesNotBreak() throws Exception {
-        final var images = losslessPngs().toList();
-        if (images.size() < 3) return;
-
-        final var rasters = images.stream()
-                .map(p -> { try { return CrossFormatDecoder.decode(p); }
-                            catch (IOException e) { throw new RuntimeException(e); }})
-                .limit(3)
-                .toList();
-
-        final int w = rasters.stream().mapToInt(Raster::width).max().orElseThrow();
-        final int h = rasters.stream().mapToInt(Raster::height).max().orElseThrow();
+        final int w = REF_LARGE_DIM;
+        final int h = REF_SMALL_DIM;
+        final var rasters = someLandscapeRasters(3);
 
         try (var gpu = new VulkanRoot();
              var reduction = new VideoReduction(gpu, w, h)) {
 
-            final var embedder = new MarkEmbedder();
+            final var embedder = new QrMarkEmbedder(w, h);
             final var pipeline = new BindsMarkingPipeline(reduction, embedder, embedder);
             final var underTest = new VideoMarring(
                     BindsConstructors.defaultConstructors(),
@@ -267,4 +238,40 @@ class VideoMarringPipelineTest {
             assertFalse(calcThread.isAlive(), "Calc thread should not hang");
         }
     }
+
+    @Test
+    void generateTimResourceFrames() throws Exception {
+        final Path imagePath = firstLosslessPng();
+        final String baseName = imagePath.getFileName().toString().replace("_lossless.png", "");
+        final Raster raster = CrossFormatDecoder.decode(imagePath);
+
+        final var ctors = defaultConstructors();
+        final var env = desktopEnvironment();
+        try (var gpu = new VulkanRoot()) {
+            final var reduction = new VideoReduction(gpu, raster.width(), raster.height());
+            final var creation = new MarCreation(ctors, env);
+            final var embedder = new QrMarkEmbedder(raster.width(), raster.height());
+
+            final MarCreation.ReducedFrameReceiver receiver = creation.intentToRecord(reduction.reductions());
+            final ByteBuffer cleanFrame = raster.toBuffer();
+            final ByteBuffer reducedFrame0 = reduction.apply(cleanFrame);
+            final ExposesMar mar0 = receiver.reducedFrame(reducedFrame0, 0);
+
+            final ByteBuffer markBuffer = embedder.emptyMark(mar0.canonicalBytes().length);
+            embedder.accept(mar0.canonicalBytes(), markBuffer);
+
+            // PLUS version (even frame index)
+            final ByteBuffer plusFrame = ByteBuffer.wrap(Arrays.copyOf(raster.rgb(), raster.rgb().length));
+            embedder.mark(markBuffer, plusFrame, 0);
+            writeRasterAsPng(plusFrame, raster.width(), raster.height(),
+                    CROSS_FORMAT_DIR.resolve(baseName + "_lossless_plus.png"));
+
+            // MINUS version (odd frame index)
+            final ByteBuffer minusFrame = ByteBuffer.wrap(Arrays.copyOf(raster.rgb(), raster.rgb().length));
+            embedder.mark(markBuffer, minusFrame, 1);
+            writeRasterAsPng(minusFrame, raster.width(), raster.height(),
+                    CROSS_FORMAT_DIR.resolve(baseName + "_lossless_minus.png"));
+        }
+    }
+
 }
