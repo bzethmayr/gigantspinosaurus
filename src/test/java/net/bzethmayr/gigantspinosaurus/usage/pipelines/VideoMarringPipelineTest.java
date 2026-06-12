@@ -11,6 +11,7 @@ import net.bzethmayr.gigantspinosaurus.usage.qr.QrMarkEmbedder;
 import net.bzethmayr.gigantspinosaurus.usage.video.VideoMarring;
 import net.bzethmayr.gigantspinosaurus.usage.video.VideoMarringCoordinator;
 import net.bzethmayr.gigantspinosaurus.usage.vk.VulkanRoot;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 import java.nio.ByteBuffer;
@@ -33,6 +34,7 @@ class VideoMarringPipelineTest implements TestsWithImages {
     }
 
     @Test
+    @Tag("windows")
     void threeFrames_identicalContent_doesNotBreak() throws Exception {
         final Path first = firstLosslessPng();
         final Raster raster = CrossFormatDecoder.decode(first);
@@ -216,6 +218,7 @@ class VideoMarringPipelineTest implements TestsWithImages {
     }
 
     @Test
+    @Tag("windows")
     void generateTimResourceFrames() throws Exception {
         final Path imagePath = firstLosslessPng();
         final String baseName = imagePath.getFileName().toString().replace("_lossless.png", "");

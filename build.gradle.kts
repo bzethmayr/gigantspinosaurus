@@ -1,3 +1,5 @@
+import org.gradle.internal.impldep.org.junit.platform.launcher.TagFilter.excludeTags
+
 plugins {
     kotlin("jvm") version "2.0.0"          // make sure the Kotlin plugin itself supports Java 21
     id("java")
@@ -11,12 +13,23 @@ java { toolchain { languageVersion = JavaLanguageVersion.of(21) } }
 group = "net.bzethmayr.mar"
 version = "0.6.4-SNAPSHOT"
 
+enum class BuildEnv { WINDOWS, MAC }
+
+val buildEnv: BuildEnv = when {
+    System.getProperty("os.name").lowercase().contains("windows") -> BuildEnv.WINDOWS
+    System.getProperty("os.name").lowercase().contains("mac") -> BuildEnv.MAC
+    else -> throw GradleException("Unsupported build environment: ${System.getProperty("os.name")}")
+}
+
 repositories {
     mavenCentral()
 }
 
 var lwjglVersion = "3.4.1"
-var lwjglNatives = "natives-windows"
+var lwjglNatives = when (buildEnv) {
+    BuildEnv.WINDOWS -> "natives-windows"
+    BuildEnv.MAC -> "natives-macos"
+}
 
 
 dependencies {
@@ -91,7 +104,14 @@ tasks.processResources {
 }
 
 tasks.test {
-    useJUnitPlatform()
+    useJUnitPlatform {
+        if (buildEnv != BuildEnv.WINDOWS) {
+            excludeTags("windows")
+        }
+        if (buildEnv != BuildEnv.MAC) {
+            excludeTags("mac")
+        }
+    }
 }
 
 jacoco {
