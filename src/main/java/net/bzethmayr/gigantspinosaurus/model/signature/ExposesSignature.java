@@ -11,6 +11,7 @@ import static net.bzethmayr.gigantspinosaurus.util.CollectionHelper.adds;
 import static net.zethmayr.fungu.core.ExceptionFactory.becauseImpossible;
 
 public interface ExposesSignature extends HasCanonicalAttributes {
+    String SIGNATURE_ALGORITHM = "Ed25519";
     /**
      * 1... - wrong lengths
      * 2 - 32 bytes key, 64 bytes signature (also wrong)
@@ -42,6 +43,6 @@ public interface ExposesSignature extends HasCanonicalAttributes {
     }
 
     static IllegalStateException becauseEdHasGone() {
-        return becauseImpossible("Ed25519 has gone?");
+        return becauseImpossible("%s has gone?", SIGNATURE_ALGORITHM);
     }
 }

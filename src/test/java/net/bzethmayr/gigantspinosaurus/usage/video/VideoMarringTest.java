@@ -7,8 +7,8 @@ import net.bzethmayr.gigantspinosaurus.model.media.PreparesMark;
 import net.bzethmayr.gigantspinosaurus.model.media.ReducesMedia;
 import net.bzethmayr.gigantspinosaurus.model.media.ReductionStep;
 import net.bzethmayr.gigantspinosaurus.usage.BindsConstructors;
-import net.bzethmayr.gigantspinosaurus.usage.BindsEnvironment;
 import net.bzethmayr.gigantspinosaurus.usage.BindsMarkingPipeline;
+import net.bzethmayr.gigantspinosaurus.usage.defaults.DefaultEnvironments;
 import org.junit.jupiter.api.Test;
 
 import java.nio.ByteBuffer;
@@ -18,6 +18,9 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
+import static net.bzethmayr.gigantspinosaurus.usage.BindsConstructors.defaultConstructors;
+import static net.bzethmayr.gigantspinosaurus.usage.defaults.DefaultEnvironments.desktopEnvironment;
+import static net.bzethmayr.gigantspinosaurus.usage.video.VideoMarringCoordinator.blockingCoordinator;
 import static net.bzethmayr.gigantspinosaurus.usage.video.WorkerState.APPLY_MARK;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -36,9 +39,8 @@ class VideoMarringTest implements TestsModel, TestsWithBytes {
         final MarksMedia mockMarking = mock();
         pipeline = new BindsMarkingPipeline(mockReduction, mockPreparation, mockMarking);
         Stream.of(configs).forEach(c -> c.accept(pipeline));
-        underTest = new VideoMarring(
-                BindsConstructors.defaultConstructors(), BindsEnvironment.desktopEnvironment(),
-                pipeline, VideoMarringCoordinator.blockingCoordinator(), CADENCE, EMPTY);
+        underTest = new VideoMarring(defaultConstructors(), desktopEnvironment(),
+                pipeline, blockingCoordinator(), CADENCE, EMPTY);
     }
 
     private Consumer<BindsMarkingPipeline> reducerSteps(final ReductionStep... steps) {
@@ -93,9 +95,8 @@ class VideoMarringTest implements TestsModel, TestsWithBytes {
 
     @Test
     void mediaPipelineCrash_setsBrokenState() throws Exception {
-        setUpMockPipeline(
-                reducerSteps(), fakeReducer(), fakePreparer(),
-                p -> doThrow(new OutOfMemoryError("Vulkan device lost")).when(p.marker()).mark(any(), any(), anyInt()));
+        setUpMockPipeline(reducerSteps(), fakeReducer(), fakePreparer(), p ->
+                doThrow(new OutOfMemoryError("Vulkan device lost")).when(p.marker()).mark(any(), any(), anyInt()));
 
         final var coordinator = underTest.coordinator();
         final var background = underTest.background();

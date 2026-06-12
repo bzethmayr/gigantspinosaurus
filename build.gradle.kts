@@ -9,7 +9,7 @@ plugins {
 java { toolchain { languageVersion = JavaLanguageVersion.of(21) } }
 
 group = "net.bzethmayr.mar"
-version = "0.6.3-SNAPSHOT"
+version = "0.6.4-SNAPSHOT"
 
 repositories {
     mavenCentral()
@@ -24,6 +24,8 @@ dependencies {
     implementation("io.github.rctcwyvrn:blake3:1.3")
     implementation("io.whitfin:siphash:3.0.0")
     implementation("com.google.zxing:core:3.5.3")
+    implementation("net.java.dev.jna:jna:5.18.0")
+    implementation("net.java.dev.jna:jna-platform:5.18.0")
     implementation(platform("org.lwjgl:lwjgl-bom:$lwjglVersion"))
     implementation("org.lwjgl", "lwjgl", classifier = lwjglNatives)
     implementation("org.lwjgl:lwjgl-vulkan")

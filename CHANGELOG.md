@@ -6,6 +6,30 @@ The library version is independent of the MAR format version (see notes below).
 
 ---
 
+## 0.6.4-SNAPSHOT (2026-06-12)
+
+- `SIGNATURE_ALGORITHM = "Ed25519"` constant extracted to `ExposesSignature`;
+  hardcoded `"Ed25519"` literals replaced in `SignsForJava15`,
+  `PermanentSignatory`, `BindsEnvironment`.
+- JNA 5.18.0 (`net.java.dev.jna:jna`, `jna-platform`) added for Win32 API access.
+- `PermanentSignatory` — abstract `Signatory` base class with Ed25519 key
+  generation and `load/storePrivateKeyBytes` / `load/storePublicKeyBytes`
+  persistence hooks.
+- `WindowsCredentialSignatory` (`usage.defaults.windows`) — `PermanentSignatory`
+  subclass using JNA `Advapi32.dll` (`CredWriteW`/`CredReadW`) to store PKCS#8
+  private + X.509 public key in Windows Credential Manager under MAR-named
+  targets (`gigantspinosaurus/mar/ed25519/{priv,pub}`).
+- `BindsEnvironment` refactored: static factories (`desktopEnvironment()`,
+  `windowsPermanentEnvironment()`) extracted to dedicated factory classes;
+  `withPosition()`, `withOrientation()`, `withSignatory()` withers added.
+- `DefaultEnvironments` — factory utility providing `partialEnvironment()`
+  (shared hashers + time source) and `desktopEnvironment()`.
+- `WindowsEnvironments` — factory utility providing
+  `windowsPermanentEnvironment()`.
+- `usage.desktop` package moved to `usage.defaults.desktop`.
+- `PermanentSignatoryTest` — 4 tests covering generation+reload round-trip,
+  sign+verify, wrong-payload rejection, key identity across instances.
+
 ## 0.6.3-SNAPSHOT (2026-06-11)
 
 - Coordinator refactoring: `BlockingMarringCoordinator` and

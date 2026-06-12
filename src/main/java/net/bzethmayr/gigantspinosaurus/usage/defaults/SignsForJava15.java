@@ -7,6 +7,7 @@ import java.security.*;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.X509EncodedKeySpec;
 
+import static net.bzethmayr.gigantspinosaurus.model.signature.ExposesSignature.SIGNATURE_ALGORITHM;
 import static net.bzethmayr.gigantspinosaurus.model.signature.ExposesSignature.becauseEdHasGone;
 import static net.zethmayr.fungu.core.ExceptionFactory.becauseIllegal;
 import static net.zethmayr.fungu.core.ExceptionFactory.becauseImpossible;
@@ -36,7 +37,7 @@ public class SignsForJava15 implements Signatory {
 
     private static Signature getEd() {
         try {
-            return Signature.getInstance("Ed25519");
+            return Signature.getInstance(SIGNATURE_ALGORITHM);
         } catch (final NoSuchAlgorithmException nsae) {
             throw becauseEdHasGone();
         }
@@ -62,7 +63,7 @@ public class SignsForJava15 implements Signatory {
     public boolean test(final ExposesSignature exposesSignature, final byte[] payload) {
         final KeyFactory kf;
         try {
-            kf = KeyFactory.getInstance("Ed25519");
+            kf = KeyFactory.getInstance(SIGNATURE_ALGORITHM);
         } catch (final NoSuchAlgorithmException nsae) {
             throw becauseEdHasGone();
         }

@@ -25,7 +25,7 @@ import static net.bzethmayr.gigantspinosaurus.model.orientation.ExposesOrientati
 import static net.bzethmayr.gigantspinosaurus.model.position.ExposesPosition.POSITION_VERSION;
 import static net.bzethmayr.gigantspinosaurus.model.signature.ExposesSignature.SIGNATURE_VERSION;
 import static net.bzethmayr.gigantspinosaurus.usage.BindsConstructors.defaultConstructors;
-import static net.bzethmayr.gigantspinosaurus.usage.BindsEnvironment.desktopEnvironment;
+import static net.bzethmayr.gigantspinosaurus.usage.defaults.DefaultEnvironments.desktopEnvironment;
 import static net.zethmayr.fungu.test.MatcherFactory.has;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;

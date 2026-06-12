@@ -16,7 +16,7 @@ point-of-fact attestations.  One component of a larger evidence-provenance syste
 - `ExposesPosition`, `Geoposition` — lat/lon/elevation/north
 - `ExposesOrientation`, `Orientation`, `ExposesQuaternion`, `QuaternionHelper` — quaternion orientation
 - `ExposesFraming`, `Framing`, enums (`North`, `Face`, `Handedness`, `Vertical`) — camera framing conventions
-- `ExposesSignature`, `Signatory`, `Signs`, `VerifiesSignature`, `ExposesSigningKeys`, `CreatesSignature` — Ed25519 signing interfaces
+- `ExposesSignature` (with `SIGNATURE_ALGORITHM = "Ed25519"`, previously hardcoded), `Signatory`, `Signs`, `VerifiesSignature`, `ExposesSigningKeys`, `CreatesSignature` — Ed25519 signing interfaces
 - `ExposesUtcDoubleSeconds` — time source
 - `GeneratesNonce`, `DefaultNonceFactory` — nonce generation
 - `ReductionStep`, `ReductionIds` — media reduction descriptors (DWT/Sobel cell layout)
@@ -46,12 +46,18 @@ point-of-fact attestations.  One component of a larger evidence-provenance syste
 - `VulkanCommon` utilities
 
 ### Default implementations
-- `BindsEnvironment.desktopEnvironment()` — wires `SipMarHasher` + `Blake3MediaHasher` + `SignsForJava15` + desktop sensor stubs
+- `DefaultEnvironments.desktopEnvironment()` — wires `SipMarHasher` + `Blake3MediaHasher` + `SignsForJava15` + desktop sensor stubs (ephemeral keypair per session)
+- `WindowsEnvironments.windowsPermanentEnvironment()` — wires same hashers + `WindowsCredentialSignatory` for persistent keypair across restarts
+- `DefaultEnvironments.partialEnvironment()` — shared hashers + time source (nulls for position/orientation/signatory), consumed by both above factories
 - `BindsConstructors.defaultConstructors()` — wires all model constructors
 - `BindsMarkingPipeline` — reducer + combiner + marker
+- `BindsEnvironment` — record with `withPosition()`, `withOrientation()`, `withSignatory()` withers instead of static factories
 - `SipMarHasher` — SipHash 4-8 via `io.whitfin:siphash`
 - `Blake3MediaHasher` — BLAKE3 via `io.github.rctcwyvrn:blake3`
-- `SignsForJava15` — Ed25519 via `java.security.Signature`
+- `SignsForJava15` — Ed25519 via `java.security.Signature` (ephemeral keypair, no persistence)
+- `PermanentSignatory` — abstract `Signatory` base: generates Ed25519 keypair on first use, reloads from persistent storage via `load/storePrivateKeyBytes` + `load/storePublicKeyBytes` hooks
+- `WindowsCredentialSignatory` (`usage.defaults.windows`) — `PermanentSignatory` subclass using JNA (`Advapi32.dll`: `CredWriteW`/`CredReadW`) to store PKCS#8 private key + X.509 public key in Windows Credential Manager under MAR-named targets (`gigantspinosaurus/mar/ed25519/{priv,pub}`)
+- JNA 5.18.0 (`net.java.dev.jna:jna`, `jna-platform`) — Win32 API access for credential storage
 
 ### Near-real-time video marring
 - `VideoMarring` — dual-thread state machine (GRAB_FRAME→CALCULATE_MARK→APPLY_MARK→WAIT_EMPTY),
@@ -72,7 +78,7 @@ point-of-fact attestations.  One component of a larger evidence-provenance syste
 - `BindsExtractionPipeline` — one-shot `extractAndDecode(ByteBuffer) → Optional<byte[]>`
 - `QrExtractionPipeline` (`usage.video`) — static factory: `videoTimExtraction(width, height) → BindsExtractionPipeline`
 
-### Desktop sensor stubs
+### Desktop sensor stubs (`usage.defaults.desktop`)
 - `DesktopPosition` — returns zeros for all fields
 - `DesktopOrientation` — fixed quaternion (1, 0, 1, 0); `withFraming` returns new instance
 
@@ -91,14 +97,19 @@ point-of-fact attestations.  One component of a larger evidence-provenance syste
 - `VideoPipelineTest`, `VideoMarringPipelineTest`, `VideoMarringTest`
 - `VideoMarringTimTest` — TIM alternating mark + extraction + ZXing decode + cryptographic verification
 - `CrossFormatDecoder` (image test utility)
+- `PermanentSignatoryTest` — 4 tests: generation+reload round-trip, sign+verify, wrong-payload rejection, key identity across instances
 
 ---
 
 ## Remaining: EXTERNAL (deployment ecosystem — out of library scope per README)
 
 1. **Install/key-provisioning flow** — generate hardware-backed Ed25519 keypair, store private key in secure hardware, store public key in app storage
+   - **DONE**: Windows reference implementation — `WindowsCredentialSignatory` stores Ed25519 key in Windows Credential Manager via JNA
+   - **REMAINING**: macOS Keychain, Android KeyStore, iOS Keychain implementations
 2. **Device bindings** — per-platform app integration (Android CameraX/ARCore, iOS, desktop capture)
 3. **Key access/persistence** — secure key lifecycle across app restarts
+   - **DONE**: `PermanentSignatory` abstraction + Windows Credential Manager reference
+   - **REMAINING**: macOS/Android/iOS platform backings
 4. **Registrar propagation** — MAR frames → durable external ledgers (blockchain, timestamp authorities) for a referential spine
 5. **Embeddings** — placeholder, unspecified
 
