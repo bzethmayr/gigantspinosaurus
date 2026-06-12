@@ -18,7 +18,7 @@ import java.util.Arrays;
 import java.util.Optional;
 
 import static net.bzethmayr.gigantspinosaurus.usage.BindsConstructors.defaultConstructors;
-import static net.bzethmayr.gigantspinosaurus.usage.BindsEnvironment.desktopEnvironment;
+import static net.bzethmayr.gigantspinosaurus.usage.defaults.DefaultEnvironments.desktopEnvironment;
 import static net.bzethmayr.gigantspinosaurus.usage.video.QrExtractionPipeline.videoTimExtraction;
 import static org.junit.jupiter.api.Assertions.*;
 

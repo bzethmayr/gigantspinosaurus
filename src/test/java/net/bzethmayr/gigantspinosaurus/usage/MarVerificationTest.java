@@ -9,7 +9,7 @@ import org.junit.jupiter.api.Test;
 
 import java.nio.ByteBuffer;
 
-import static net.bzethmayr.gigantspinosaurus.usage.BindsEnvironment.desktopEnvironment;
+import static net.bzethmayr.gigantspinosaurus.usage.defaults.DefaultEnvironments.desktopEnvironment;
 import static net.zethmayr.fungu.test.TestConstants.TEST_RANDOM;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;

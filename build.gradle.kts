@@ -1,3 +1,5 @@
+import org.gradle.internal.impldep.org.junit.platform.launcher.TagFilter.excludeTags
+
 plugins {
     kotlin("jvm") version "2.0.0"          // make sure the Kotlin plugin itself supports Java 21
     id("java")
@@ -9,14 +11,25 @@ plugins {
 java { toolchain { languageVersion = JavaLanguageVersion.of(21) } }
 
 group = "net.bzethmayr.mar"
-version = "0.6.3-SNAPSHOT"
+version = "0.6.4-SNAPSHOT"
+
+enum class BuildEnv { WINDOWS, MAC }
+
+val buildEnv: BuildEnv = when {
+    System.getProperty("os.name").lowercase().contains("windows") -> BuildEnv.WINDOWS
+    System.getProperty("os.name").lowercase().contains("mac") -> BuildEnv.MAC
+    else -> throw GradleException("Unsupported build environment: ${System.getProperty("os.name")}")
+}
 
 repositories {
     mavenCentral()
 }
 
 var lwjglVersion = "3.4.1"
-var lwjglNatives = "natives-windows"
+var lwjglNatives = when (buildEnv) {
+    BuildEnv.WINDOWS -> "natives-windows"
+    BuildEnv.MAC -> "natives-macos"
+}
 
 
 dependencies {
@@ -24,6 +37,8 @@ dependencies {
     implementation("io.github.rctcwyvrn:blake3:1.3")
     implementation("io.whitfin:siphash:3.0.0")
     implementation("com.google.zxing:core:3.5.3")
+    implementation("net.java.dev.jna:jna:5.18.0")
+    implementation("net.java.dev.jna:jna-platform:5.18.0")
     implementation(platform("org.lwjgl:lwjgl-bom:$lwjglVersion"))
     implementation("org.lwjgl", "lwjgl", classifier = lwjglNatives)
     implementation("org.lwjgl:lwjgl-vulkan")
@@ -89,7 +104,14 @@ tasks.processResources {
 }
 
 tasks.test {
-    useJUnitPlatform()
+    useJUnitPlatform {
+        if (buildEnv != BuildEnv.WINDOWS) {
+            excludeTags("windows")
+        }
+        if (buildEnv != BuildEnv.MAC) {
+            excludeTags("mac")
+        }
+    }
 }
 
 jacoco {

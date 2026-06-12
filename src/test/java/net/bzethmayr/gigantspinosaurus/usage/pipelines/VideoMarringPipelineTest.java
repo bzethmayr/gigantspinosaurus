@@ -2,6 +2,8 @@ package net.bzethmayr.gigantspinosaurus.usage.pipelines;
 
 import net.bzethmayr.gigantspinosaurus.model.mar.ExposesMar;
 import net.bzethmayr.gigantspinosaurus.usage.*;
+import net.bzethmayr.gigantspinosaurus.usage.defaults.DefaultEnvironments;
+import net.bzethmayr.gigantspinosaurus.usage.defaults.windows.WindowsEnvironments;
 import net.bzethmayr.gigantspinosaurus.usage.images.CrossFormatDecoder;
 import net.bzethmayr.gigantspinosaurus.usage.images.CrossFormatDecoder.Raster;
 import net.bzethmayr.gigantspinosaurus.usage.images.TestsWithImages;
@@ -9,6 +11,7 @@ import net.bzethmayr.gigantspinosaurus.usage.qr.QrMarkEmbedder;
 import net.bzethmayr.gigantspinosaurus.usage.video.VideoMarring;
 import net.bzethmayr.gigantspinosaurus.usage.video.VideoMarringCoordinator;
 import net.bzethmayr.gigantspinosaurus.usage.vk.VulkanRoot;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 import java.nio.ByteBuffer;
@@ -19,7 +22,9 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 import static net.bzethmayr.gigantspinosaurus.usage.BindsConstructors.defaultConstructors;
-import static net.bzethmayr.gigantspinosaurus.usage.BindsEnvironment.desktopEnvironment;
+import static net.bzethmayr.gigantspinosaurus.usage.defaults.DefaultEnvironments.desktopEnvironment;
+import static net.bzethmayr.gigantspinosaurus.usage.defaults.windows.WindowsEnvironments.windowsPermanentEnvironment;
+import static net.bzethmayr.gigantspinosaurus.usage.video.VideoMarringCoordinator.blockingCoordinator;
 import static org.junit.jupiter.api.Assertions.*;
 
 class VideoMarringPipelineTest implements TestsWithImages {
@@ -29,6 +34,7 @@ class VideoMarringPipelineTest implements TestsWithImages {
     }
 
     @Test
+    @Tag("windows")
     void threeFrames_identicalContent_doesNotBreak() throws Exception {
         final Path first = firstLosslessPng();
         final Raster raster = CrossFormatDecoder.decode(first);
@@ -36,10 +42,9 @@ class VideoMarringPipelineTest implements TestsWithImages {
 
         final var preparation = new QrMarkEmbedder(raster.width(), raster.height());
         final var pipeline = new BindsMarkingPipeline(reduction, preparation, preparation);
-        final var underTest = new VideoMarring(
-                BindsConstructors.defaultConstructors(),
-                BindsEnvironment.desktopEnvironment(),
-                pipeline, VideoMarringCoordinator.blockingCoordinator(), 1, 1);
+        final var underTest = new VideoMarring(defaultConstructors(),
+                windowsPermanentEnvironment(),
+                pipeline, blockingCoordinator(), 1, 1);
 
         final ByteBuffer frame = raster.toBuffer();
         final var media = underTest.mediaFrame();
@@ -93,10 +98,8 @@ class VideoMarringPipelineTest implements TestsWithImages {
 
         final var embedder = new QrMarkEmbedder(w, h);
         final var pipeline = new BindsMarkingPipeline(reduction, embedder, embedder);
-        final var underTest = new VideoMarring(
-                BindsConstructors.defaultConstructors(),
-                BindsEnvironment.desktopEnvironment(),
-                pipeline, VideoMarringCoordinator.blockingCoordinator(), 1, 1);
+        final var underTest = new VideoMarring(defaultConstructors(), desktopEnvironment(),
+                pipeline, blockingCoordinator(), 1, 1);
 
         final var media = underTest.mediaFrame();
         final var background = underTest.background();
@@ -139,10 +142,8 @@ class VideoMarringPipelineTest implements TestsWithImages {
 
             final var embedder = new QrMarkEmbedder(raster.width(), raster.height());
             final var pipeline = new BindsMarkingPipeline(reduction, embedder, embedder);
-            final var underTest = new VideoMarring(
-                    BindsConstructors.defaultConstructors(),
-                    BindsEnvironment.desktopEnvironment(),
-                    pipeline, VideoMarringCoordinator.blockingCoordinator(), 1, 1);
+            final var underTest = new VideoMarring(defaultConstructors(), desktopEnvironment(),
+                    pipeline, blockingCoordinator(), 1, 1);
 
             final ByteBuffer frame = raster.toBuffer();
             final var media = underTest.mediaFrame();
@@ -186,10 +187,8 @@ class VideoMarringPipelineTest implements TestsWithImages {
 
             final var embedder = new QrMarkEmbedder(w, h);
             final var pipeline = new BindsMarkingPipeline(reduction, embedder, embedder);
-            final var underTest = new VideoMarring(
-                    BindsConstructors.defaultConstructors(),
-                    BindsEnvironment.desktopEnvironment(),
-                    pipeline, VideoMarringCoordinator.blockingCoordinator(), 1, 1);
+            final var underTest = new VideoMarring(defaultConstructors(), desktopEnvironment(),
+                    pipeline, blockingCoordinator(), 1, 1);
 
             final var media = underTest.mediaFrame();
             final var background = underTest.background();
@@ -219,13 +218,14 @@ class VideoMarringPipelineTest implements TestsWithImages {
     }
 
     @Test
+    @Tag("windows")
     void generateTimResourceFrames() throws Exception {
         final Path imagePath = firstLosslessPng();
         final String baseName = imagePath.getFileName().toString().replace("_lossless.png", "");
         final Raster raster = CrossFormatDecoder.decode(imagePath);
 
         final var ctors = defaultConstructors();
-        final var env = desktopEnvironment();
+        final var env = windowsPermanentEnvironment();
         try (var gpu = new VulkanRoot()) {
             final var reduction = new VideoReduction(gpu, raster.width(), raster.height());
             final var creation = new MarCreation(ctors, env);

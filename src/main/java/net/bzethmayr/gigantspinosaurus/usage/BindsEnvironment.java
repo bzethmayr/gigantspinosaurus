@@ -9,19 +9,6 @@ import net.bzethmayr.gigantspinosaurus.model.orientation.ExposesOrientation;
 import net.bzethmayr.gigantspinosaurus.model.position.ExposesPosition;
 import net.bzethmayr.gigantspinosaurus.model.signature.Signatory;
 import net.bzethmayr.gigantspinosaurus.model.time.ExposesUtcDoubleSeconds;
-import net.bzethmayr.gigantspinosaurus.usage.defaults.Blake3MediaHasher;
-import net.bzethmayr.gigantspinosaurus.usage.defaults.SignsForJava15;
-import net.bzethmayr.gigantspinosaurus.usage.defaults.SipMarHasher;
-import net.bzethmayr.gigantspinosaurus.usage.desktop.DesktopOrientation;
-import net.bzethmayr.gigantspinosaurus.usage.desktop.DesktopPosition;
-
-import java.security.KeyPair;
-import java.security.KeyPairGenerator;
-import java.security.NoSuchAlgorithmException;
-import java.security.SecureRandom;
-import java.time.Clock;
-
-import static net.bzethmayr.gigantspinosaurus.model.signature.ExposesSignature.becauseEdHasGone;
 
 public record BindsEnvironment(GeneratesNonce nonceSource,
                                HashesMarFrame marHasher,
@@ -45,28 +32,18 @@ public record BindsEnvironment(GeneratesNonce nonceSource,
                 orientationSource, framingSource, signatory, null);
     }
 
-    public static BindsEnvironment desktopEnvironment() {
-        final SecureRandom random = new SecureRandom();
-        final SipMarHasher hashesMar = new SipMarHasher();
-        final Blake3MediaHasher hashesMedia = new Blake3MediaHasher();
-        final Clock utcClock = Clock.systemUTC();
-        final DesktopOrientation fixedOrientation = new DesktopOrientation();
-        final KeyPairGenerator ephemeral;
-        try {
-            ephemeral = KeyPairGenerator.getInstance("Ed25519");
-        } catch (final NoSuchAlgorithmException nsae) {
-            throw becauseEdHasGone();
-        }
-        final KeyPair ephemeralPair = ephemeral.generateKeyPair();
-        return new BindsEnvironment(
-                random::nextLong,
-                hashesMar,
-                hashesMedia,
-                () -> utcClock.millis() / 1000d,
-                new DesktopPosition(),
-                fixedOrientation,
-                fixedOrientation.framing(),
-                new SignsForJava15(ephemeralPair)
-        );
+    public BindsEnvironment withPosition(final ExposesPosition positionSource) {
+        return new BindsEnvironment(nonceSource, marHasher, mediaHasher, timeSource,
+                positionSource, orientationSource, framingSource, signatory, gpuContext);
+    }
+
+    public BindsEnvironment withOrientation(final ExposesOrientation<?> orientationSource) {
+        return new BindsEnvironment(nonceSource, marHasher, mediaHasher, timeSource, positionSource,
+                orientationSource, orientationSource.framing(), signatory, gpuContext);
+    }
+
+    public BindsEnvironment withSignatory(final Signatory signatory) {
+        return new BindsEnvironment(nonceSource, marHasher, mediaHasher, timeSource, positionSource, orientationSource, framingSource,
+                signatory, gpuContext);
     }
 }
