@@ -57,7 +57,12 @@ final class BlockingMarringCoordinator implements MarringCoordinatorAccess, Vide
 
     @Override
     public void unparkCalc() {
-        calcWaker.signalAll();
+        lock.lock();
+        try {
+            calcWaker.signalAll();
+        } finally {
+            lock.unlock();
+        }
     }
 
     @Override
@@ -66,12 +71,17 @@ final class BlockingMarringCoordinator implements MarringCoordinatorAccess, Vide
 
     @Override
     public void pipelineBroken(final Throwable t) {
-        broken = true;
-        brokenThrowable = t;
-        state = WorkerState.BROKEN;
-        calcWaker.signalAll();
-        if (calcThread != null) {
-            calcThread.interrupt();
+        lock.lock();
+        try {
+            broken = true;
+            brokenThrowable = t;
+            state = WorkerState.BROKEN;
+            calcWaker.signalAll();
+            if (calcThread != null) {
+                calcThread.interrupt();
+            }
+        } finally {
+            lock.unlock();
         }
     }
 
