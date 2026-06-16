@@ -2,13 +2,7 @@ package net.bzethmayr.gigantspinosaurus.usage.video;
 
 import net.bzethmayr.gigantspinosaurus.model.TestsModel;
 import net.bzethmayr.gigantspinosaurus.model.TestsWithBytes;
-import net.bzethmayr.gigantspinosaurus.model.media.MarksMedia;
-import net.bzethmayr.gigantspinosaurus.model.media.PreparesMark;
-import net.bzethmayr.gigantspinosaurus.model.media.ReducesMedia;
-import net.bzethmayr.gigantspinosaurus.model.media.ReductionStep;
-import net.bzethmayr.gigantspinosaurus.usage.BindsConstructors;
 import net.bzethmayr.gigantspinosaurus.usage.BindsMarkingPipeline;
-import net.bzethmayr.gigantspinosaurus.usage.defaults.DefaultEnvironments;
 import org.junit.jupiter.api.Test;
 
 import java.nio.ByteBuffer;
@@ -16,49 +10,20 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
-import java.util.stream.Stream;
 
-import static net.bzethmayr.gigantspinosaurus.usage.BindsConstructors.defaultConstructors;
-import static net.bzethmayr.gigantspinosaurus.usage.defaults.DefaultEnvironments.desktopEnvironment;
-import static net.bzethmayr.gigantspinosaurus.usage.video.VideoMarringCoordinator.blockingCoordinator;
 import static net.bzethmayr.gigantspinosaurus.usage.video.WorkerState.APPLY_MARK;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-class VideoMarringTest implements TestsModel, TestsWithBytes {
+class VideoMarringTest implements TestsModel, TestsWithBytes, TestsWithFakePipelines {
     private static final int CADENCE = 60;
     private static final int EMPTY = 10;
 
-    private BindsMarkingPipeline pipeline;
     private VideoMarring underTest;
 
     @SafeVarargs
     private void setUpMockPipeline(final Consumer<BindsMarkingPipeline>... configs) {
-        final ReducesMedia mockReduction = mock();
-        final PreparesMark mockPreparation = mock();
-        final MarksMedia mockMarking = mock();
-        pipeline = new BindsMarkingPipeline(mockReduction, mockPreparation, mockMarking);
-        Stream.of(configs).forEach(c -> c.accept(pipeline));
-        underTest = new VideoMarring(defaultConstructors(), desktopEnvironment(),
-                pipeline, blockingCoordinator(), CADENCE, EMPTY);
-    }
-
-    private Consumer<BindsMarkingPipeline> reducerSteps(final ReductionStep... steps) {
-        return p -> doReturn(steps).when(p.reducer()).reductions();
-    }
-
-    private Consumer<BindsMarkingPipeline> fakeReducer() {
-        return p -> doAnswer(iom ->
-                fakeMediaBytes(SOME)).when(p.reducer()).apply(any());
-    }
-
-    private Consumer<BindsMarkingPipeline> fakePreparer() {
-        return p -> doAnswer(iom ->
-                fakeMediaBytes(MANY)).when(p.encoder()).emptyMark(anyInt());
-    }
-
-    private Consumer<BindsMarkingPipeline> minimalFakes() {
-        return reducerSteps().andThen(fakeReducer()).andThen(fakePreparer());
+        underTest = mockPipeline(CADENCE, EMPTY, configs).marring();
     }
 
     @Test
@@ -74,8 +39,7 @@ class VideoMarringTest implements TestsModel, TestsWithBytes {
 
     @Test
     void background_pipelineCrash_setsBrokenState() throws Exception {
-        setUpMockPipeline(
-                reducerSteps(),
+        setUpMockPipeline(reducerSteps(),
                 p -> doThrow(new RuntimeException("GPU device lost")).when(p.reducer()).apply(any()),
                 fakePreparer());
 

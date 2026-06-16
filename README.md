@@ -6,12 +6,7 @@ To retain the possibility of a point of fact.
 The notion here is to take point-of-capture image, video, or audio evidence and
 produce a durable provenance and content signature,
 preventing trivial repudiation or manipulation.
-For video, the frame is downsampled, wavelet-transformed,
-and reduced to gradient features via a Sobel grid,
-producing a compact signature that survives compression.
-The resulting attestation is embedded as a QR-code-derived mark
-using bipolar luma modulation with temporal persistence;
-extraction uses rolling-frame subtraction and ZXing decode.
+
 A user presents intent to record. We generate an "Intent" MAR consisting of the conditions of recording at index -1.
 We don't ask what the user says they are recording. We provide a unique reference to the event,
 interpretation beyond the conditions of capture are intentionally out of our domain.
@@ -20,13 +15,19 @@ but this is not part of the MAR.
 
 Publishing an "Intent" frame does not establish any correlation to a piece of media -
 this requires media frames.
+For video, the raw frame is downsampled, then in parallel 
+wavelet-transformed with DWT
+and reduced to gradient features via Sobel using the same grid,
+producing a compact signature that survives compression.
 At each frame, we compute the media hash using BLAKE3,
-then use SipHash 4-8 to combine this with the frame data for the frame hash.
+then use SipHash 4-8 to combine this with the frame metadata for the frame hash.
 Each frame's SipHash key consists of the nonce followed by the prior hash.
-We continue to update the attestation, at frequency per application, with updated conditions and the media index.
-We can publish Frame 0, intermediate attestations, or Frame N.
+The resulting attestation is embedded as a QR-code-derived mark
+using bipolar luma modulation with temporal persistence;
+extraction uses rolling-frame subtraction and ZXing decode.
 
-Signatures are embedded into the evidence.
+We continue to update the attestation, at frequency per application, with updated conditions and the media index.
+We can publish the MARs for Frame 0 and/or the media frame MARs.
 
 ### Intent frame
 Signed conditions of capture, with random nonce and prior hash,
@@ -139,13 +140,19 @@ These are necessary for production deployment but not yet implemented in the lib
 Could be brought into library scope, given common OS support for this workflow.
 
 #### embeddings
-In progress for sequences of frames.
+Refers to in-media steganography or metadata containing the MAR, vs generating a vector.
+* In progress for sequences of video frames, with working POC, using TIM steganography.
+* Method not determined for image embedding, aside from BASE64 metadata.
+  * The video QR mark is both noticeable and unreliable for a single frame.
+* Method not determined for audio embedding, aside from BASE64 metadata.
+
 
 #### device bindings
 E.g. Android, iOS, OSX, Windows, Linux - access to the sensors needed to make Orientation and Framing meaningful.
 
 #### key access/persistence
-Mostly covered in install flow - this is explicitly not in our direct scopes.
+Mostly covered in install flow.
+We do include a Windows-specific reference implementation `WindowsCredentialSignatory` currently.
 
 #### registrar propagation
 Propagation of MAR frames to durable external ledgers for establishing a referential spine of attestations.
@@ -157,7 +164,7 @@ Limited, with mixed results. Evaluations are specific to the development system.
 ### opencode
 Competent. If you aren't paying for anything already, you should probably use this.
 * Does not introspect ollama for models by default
-* BigPickle - Seems to have written this buffer copying pretty well?
+* Big Pickle - Seems to have written this buffer copying pretty well?
 * Same tool-calling issues for most local models
 * orieg/gemma3-tools:12b-ft - wrong tool format.
 

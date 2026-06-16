@@ -13,7 +13,7 @@ import java.util.stream.Stream;
 import static net.bzethmayr.gigantspinosaurus.model.media.ReductionIds.REDUCED_OUTPUT_BYTES;
 import static org.junit.jupiter.api.Assertions.*;
 
-class VideoPipelineTest implements TestsWithImages {
+class VideoPipelineTest implements TestsWithImages, TestsWithRealPipelines {
 
     static Stream<Path> losslessPngs() throws Exception {
         return TestsWithImages.allImages("_lossless.png");

@@ -6,6 +6,11 @@ The library version is independent of the MAR format version (see notes below).
 
 ---
 
+## 0.6.5-SNAPSHOT (unreleased)
+
+- README introduction reorganized.
+- `TestsWithFakePipelines` test boilerplate extraction / test purpose marking interface
+
 ## 0.6.4-SNAPSHOT (2026-06-12)
 
 - `SIGNATURE_ALGORITHM = "Ed25519"` constant extracted to `ExposesSignature`;

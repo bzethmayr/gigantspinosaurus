@@ -11,7 +11,7 @@ plugins {
 java { toolchain { languageVersion = JavaLanguageVersion.of(21) } }
 
 group = "net.bzethmayr.mar"
-version = "0.6.4-SNAPSHOT"
+version = "0.6.5-SNAPSHOT"
 
 enum class BuildEnv { WINDOWS, MAC }
 

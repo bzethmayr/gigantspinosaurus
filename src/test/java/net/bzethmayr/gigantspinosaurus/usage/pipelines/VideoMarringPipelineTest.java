@@ -27,7 +27,7 @@ import static net.bzethmayr.gigantspinosaurus.usage.defaults.windows.WindowsEnvi
 import static net.bzethmayr.gigantspinosaurus.usage.video.VideoMarringCoordinator.blockingCoordinator;
 import static org.junit.jupiter.api.Assertions.*;
 
-class VideoMarringPipelineTest implements TestsWithImages {
+class VideoMarringPipelineTest implements TestsWithImages, TestsWithRealPipelines {
 
     private Path firstLosslessPng() {
         return TestsWithImages.losslessPngs().findFirst().orElseThrow();
