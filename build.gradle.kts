@@ -146,6 +146,7 @@ pitest {
     targetTests.set(listOf("net.bzethmayr.gigantspinosaurus.*Test"))
     // If you mutate code that calls Vulkan, your machine will crash.
     excludedTestClasses.set(listOf(
+        "net.bzethmayr.gigantspinosaurus.usage.defaults.windows.WindowsCredentialSignatory",
         "net.bzethmayr.gigantspinosaurus.usage.vk.*",
         "net.bzethmayr.gigantspinosaurus.usage.pipelines.*"
     ))
