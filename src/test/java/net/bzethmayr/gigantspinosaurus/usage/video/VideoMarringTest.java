@@ -40,7 +40,7 @@ class VideoMarringTest implements TestsModel, TestsWithBytes, TestsWithFakePipel
     @Test
     void background_pipelineCrash_setsBrokenState() throws Exception {
         setUpMockPipeline(reducerSteps(),
-                p -> doThrow(new RuntimeException("GPU device lost")).when(p.reducer()).apply(any()),
+                p -> doThrow(deviceLost()).when(p.reducer()).apply(any()),
                 fakePreparer());
 
         final var coordinator = underTest.coordinator();
@@ -60,7 +60,7 @@ class VideoMarringTest implements TestsModel, TestsWithBytes, TestsWithFakePipel
     @Test
     void mediaPipelineCrash_setsBrokenState() throws Exception {
         setUpMockPipeline(reducerSteps(), fakeReducer(), fakePreparer(), p ->
-                doThrow(new OutOfMemoryError("Vulkan device lost")).when(p.marker()).mark(any(), any(), anyInt()));
+                doThrow(deviceLost()).when(p.marker()).mark(any(), any(), anyInt()));
 
         final var coordinator = underTest.coordinator();
         final var background = underTest.background();

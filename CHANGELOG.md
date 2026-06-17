@@ -10,6 +10,11 @@ The library version is independent of the MAR format version (see notes below).
 
 - README introduction reorganized.
 - `TestsWithFakePipelines` test boilerplate extraction / test purpose marking interface
+- `TestsWithPipelines` — test boilerplate interface extraction for pipeline-based tests.
+- `ClosingChain` — fix missing `throw e` when no prior exception was caught during resource disposal.
+- `BlockingMarringCoordinator` — thread-safe locking fixes for `unparkCalc()` and `pipelineBroken()`.
+- `WindowsCredentialSignatory` excluded from PIT mutation testing in `build.gradle.kts`.
+- Regression test coverage for canonical serialization, media reduction, extraction pipeline, coordinators, Vulkan backend, `ClosingChain`, desktop orientation, and Windows signatory.
 
 ## 0.6.4-SNAPSHOT (2026-06-12)
 

@@ -1,24 +1,31 @@
 package net.bzethmayr.gigantspinosaurus.usage.video;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import static net.bzethmayr.gigantspinosaurus.usage.video.VideoMarringCoordinator.nonBlockingCoordinator;
 import static net.bzethmayr.gigantspinosaurus.usage.video.WorkerState.*;
 import static org.junit.jupiter.api.Assertions.*;
 
-class NonBlockingMarringCoordinatorTest {
+class NonBlockingMarringCoordinatorTest implements  TestsWithFakePipelines {
+
+    private MarringCoordinatorAccess underTest;
+
+    @BeforeEach
+    void setUpUnderTest() {
+        underTest = (MarringCoordinatorAccess) nonBlockingCoordinator();
+    }
 
     @Test
     void initialState_isGrabbingAndNotBroken() {
-        final var underTest = new NonBlockingMarringCoordinator();
         assertEquals(GRAB_FRAME, underTest.getState());
         assertFalse(underTest.isBroken());
     }
 
     @Test
     void setStateAndGetState_roundTrip() {
-        final var underTest = new NonBlockingMarringCoordinator();
         underTest.setState(CALCULATE_MARK);
         assertEquals(CALCULATE_MARK, underTest.getState());
         underTest.setState(APPLY_MARK);
@@ -27,8 +34,7 @@ class NonBlockingMarringCoordinatorTest {
 
     @Test
     void pipelineBroken_setsBrokenState() {
-        final var underTest = new NonBlockingMarringCoordinator();
-        final var t = new RuntimeException("crash");
+        final var t = gpuCrash();
 
         underTest.pipelineBroken(t);
 
@@ -39,15 +45,13 @@ class NonBlockingMarringCoordinatorTest {
 
     @Test
     void pipelineBroken_withNoRegisteredThreads_doesNotThrow() {
-        final var underTest = new NonBlockingMarringCoordinator();
-        assertDoesNotThrow(() -> underTest.pipelineBroken(new RuntimeException()));
+        assertDoesNotThrow(() -> underTest.pipelineBroken(gpuCrash()));
         assertTrue(underTest.isBroken());
     }
 
     @Test
     void reset_clearsBrokenStateAndResetsToGrabbing() {
-        final var underTest = new NonBlockingMarringCoordinator();
-        underTest.pipelineBroken(new RuntimeException("boom"));
+        underTest.pipelineBroken(gpuCrash());
 
         underTest.reset();
 
@@ -58,7 +62,6 @@ class NonBlockingMarringCoordinatorTest {
 
     @Test
     void mediaEnter_thenLeave() {
-        final var underTest = new NonBlockingMarringCoordinator();
         assertDoesNotThrow(() -> {
             underTest.mediaEnter();
             underTest.mediaLeave();
@@ -67,7 +70,6 @@ class NonBlockingMarringCoordinatorTest {
 
     @Test
     void calcEnter_thenLeave() {
-        final var underTest = new NonBlockingMarringCoordinator();
         assertDoesNotThrow(() -> {
             underTest.calcEnter();
             underTest.calcLeave();
@@ -76,7 +78,6 @@ class NonBlockingMarringCoordinatorTest {
 
     @Test
     void mediaEnter_secondDifferentThread_throws() throws Exception {
-        final var underTest = new NonBlockingMarringCoordinator();
         underTest.mediaEnter();
         underTest.mediaLeave();
 
@@ -91,7 +92,6 @@ class NonBlockingMarringCoordinatorTest {
 
     @Test
     void calcEnter_secondDifferentThread_throws() throws Exception {
-        final var underTest = new NonBlockingMarringCoordinator();
         underTest.calcEnter();
         underTest.calcLeave();
 
@@ -106,7 +106,6 @@ class NonBlockingMarringCoordinatorTest {
 
     @Test
     void mediaAndCalcMustBeDistinctThreads() throws Exception {
-        final var underTest = new NonBlockingMarringCoordinator();
         final var ct = new Thread(() -> {
             underTest.calcEnter();
             assertThrows(IllegalArgumentException.class, underTest::mediaEnter);
@@ -118,7 +117,6 @@ class NonBlockingMarringCoordinatorTest {
 
     @Test
     void reset_underLock_doesNotDeadlock() throws Exception {
-        final var underTest = new NonBlockingMarringCoordinator();
         underTest.mediaEnter();
         final AtomicBoolean resetDone = new AtomicBoolean(false);
 
@@ -136,7 +134,6 @@ class NonBlockingMarringCoordinatorTest {
 
     @Test
     void unparkMethods_areNoOps() {
-        final var underTest = new NonBlockingMarringCoordinator();
         assertDoesNotThrow(underTest::unparkCalc);
         assertDoesNotThrow(underTest::unparkMedia);
     }

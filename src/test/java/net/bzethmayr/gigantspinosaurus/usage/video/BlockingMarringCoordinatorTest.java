@@ -1,35 +1,41 @@
 package net.bzethmayr.gigantspinosaurus.usage.video;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import static net.bzethmayr.gigantspinosaurus.usage.video.VideoMarringCoordinator.blockingCoordinator;
 import static net.bzethmayr.gigantspinosaurus.usage.video.WorkerState.*;
 import static org.junit.jupiter.api.Assertions.*;
 
-class BlockingMarringCoordinatorTest {
+class BlockingMarringCoordinatorTest implements TestsWithFakePipelines{
+
+    private MarringCoordinatorAccess underTest;
+
+    @BeforeEach
+    void setUpUnderTest() {
+        underTest = (MarringCoordinatorAccess) blockingCoordinator();
+    }
 
     @Test
     void initialState_isGrabbingAndNotBroken() {
-        final var underTest = new BlockingMarringCoordinator();
         assertEquals(GRAB_FRAME, underTest.getState());
         assertFalse(underTest.isBroken());
     }
 
     @Test
     void setStateAndGetState_roundTrip() {
-        final var underTest = new BlockingMarringCoordinator();
         underTest.setState(CALCULATE_MARK);
         assertEquals(CALCULATE_MARK, underTest.getState());
     }
 
     @Test
     void pipelineBroken_setsBrokenState() {
-        final var underTest = new BlockingMarringCoordinator();
         underTest.mediaEnter();
-        final var t = new RuntimeException("gpu crash");
+        final var t = gpuCrash();
         underTest.pipelineBroken(t);
         underTest.mediaLeave();
         assertTrue(underTest.isBroken());
@@ -39,9 +45,8 @@ class BlockingMarringCoordinatorTest {
 
     @Test
     void reset_clearsBrokenState() {
-        final var underTest = new BlockingMarringCoordinator();
         underTest.mediaEnter();
-        underTest.pipelineBroken(new RuntimeException());
+        underTest.pipelineBroken(deviceLost());
         underTest.reset();
         underTest.mediaLeave();
         assertFalse(underTest.isBroken());
@@ -51,7 +56,6 @@ class BlockingMarringCoordinatorTest {
 
     @Test
     void mediaEnter_thenLeave() {
-        final var underTest = new BlockingMarringCoordinator();
         assertDoesNotThrow(() -> {
             underTest.mediaEnter();
             underTest.mediaLeave();
@@ -60,7 +64,6 @@ class BlockingMarringCoordinatorTest {
 
     @Test
     void calcEnter_whenStateIsCalculateMark_completesOnSeparateThread() throws Exception {
-        final var underTest = new BlockingMarringCoordinator();
         final var done = new CountDownLatch(1);
 
         underTest.mediaEnter();
@@ -80,7 +83,6 @@ class BlockingMarringCoordinatorTest {
 
     @Test
     void calcEnter_blocksUntilUnparked() throws Exception {
-        final var underTest = new BlockingMarringCoordinator();
         final var calcDone = new AtomicBoolean(false);
 
         final var ct = new Thread(() -> {
@@ -105,9 +107,8 @@ class BlockingMarringCoordinatorTest {
 
     @Test
     void calcEnter_whenBroken_doesNotBlock() throws Exception {
-        final var underTest = new BlockingMarringCoordinator();
         underTest.mediaEnter();
-        underTest.pipelineBroken(new RuntimeException());
+        underTest.pipelineBroken(gpuCrash());
         underTest.mediaLeave();
 
         final var ct = new Thread(() -> {
@@ -121,7 +122,6 @@ class BlockingMarringCoordinatorTest {
 
     @Test
     void mediaEnter_secondDifferentThread_throws() throws Exception {
-        final var underTest = new BlockingMarringCoordinator();
         underTest.mediaEnter();
         underTest.mediaLeave();
 
@@ -136,7 +136,6 @@ class BlockingMarringCoordinatorTest {
 
     @Test
     void calcEnter_sameThreadAsMedia_throws() {
-        final var underTest = new BlockingMarringCoordinator();
         underTest.mediaEnter();
         assertThrows(IllegalArgumentException.class, underTest::calcEnter);
         underTest.mediaLeave();
@@ -144,7 +143,6 @@ class BlockingMarringCoordinatorTest {
 
     @Test
     void calcEnter_secondDifferentThread_throws() throws Exception {
-        final var underTest = new BlockingMarringCoordinator();
         final var calcDone = new CountDownLatch(1);
 
         final var ct = new Thread(() -> {
@@ -171,7 +169,6 @@ class BlockingMarringCoordinatorTest {
 
     @Test
     void unparkCalc_requiresHeldLock_doesNotThrow() {
-        final var underTest = new BlockingMarringCoordinator();
         underTest.mediaEnter();
         assertDoesNotThrow(underTest::unparkCalc);
         underTest.mediaLeave();
@@ -179,14 +176,12 @@ class BlockingMarringCoordinatorTest {
 
     @Test
     void unparkCalc_withoutLock_doesNotThrow() {
-        final var underTest = new BlockingMarringCoordinator();
         assertDoesNotThrow(underTest::unparkCalc);
     }
 
     @Test
     void pipelineBroken_withoutLock_setsBrokenState() {
-        final var underTest = new BlockingMarringCoordinator();
-        final var t = new RuntimeException("crash");
+        final var t = gpuCrash();
         assertDoesNotThrow(() -> underTest.pipelineBroken(t));
         assertTrue(underTest.isBroken());
         assertEquals(BROKEN, underTest.getState());
@@ -195,7 +190,6 @@ class BlockingMarringCoordinatorTest {
 
     @Test
     void reset_underLock_doesNotDeadlock() throws Exception {
-        final var underTest = new BlockingMarringCoordinator();
         underTest.mediaEnter();
         final var resetDone = new AtomicBoolean(false);
 

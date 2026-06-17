@@ -20,10 +20,16 @@ import static net.bzethmayr.gigantspinosaurus.model.signature.ExposesSignature.S
 import static net.zethmayr.fungu.core.ExceptionFactory.becauseIllegal;
 import static net.zethmayr.fungu.core.ExceptionFactory.becauseImpossible;
 
+/**
+ * Creates MARs using strategies provided at construction.
+ */
 public class MarCreation {
     private final BindsConstructors ctors;
     private final BindsEnvironment env;
 
+    /**
+     * Reduces raw (full-entropy) media to reduced (selective-entropy) media signature.
+     */
     @FunctionalInterface
     public interface ReducedFrameReceiver {
         ExposesMar reducedFrame(final ByteBuffer frameData, final int index);
@@ -43,6 +49,11 @@ public class MarCreation {
                 : noStep();
     }
 
+    /**
+     * Returns a MAR frame declaring intent to record, with initial conditions but no specific media.
+     * @param reductionSteps the reductions that will be in use.
+     * @return an intent frame record.
+     */
     public ExposesMar intentFrame(final ReductionStep... reductionSteps) {
         if (reductionSteps.length > MAX_REDUCERS) {
             throw becauseTooManyReducers();
@@ -74,11 +85,21 @@ public class MarCreation {
         return ctors.marCtor().copyMar(bufferZero);
     }
 
+    /**
+     * Returns a frame signature receiver.
+     * @param reductionSteps the reduction steps that will be in use.
+     * @return a frame signature receiver.
+     */
     public ReducedFrameReceiver intentToRecord(final ReductionStep... reductionSteps) {
         ExposesMar intentFrame = intentFrame(reductionSteps);
         return intentToRecord(intentFrame);
     }
 
+    /**
+     * Returns a frame signature receiver based on the given intent frame.
+     * @param intentFrame the intent frame.
+     * @return a frame signature receiver.
+     */
     public ReducedFrameReceiver intentToRecord(final ExposesMar intentFrame) {
         final AtomicReference<ExposesMar> priorFrame = new AtomicReference<>(intentFrame);
         final AtomicInteger priorIndex = new AtomicInteger(intentFrame.index());
