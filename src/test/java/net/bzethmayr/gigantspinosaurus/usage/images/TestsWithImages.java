@@ -46,25 +46,6 @@ public interface TestsWithImages {
         }
     }
 
-    default void writeRasterAsPng(final ByteBuffer buf, final int width, final int height, final Path path) {
-        final BufferedImage img = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
-        buf.rewind();
-        for (int y = 0; y < height; y++) {
-            for (int x = 0; x < width; x++) {
-                final int off = (y * width + x) * 4;
-                final int r = buf.get(off) & 0xFF;
-                final int g = buf.get(off + 1) & 0xFF;
-                final int b = buf.get(off + 2) & 0xFF;
-                img.setRGB(x, y, (r << 16) | (g << 8) | b);
-            }
-        }
-        try {
-            ImageIO.write(img, "png", path.toFile());
-        } catch (final IOException ioe) {
-            throw new TestRuntimeException(ioe);
-        }
-    }
-
     static Stream<Path> allImages(final String... extensions) {
         final Predicate<Path> filter = Stream.of(extensions)
                 .map(s -> (Predicate<Path>) p ->
@@ -81,6 +62,14 @@ public interface TestsWithImages {
 
     static Stream<Path> imageFiles() {
         return allImages(".png", ".jpg", ".webp", ".jp2");
+    }
+
+    static int anharmonic() {
+        return TEST_RANDOM.nextInt(SAMPLE_STRIDE);
+    }
+
+    default int anharmonicSkip() {
+        return anharmonic();
     }
 
     static Stream<Path> sampledImageFiles(final int stride) {
@@ -103,5 +92,24 @@ public interface TestsWithImages {
         final byte[] b = new byte[buf.remaining()];
         buf.get(b);
         return b;
+    }
+
+    default void writeRasterAsPng(final ByteBuffer buf, final int width, final int height, final Path path) {
+        final BufferedImage img = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+        buf.rewind();
+        for (int y = 0; y < height; y++) {
+            for (int x = 0; x < width; x++) {
+                final int off = (y * width + x) * 4;
+                final int r = buf.get(off) & 0xFF;
+                final int g = buf.get(off + 1) & 0xFF;
+                final int b = buf.get(off + 2) & 0xFF;
+                img.setRGB(x, y, (r << 16) | (g << 8) | b);
+            }
+        }
+        try {
+            ImageIO.write(img, "png", path.toFile());
+        } catch (final IOException ioe) {
+            throw new TestRuntimeException(ioe);
+        }
     }
 }

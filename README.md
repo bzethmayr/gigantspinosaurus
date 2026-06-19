@@ -162,7 +162,7 @@ This is definitely an application vs a library scope, or at least it's a differe
 Limited, with mixed results. Evaluations are specific to the development system.
 
 ### opencode
-Competent. If you aren't paying for anything already, you should probably use this.
+Initially competent. No longer commendable due to regression toward overanalysis.
 * Does not introspect ollama for models by default
 * Big Pickle - Seems to have written this buffer copying pretty well?
 * Same tool-calling issues for most local models

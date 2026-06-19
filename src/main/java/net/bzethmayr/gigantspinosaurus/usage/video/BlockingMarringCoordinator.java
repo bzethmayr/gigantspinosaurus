@@ -1,11 +1,13 @@
 package net.bzethmayr.gigantspinosaurus.usage.video;
 
+import net.bzethmayr.gigantspinosaurus.usage.video.VideoMarringCoordinator.ObservableMarringCoordinator;
+
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
 import static net.zethmayr.fungu.core.ExceptionFactory.becauseIllegal;
 
-final class BlockingMarringCoordinator implements MarringCoordinatorAccess, VideoMarringCoordinator {
+final class BlockingMarringCoordinator extends ObservableMarringCoordinator implements MarringCoordinatorAccess, VideoMarringCoordinator {
     private final ReentrantLock lock = new ReentrantLock();
     private final Condition calcWaker = lock.newCondition();
     private volatile WorkerState state = WorkerState.GRAB_FRAME;
@@ -23,7 +25,9 @@ final class BlockingMarringCoordinator implements MarringCoordinatorAccess, Vide
 
     @Override
     public void mediaLeave() {
+        final WorkerState endingOn = getState();
         lock.unlock();
+        afterMedia(endingOn);
     }
 
     @Override
@@ -42,7 +46,9 @@ final class BlockingMarringCoordinator implements MarringCoordinatorAccess, Vide
 
     @Override
     public void calcLeave() {
+        final WorkerState endingOn = getState();
         lock.unlock();
+        afterCalc(endingOn);
     }
 
     @Override

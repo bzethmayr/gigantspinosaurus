@@ -10,6 +10,7 @@ import net.bzethmayr.gigantspinosaurus.usage.images.TestsWithImages;
 import net.bzethmayr.gigantspinosaurus.usage.qr.QrMarkEmbedder;
 import net.bzethmayr.gigantspinosaurus.usage.video.VideoMarring;
 import net.bzethmayr.gigantspinosaurus.usage.video.VideoMarringCoordinator;
+import net.bzethmayr.gigantspinosaurus.usage.video.VideoMarringTestCoordination;
 import net.bzethmayr.gigantspinosaurus.usage.vk.VulkanRoot;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
@@ -18,8 +19,6 @@ import java.nio.ByteBuffer;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
 
 import static net.bzethmayr.gigantspinosaurus.usage.BindsConstructors.defaultConstructors;
 import static net.bzethmayr.gigantspinosaurus.usage.defaults.DefaultEnvironments.desktopEnvironment;
@@ -47,37 +46,16 @@ class VideoMarringPipelineTest implements TestsWithImages, TestsWithRealPipeline
                 pipeline, blockingCoordinator(), 1, 1);
 
         final ByteBuffer frame = raster.toBuffer();
-        final var media = underTest.mediaFrame();
-        final var background = underTest.background();
 
-        // Frame 0: captured by media thread, calculated by calc thread
-        media.accept(frame, 0);
-
-        final CountDownLatch calcReady = new CountDownLatch(1);
-        Thread calcThread = new Thread(() -> {
-            background.calculate(); // processes frame 0, state → APPLY_MARK
-            calcReady.countDown();
-            background.calculate(); // parks (APPLY_MARK → await in calcEnter)
-        });
-        calcThread.start();
-        calcReady.await(1, TimeUnit.SECONDS);
-
-        // Frame 1: mark applied
-        frame.rewind();
-        media.accept(frame, 1);
-
-        // Frame 2: mark applied
-        frame.rewind();
-        media.accept(frame, 2);
-
-        // Verify not broken: wake the parked calc thread
-        while (calcThread.getState() != Thread.State.WAITING && calcThread.isAlive()) {
-            Thread.sleep(5);
+        try (final var coordination = new VideoMarringTestCoordination(underTest)) {
+            coordination.sendFrame(frame, 0);
+            frame.rewind();
+            coordination.sendFrame(frame, 1);
+            frame.rewind();
+            coordination.sendFrame(frame, 2);
         }
-        calcThread.interrupt();
-        calcThread.join(1000);
+
         assertFalse(underTest.coordinator().isBroken(), "Pipeline should not be broken");
-        assertFalse(calcThread.isAlive(), "Calc thread should not hang");
     }
 
     private List<Raster> someLandscapeRasters(final int count) {
@@ -101,35 +79,13 @@ class VideoMarringPipelineTest implements TestsWithImages, TestsWithRealPipeline
         final var underTest = new VideoMarring(defaultConstructors(), desktopEnvironment(),
                 pipeline, blockingCoordinator(), 1, 1);
 
-        final var media = underTest.mediaFrame();
-        final var background = underTest.background();
-
-        // Frame 0: captured by media thread, calculated by calc thread
-        media.accept(rasters.get(0).toBuffer(), 0);
-
-        final CountDownLatch calcReady = new CountDownLatch(1);
-        Thread calcThread = new Thread(() -> {
-            background.calculate(); // processes frame 0, state → APPLY_MARK
-            calcReady.countDown();
-            background.calculate(); // parks (APPLY_MARK → await in calcEnter)
-        });
-        calcThread.start();
-        calcReady.await(1, TimeUnit.SECONDS);
-
-        // Frame 1: mark applied
-        media.accept(rasters.get(1).toBuffer(), 1);
-
-        // Frame 2: mark applied
-        media.accept(rasters.get(2).toBuffer(), 2);
-
-        // Verify not broken: wake the parked calc thread
-        while (calcThread.getState() != Thread.State.WAITING && calcThread.isAlive()) {
-            Thread.sleep(5);
+        try (final var coordination = new VideoMarringTestCoordination(underTest)) {
+            coordination.sendFrame(rasters.get(0).toBuffer(), 0);
+            coordination.sendFrame(rasters.get(1).toBuffer(), 1);
+            coordination.sendFrame(rasters.get(2).toBuffer(), 2);
         }
-        calcThread.interrupt();
-        calcThread.join(1000);
+
         assertFalse(underTest.coordinator().isBroken(), "Pipeline should not be broken");
-        assertFalse(calcThread.isAlive(), "Calc thread should not hang");
     }
 
     @Test
@@ -146,33 +102,16 @@ class VideoMarringPipelineTest implements TestsWithImages, TestsWithRealPipeline
                     pipeline, blockingCoordinator(), 1, 1);
 
             final ByteBuffer frame = raster.toBuffer();
-            final var media = underTest.mediaFrame();
-            final var background = underTest.background();
 
-            media.accept(frame, 0);
-
-            final CountDownLatch calcReady = new CountDownLatch(1);
-            Thread calcThread = new Thread(() -> {
-                background.calculate();
-                calcReady.countDown();
-                background.calculate();
-            });
-            calcThread.start();
-            calcReady.await(5, TimeUnit.SECONDS);
-
-            frame.rewind();
-            media.accept(frame, 1);
-
-            frame.rewind();
-            media.accept(frame, 2);
-
-            while (calcThread.getState() != Thread.State.WAITING && calcThread.isAlive()) {
-                Thread.sleep(5);
+            try (final var coordination = new VideoMarringTestCoordination(underTest)) {
+                coordination.sendFrame(frame, 0);
+                frame.rewind();
+                coordination.sendFrame(frame, 1);
+                frame.rewind();
+                coordination.sendFrame(frame, 2);
             }
-            calcThread.interrupt();
-            calcThread.join(1000);
+
             assertFalse(underTest.coordinator().isBroken(), "GPU pipeline should not be broken");
-            assertFalse(calcThread.isAlive(), "Calc thread should not hang");
         }
     }
 
@@ -190,30 +129,13 @@ class VideoMarringPipelineTest implements TestsWithImages, TestsWithRealPipeline
             final var underTest = new VideoMarring(defaultConstructors(), desktopEnvironment(),
                     pipeline, blockingCoordinator(), 1, 1);
 
-            final var media = underTest.mediaFrame();
-            final var background = underTest.background();
-
-            media.accept(rasters.get(0).toBuffer(), 0);
-
-            final CountDownLatch calcReady = new CountDownLatch(1);
-            Thread calcThread = new Thread(() -> {
-                background.calculate();
-                calcReady.countDown();
-                background.calculate();
-            });
-            calcThread.start();
-            calcReady.await(5, TimeUnit.SECONDS);
-
-            media.accept(rasters.get(1).toBuffer(), 1);
-            media.accept(rasters.get(2).toBuffer(), 2);
-
-            while (calcThread.getState() != Thread.State.WAITING && calcThread.isAlive()) {
-                Thread.sleep(5);
+            try (final var coordination = new VideoMarringTestCoordination(underTest)) {
+                coordination.sendFrame(rasters.get(0).toBuffer(), 0);
+                coordination.sendFrame(rasters.get(1).toBuffer(), 1);
+                coordination.sendFrame(rasters.get(2).toBuffer(), 2);
             }
-            calcThread.interrupt();
-            calcThread.join(1000);
+
             assertFalse(underTest.coordinator().isBroken(), "GPU pipeline should not be broken");
-            assertFalse(calcThread.isAlive(), "Calc thread should not hang");
         }
     }
 
