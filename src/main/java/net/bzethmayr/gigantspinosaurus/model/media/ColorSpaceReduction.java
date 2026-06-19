@@ -5,6 +5,10 @@ import java.nio.ByteBuffer;
 import static net.bzethmayr.gigantspinosaurus.model.media.ReductionIds.YCBCR_ID;
 import static net.bzethmayr.gigantspinosaurus.model.media.ReductionIds.YCBCR_VERSION;
 
+/**
+ * This is a slow implementation used in testing and verification of the HLSL implementation.
+ * It performs the same color-space translation but on a single CPU core.
+ */
 public class ColorSpaceReduction implements ReducesMedia {
     private final int width;
     private final int height;

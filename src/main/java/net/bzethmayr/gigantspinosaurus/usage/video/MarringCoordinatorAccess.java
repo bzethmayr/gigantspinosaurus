@@ -1,6 +1,6 @@
 package net.bzethmayr.gigantspinosaurus.usage.video;
 
-sealed interface MarringCoordinatorAccess extends VideoMarringCoordinator permits BlockingMarringCoordinator, NonBlockingMarringCoordinator {
+sealed interface MarringCoordinatorAccess extends VideoMarringCoordinator permits VideoMarringCoordinator.ObservableMarringCoordinator, BlockingMarringCoordinator, NonBlockingMarringCoordinator {
 
     void mediaEnter();
     void mediaLeave();

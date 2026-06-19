@@ -2,6 +2,7 @@ package net.bzethmayr.gigantspinosaurus.usage.video;
 
 import net.bzethmayr.gigantspinosaurus.model.TestsWithBytes;
 import net.bzethmayr.gigantspinosaurus.model.mar.ExposesMar;
+import net.bzethmayr.gigantspinosaurus.usage.BindsMarkingPipeline;
 import net.bzethmayr.gigantspinosaurus.usage.MarCreation;
 import net.bzethmayr.gigantspinosaurus.usage.MarCreation.ReducedFrameReceiver;
 import net.bzethmayr.gigantspinosaurus.usage.MarDecoding;
@@ -14,20 +15,78 @@ import org.junit.jupiter.api.Test;
 
 import java.nio.ByteBuffer;
 import java.nio.file.Path;
+import java.time.Duration;
 import java.util.Arrays;
 import java.util.Optional;
 
 import static net.bzethmayr.gigantspinosaurus.usage.BindsConstructors.defaultConstructors;
 import static net.bzethmayr.gigantspinosaurus.usage.defaults.DefaultEnvironments.desktopEnvironment;
 import static net.bzethmayr.gigantspinosaurus.usage.video.QrExtractionPipeline.videoTimExtraction;
+import static net.bzethmayr.gigantspinosaurus.usage.video.VideoMarringCoordinator.blockingCoordinator;
+import static net.bzethmayr.gigantspinosaurus.usage.video.VideoMarringCoordinator.nonBlockingCoordinator;
 import static org.junit.jupiter.api.Assertions.*;
 
-class VideoMarringTimTest implements TestsWithBytes, TestsWithImages {
+class VideoMarringTimTest implements TestsWithBytes, TestsWithImages, TestsWithFakePipelines {
+
+    private Raster someLosslessPng() {
+        final Path imagePath = TestsWithImages.losslessPngs()
+                .skip(anharmonicSkip())
+                .findFirst().orElseThrow();
+        return CrossFormatDecoder.decode(imagePath);
+    }
+
+    private ByteBuffer[] prepareIdenticalFrames(final Raster someRaster, final int frameCount) {
+        final ByteBuffer[] frames = new ByteBuffer[frameCount];
+        final byte[] rgba = someRaster.rgb();
+        for (int i = 0; i < frameCount; i++) {
+            final ByteBuffer frame = ByteBuffer.wrap(Arrays.copyOf(rgba, rgba.length));
+            frames[i] = frame;
+        }
+        return frames;
+    }
+
+    @Test
+    void timVideoMarring_identicalFrames_markExtractAndVerify() {
+        assertTimeout(Duration.ofSeconds(10), () -> {
+            final Raster raster = someLosslessPng();
+            final int frameCount = 5;
+            final ByteBuffer[] frames = prepareIdenticalFrames(raster, frameCount);
+            final var ctors = defaultConstructors();
+            final var env = desktopEnvironment();
+            final var reduction = new FakeReduction(raster.width(), raster.height());
+            final var embedder = new QrMarkEmbedder(raster.width(), raster.height());
+            final var pipeline = new BindsMarkingPipeline(reduction, embedder, embedder);
+
+            final VideoMarring marring = new VideoMarring(ctors, env, pipeline, blockingCoordinator(), 4, 1);
+            try (final var coordination = new VideoMarringTestCoordination(marring)) {
+                for (int i = 0; i < frameCount; i++) {
+                    coordination.sendFrame(frames[i], i);
+                }
+            }
+
+            final var verifier = new MarVerification(ctors, env);
+            final var videoVerification = new VideoVerification(videoTimExtraction(raster.width(), raster.height()));
+            byte[] decodedMarBytes = null;
+            for (int i = 0; i < frameCount; i++) {
+                final Optional<byte[]> result = videoVerification.acceptFrame(frames[i], i);
+                if (result.isPresent()) {
+                    decodedMarBytes = result.get();
+                    break;
+                }
+            }
+
+            assertNotNull(decodedMarBytes, "Should have decoded a MAR from marked frames");
+            assertTrue(decodedMarBytes.length > 0, "Decoded MAR bytes should not be empty");
+            final ExposesMar decodedMar = MarDecoding.decode(ByteBuffer.wrap(decodedMarBytes));
+            assertEquals(0, decodedMar.index(), "Decoded MAR index should match original");
+            assertTrue(verifier.verifyMedia(decodedMar, reduction.apply(frames[0])),
+                    "Decoded MAR should cryptographically verify against first frame media");
+        });
+    }
 
     @Test
     void timAlternatingFrames_markExtractAndVerify() throws Exception {
-        final Path imagePath = TestsWithImages.losslessPngs().findFirst().orElseThrow();
-        final Raster raster = CrossFormatDecoder.decode(imagePath);
+        final Raster raster = someLosslessPng();
 
         final var ctors = defaultConstructors();
         final var env = desktopEnvironment();

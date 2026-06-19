@@ -28,6 +28,15 @@ public class VideoMarring {
     private final MediaFrameAcceptor mediaFrames;
     private final CalculationThreadWorker background;
 
+    /**
+     * Creates a marring session for a single video.
+     * @param ctors model construction strategies.
+     * @param env the working environment.
+     * @param pipeline a mark calculation pipeline.
+     * @param coordinator the coordinator ({@link VideoMarringCoordinator}).
+     * @param cadenceFrames how long to display each mark
+     * @param emptyFrames how long between marks
+     */
     public VideoMarring(
             final BindsConstructors ctors,
             final BindsEnvironment env,
@@ -52,10 +61,19 @@ public class VideoMarring {
         return coordinator;
     }
 
+    /**
+     * Receives raw media frames and the frame index,
+     * and writes the mark into the buffer.
+     * @see WorkerState
+     */
     @FunctionalInterface
     public interface MediaFrameAcceptor extends BiConsumer<ByteBuffer, Integer> {
     }
 
+    /**
+     * Performs signature and mark calculations.
+     * @see WorkerState
+     */
     @FunctionalInterface
     public interface BackgroundCalculator {
         /**
@@ -65,10 +83,18 @@ public class VideoMarring {
         void calculate();
     }
 
+    /**
+     * The raw media frame receiver - cannot be used on the background thread.
+     * @return the raw media receiver.
+     */
     public MediaFrameAcceptor mediaFrame() {
         return mediaFrames;
     }
 
+    /**
+     * The calculation worker - cannot be used on the media frame thread.
+     * @return the calculation worker.
+     */
     public BackgroundCalculator background() {
         return background;
     }

@@ -6,6 +6,21 @@ The library version is independent of the MAR format version (see notes below).
 
 ---
 
+## 0.6.5 (2026-06-19)
+
+- README introduction reorganized.
+- `TestsWithFakePipelines` test boilerplate extraction / test purpose marking interface
+- `TestsWithPipelines` — test boilerplate interface extraction for pipeline-based tests.
+- `ClosingChain` — fix missing `throw e` when no prior exception was caught during resource disposal.
+- `ObservableMarringCoordinator` — abstract base class in `VideoMarringCoordinator` with `afterMedia`/`afterCalc` callback registration maps; callbacks invoked outside the lock in `mediaLeave()`/`calcLeave()`.
+- `BlockingMarringCoordinator` — thread-safe locking fixes for `unparkCalc()` and `pipelineBroken()`; refactored to extend `ObservableMarringCoordinator`.
+- `NonBlockingMarringCoordinator` — refactored to extend `ObservableMarringCoordinator` with after-callback support.
+- `VideoMarringTestCoordination` — test coordination utility wrapping callback-based thread synchronisation.
+- Coordinated test pattern applied to `VideoMarringTimTest` and `VideoMarringPipelineTest`.
+- `TestsWithImages.anharmonic()` / `anharmonicSkip()` — test image sampling helpers with random offset.
+- `WindowsCredentialSignatory` excluded from PIT mutation testing in `build.gradle.kts`.
+- Regression test coverage for canonical serialization, media reduction, extraction pipeline, coordinators, Vulkan backend, `ClosingChain`, desktop orientation, and Windows signatory.
+
 ## 0.6.4-SNAPSHOT (2026-06-12)
 
 - `SIGNATURE_ALGORITHM = "Ed25519"` constant extracted to `ExposesSignature`;

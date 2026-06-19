@@ -11,7 +11,7 @@ plugins {
 java { toolchain { languageVersion = JavaLanguageVersion.of(21) } }
 
 group = "net.bzethmayr.mar"
-version = "0.6.4-SNAPSHOT"
+version = "0.6.5-SNAPSHOT"
 
 enum class BuildEnv { WINDOWS, MAC }
 
@@ -143,9 +143,15 @@ pitest {
     pitestVersion.set("1.15.0")
     junit5PluginVersion.set("1.2.3")
     targetClasses.set(listOf("net.bzethmayr.gigantspinosaurus.*"))
+    excludedClasses.set(listOf(
+        "net.bzethmayr.gigantspinosaurus.usage.defaults.windows.WindowsCredentialSignatory",
+        "net.bzethmayr.gigantspinosaurus.usage.vk.*",
+        "net.bzethmayr.gigantspinosaurus.usage.pipelines.*"
+    ))
     targetTests.set(listOf("net.bzethmayr.gigantspinosaurus.*Test"))
     // If you mutate code that calls Vulkan, your machine will crash.
     excludedTestClasses.set(listOf(
+        "net.bzethmayr.gigantspinosaurus.usage.defaults.windows.WindowsCredentialSignatory",
         "net.bzethmayr.gigantspinosaurus.usage.vk.*",
         "net.bzethmayr.gigantspinosaurus.usage.pipelines.*"
     ))

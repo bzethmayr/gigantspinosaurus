@@ -37,6 +37,8 @@ public record ClosingChain(AutoCloseable res, ClosingChain parent) implements Au
                 } catch (final Exception e) {
                     if (caught != null) {
                         e.addSuppressed(caught);
+                    } else {
+                        throw e;
                     }
                 }
             }
